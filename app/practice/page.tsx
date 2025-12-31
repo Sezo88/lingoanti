@@ -10,7 +10,7 @@ import type { LetterResult } from '@/lib/supabase'
 
 export default function PracticePage() {
     const router = useRouter()
-    const [wordLength, setWordLength] = useState(5) // Başlangıç için 5 harf
+    const [wordLength, setWordLength] = useState(5)
     const [targetWord, setTargetWord] = useState<string>('')
     const [guesses, setGuesses] = useState<string[]>([])
     const [currentGuess, setCurrentGuess] = useState('')
@@ -31,7 +31,6 @@ export default function PracticePage() {
         }
     }
 
-    // Oyun başlat
     useEffect(() => {
         startNewGame()
     }, [])
@@ -72,12 +71,10 @@ export default function PracticePage() {
             return
         }
 
-        // Kelime kontrolü - Türkçe kelime listesinde var mı?
         const valid = await isValidWord(currentGuess)
         if (!valid) {
             setError('Geçersiz kelime! Hak kaybettiniz.')
 
-            // Geçersiz kelimeyi kaydet (KIRMIZI gösterim için)
             const invalidResult = currentGuess.split('').map(letter => ({
                 letter,
                 status: 'invalid' as const
@@ -89,14 +86,12 @@ export default function PracticePage() {
             setResults(newResults)
             setCurrentGuess('')
 
-            // Vibrate for error
             if (navigator.vibrate) {
                 navigator.vibrate([50, 50, 50])
             }
 
             setTimeout(() => setError(''), 3000)
 
-            // Oyun bitti mi kontrol et
             if (newGuesses.length >= 6) {
                 setGameOver(true)
                 setWon(false)
@@ -104,7 +99,6 @@ export default function PracticePage() {
             return
         }
 
-        // Tahmini değerlendir
         const evalResult = evaluateGuess(currentGuess, targetWord)
         const newGuesses = [...guesses, currentGuess]
         const newResults = [...results, evalResult]
@@ -113,12 +107,10 @@ export default function PracticePage() {
         setResults(newResults)
         setCurrentGuess('')
 
-        // Oyun bitti mi kontrol et
         if (isCorrectGuess(currentGuess, targetWord)) {
             setWon(true)
             setGameOver(true)
 
-            // Haptic feedback (mobil)
             if (navigator.vibrate) {
                 navigator.vibrate([100, 50, 100, 50, 100])
             }
@@ -147,7 +139,6 @@ export default function PracticePage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col">
-            {/* Header */}
             <header className="glass-effect border-b border-dark-200">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button
@@ -164,19 +155,11 @@ export default function PracticePage() {
                     >
                         {isFullscreen ? '⊗' : '⛶'}
                     </button>
-                    <button
-                        onClick={startNewGame}
-                        className="text-primary-500 font-semibold hover:text-primary-400 transition-colors"
-                    >
-                        Yeni
-                    </button>
                 </div>
             </header>
 
-            {/* Game Area */}
             <main className="flex-1 flex flex-col p-4 pb-2">
                 <div className="w-full max-w-md mx-auto">
-                    {/* Game Board */}
                     <GameBoard
                         guesses={guesses}
                         currentGuess={currentGuess}
@@ -185,7 +168,6 @@ export default function PracticePage() {
                         results={results}
                     />
 
-                    {/* Error Message */}
                     {error && (
                         <div className="text-center mb-4 animate-pulse">
                             <div className="bg-danger-500/20 border-2 border-danger-500 text-danger-400 px-4 py-3 rounded-xl font-semibold">
@@ -194,7 +176,6 @@ export default function PracticePage() {
                         </div>
                     )}
 
-                    {/* Game Over Message */}
                     {gameOver && (
                         <div className="text-center mb-6">
                             {won ? (
@@ -228,22 +209,20 @@ export default function PracticePage() {
                         </div>
                     )}
                 </div>
-        </div>
 
-                {/* Keyboard */ }
-    {
-        !gameOver && (
-            <div className="pb-4">
-                <GameKeyboard
-                    onKeyPress={handleKeyPress}
-                    onEnter={handleEnter}
-                    onBackspace={handleBackspace}
-                    keyStates={keyboardState}
-                />
-            </div>
-        )
-    }
-            </main >
-        </div >
+                <div className="flex-1 min-h-4"></div>
+
+                {!gameOver && (
+                    <div className="pb-2">
+                        <GameKeyboard
+                            onKeyPress={handleKeyPress}
+                            onEnter={handleEnter}
+                            onBackspace={handleBackspace}
+                            keyStates={keyboardState}
+                        />
+                    </div>
+                )}
+            </main>
+        </div>
     )
 }

@@ -66,7 +66,7 @@ export default function GameKeyboard({
                             onClick={onEnter}
                             className="px-3 py-4 bg-orange-600 hover:bg-orange-700 rounded-lg font-semibold text-sm min-w-[60px] active:bg-orange-800 transition-colors text-white"
                         >
-                            GİR
+                            GÖNDER
                         </motion.button>
                     )}
                 </div>

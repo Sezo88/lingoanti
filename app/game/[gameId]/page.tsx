@@ -23,6 +23,17 @@ export default function MultiplayerGamePage() {
     const [currentGuess, setCurrentGuess] = useState('')
     const [error, setError] = useState('')
     const [submitting, setSubmitting] = useState(false)
+    const [isFullscreen, setIsFullscreen] = useState(false)
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen()
+            setIsFullscreen(true)
+        } else {
+            document.exitFullscreen()
+            setIsFullscreen(false)
+        }
+    }
 
     const isPlayer1 = user?.id === game?.player1_id
     const isMyTurn = game?.current_turn === user?.id
@@ -227,7 +238,13 @@ export default function MultiplayerGamePage() {
                                 </p>
                             )}
                         </div>
-                        <div className="w-16"></div>
+                        <button
+                            onClick={toggleFullscreen}
+                            className="text-dark-500 hover:text-white transition-colors text-xl"
+                            title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
+                        >
+                            {isFullscreen ? '⊗' : '⛶'}
+                        </button>
                     </div>
 
                     {!isGameOver && (

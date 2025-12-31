@@ -114,6 +114,40 @@ export async function finishGame(
 }
 
 /**
+ * Oyundan pes et
+ */
+export async function forfeitGame(
+    gameId: string,
+    userId: string
+): Promise<{ success: boolean; error: any }> {
+    // Oyun bilgisini al
+    const { data: game } = await supabase
+        .from('games')
+        .select('player1_id, player2_id')
+        .eq('id', gameId)
+        .single()
+
+    if (!game) {
+        return { success: false, error: new Error('Oyun bulunamadı') }
+    }
+
+    // Karşı oyuncu kazansın
+    const winnerId = game.player1_id === userId ? game.player2_id : game.player1_id
+
+    const { error } = await supabase
+        .from('games')
+        .update({
+            status: 'finished',
+            winner_id: winnerId,
+            forfeited_by: userId,
+            finished_at: new Date().toISOString()
+        })
+        .eq('id', gameId)
+
+    return { success: !error, error }
+}
+
+/**
  * Oyun detaylarını getir
  */
 export async function getGame(gameId: string): Promise<{ game: Game | null; error: any }> {

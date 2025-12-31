@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { getActiveGames, acceptGameInvite, rejectGameInvite } from '@/lib/games'
+import { getActiveGames, acceptGameInvite, rejectGameInvite, forfeitGame } from '@/lib/games'
 import { supabase } from '@/lib/supabase'
 import type { Game } from '@/lib/supabase'
 
@@ -37,6 +37,15 @@ export default function ActiveGamesPage() {
         if (success) {
             loadGames()
         }
+    }
+
+    const handleSurrender = async (gameId: string) => {
+        if (!user) return
+        if (!confirm('Oyundan pes etmek istediğinizden emin misiniz? Rakibiniz kazanacak.')) return
+
+        setLoading(true)
+        await forfeitGame(gameId, user.id)
+        loadGames()
     }
 
     const getOpponentId = (game: Game) => {
@@ -161,8 +170,7 @@ export default function ActiveGamesPage() {
                                 return (
                                     <div
                                         key={game.id}
-                                        onClick={() => router.push(`/game/${game.id}`)}
-                                        className="glass-effect rounded-xl p-4 cursor-pointer hover:bg-white/10 transition-all active:scale-95"
+                                        className="glass-effect rounded-xl p-4 hover:bg-white/10 transition-all"
                                     >
                                         <div className="flex items-center justify-between mb-2">
                                             <div>
@@ -178,9 +186,23 @@ export default function ActiveGamesPage() {
                                                 {isMyTurn ? 'Senin Sıran' : 'Rakip Oynuyor'}
                                             </div>
                                         </div>
-                                        <button className="w-full py-2 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors">
-                                            Devam Et →
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => router.push(`/game/${game.id}`)}
+                                                className="flex-1 py-2 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"
+                                            >
+                                                Devam Et →
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleSurrender(game.id)
+                                                }}
+                                                className="px-4 py-2 rounded-lg bg-danger-600 text-white font-semibold hover:bg-danger-700 transition-colors"
+                                            >
+                                                Pes Et
+                                            </button>
+                                        </div>
                                     </div>
                                 )
                             })}

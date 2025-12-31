@@ -41,8 +41,8 @@ export default function RegisterPage() {
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <h1 className="text-5xl font-bold gradient-text mb-2">Lingo Anti</h1>
-                    <p className="text-dark-500">Hemen kayıt ol, oynamaya başla!</p>
+                    <h1 className="text-5xl font-bold gradient-text mb-2">Lingo Türkiye</h1>
+                    <p className="text-dark-500">Arkadaşlarınla kelime yarışı!</p>
                 </div>
 
                 {/* Register Form */}

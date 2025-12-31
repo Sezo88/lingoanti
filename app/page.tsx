@@ -33,7 +33,7 @@ export default function HomePage() {
             {/* Header */}
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold gradient-text">Lingo Anti</h1>
+                    <h1 className="text-2xl font-bold gradient-text">Lingo Türkiye</h1>
                     <button
                         onClick={signOut}
                         className="px-4 py-2 rounded-xl bg-dark-200 hover:bg-dark-300 transition-colors text-sm"
@@ -46,11 +46,11 @@ export default function HomePage() {
             {/* Main Content */}
             <div className="container mx-auto px-4 py-8">
                 {/* Welcome Section */}
-                <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold text-white mb-2">
-                        Hoş geldin! 👋
-                    </h2>
-                    <p className="text-dark-500">Hadi bir oyun başlatalım!</p>
+                <div className="text-center mb-8">
+                    <h1 className="text-5xl font-bold mb-2 gradient-text">
+                        Lingo Türkiye
+                    </h1>
+                    <p className="text-dark-500">Kelime tahmin oyunu</p>
                 </div>
 
                 {/* Active Games Notification */}

@@ -6,8 +6,8 @@ import { AuthProvider } from '@/contexts/AuthContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    title: 'Lingo Anti - Türkçe Kelime Oyunu',
-    description: 'İki kişilik real-time Türkçe Lingo oyunu. Arkadaşlarınla kelime tahmin et!',
+    title: 'Lingo Türkiye',
+    description: 'Çok oyunculu Türkçe kelime tahmin oyunu',
 }
 
 export default function RootLayout({

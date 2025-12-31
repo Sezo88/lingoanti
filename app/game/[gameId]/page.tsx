@@ -300,20 +300,20 @@ export default function MultiplayerGamePage() {
                         </div>
                     )}
                 </div>
-        </div>
+
 
                 {
-        !isGameOver && isMyTurn && (
-            <div className="pb-4">
-                <GameKeyboard
-                    onKeyPress={handleKeyPress}
-                    onEnter={handleEnter}
-                    onBackspace={handleBackspace}
-                    keyStates={keyboardState}
-                />
-            </div>
-        )
-    }
+                    !isGameOver && isMyTurn && (
+                        <div className="pb-4">
+                            <GameKeyboard
+                                onKeyPress={handleKeyPress}
+                                onEnter={handleEnter}
+                                onBackspace={handleBackspace}
+                                keyStates={keyboardState}
+                            />
+                        </div>
+                    )
+                }
             </main >
         </div >
     )

@@ -259,7 +259,7 @@ export default function MultiplayerGamePage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col p-4 pb-2">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
                 <div className="w-full max-w-md mx-auto">
                     <GameBoard
                         guesses={allGuesses}
@@ -304,7 +304,7 @@ export default function MultiplayerGamePage() {
 
                 {
                     !isGameOver && isMyTurn && (
-                        <div className="pb-4">
+                        <div className="w-full max-w-md mx-auto pb-12">
                             <GameKeyboard
                                 onKeyPress={handleKeyPress}
                                 onEnter={handleEnter}

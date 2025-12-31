@@ -108,16 +108,19 @@ export default function MultiplayerGamePage() {
                 const matchResult = isMatchFinished(player1Score, player2Score, game.best_of)
 
                 if (matchResult.isFinished) {
-                    // Maç tamamlandı
                     await finishGame(gameId, user.id)
                 } else {
-                    // Eli kazandı mesajı göster
-                    setError(`🎉 Sen eli kazandın! Skor: ${player1Score}-${player2Score}`)
+                    // Mesajı database'e kaydet (her iki oyuncu görecek)
+                    await supabase
+                        .from('games')
+                        .update({ round_message: `🎉 El bitti! Skor: ${player1Score}-${player2Score}` })
+                        .eq('id', gameId)
 
-                    // 3 saniye bekle, sonraki el
                     await new Promise(resolve => setTimeout(resolve, 3000))
                     await startNextRound(gameId)
-                    setError('')
+
+                    // Mesajı temizle
+                    await supabase.from('games').update({ round_message: null }).eq('id', gameId)
                 }
             }
 
@@ -127,19 +130,21 @@ export default function MultiplayerGamePage() {
             const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
             await finishRound(gameId, null)
 
-            // Doğru cevabı göster
-            setError(`✋ Kimse bulamadı! Kelime: ${game.target_word.toUpperCase()}`)
+            // Mesajı database'e kaydet (her iki oyuncu görecek)
+            await supabase
+                .from('games')
+                .update({ round_message: `✋ Kimse bulamadı! Kelime: ${game.target_word.toUpperCase()}` })
+                .eq('id', gameId)
 
             const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
             if (updatedGame.data) {
                 const matchResult = isMatchFinished(updatedGame.data.player1_score, updatedGame.data.player2_score, game.best_of)
 
                 if (!matchResult.isFinished) {
-                    // 3 saniye bekle, sonra yeni el başlat
                     await new Promise(resolve => setTimeout(resolve, 3000))
                     await startNextRound(gameId)
+                    await supabase.from('games').update({ round_message: null }).eq('id', gameId)
                 } else {
-                    // Maç bitti
                     await finishGame(gameId, matchResult.winnerId === 'player1' ? updatedGame.data.player1_id : updatedGame.data.player2_id)
                 }
             }
@@ -204,7 +209,7 @@ export default function MultiplayerGamePage() {
     const iWon = game.winner_id === user?.id
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col">
+        <div className="min-h-screen max-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col overflow-hidden">
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between mb-2">
@@ -237,7 +242,7 @@ export default function MultiplayerGamePage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col justify-between p-4 pb-0">
+            <main className="flex-1 flex flex-col justify-between p-4 pb-2 overflow-y-auto min-h-0">
                 <div className="flex-1 flex items-center justify-center">
                     <div className="w-full max-w-md">
                         <GameBoard
@@ -248,10 +253,14 @@ export default function MultiplayerGamePage() {
                             results={allResults}
                         />
 
-                        {error && (
+
+                        {(error || game.round_message) && (
                             <div className="text-center mb-4 animate-pulse">
-                                <div className="bg-danger-500/20 border-2 border-danger-500 text-danger-400 px-4 py-3 rounded-xl font-semibold">
-                                    {error}
+                                <div className={`border-2 px-4 py-3 rounded-xl font-semibold ${error
+                                    ? 'bg-danger-500/20 border-danger-500 text-danger-400'
+                                    : 'bg-primary-500/20 border-primary-500 text-primary-300'
+                                    }`}>
+                                    {error || game.round_message}
                                 </div>
                             </div>
                         )}

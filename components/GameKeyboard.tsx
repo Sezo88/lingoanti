@@ -25,14 +25,14 @@ export default function GameKeyboard({
         <div className="w-full max-w-2xl mx-auto pb-safe">
             {KEYBOARD_ROWS.map((row, rowIndex) => (
                 <div key={rowIndex} className="flex gap-1 mb-2 justify-center">
-                    {/* Enter button (first row only) */}
+                    {/* Backspace button (left side, row 3) */}
                     {rowIndex === 2 && (
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={onEnter}
+                            onClick={onBackspace}
                             className="px-3 py-4 bg-dark-200 hover:bg-dark-300 rounded-lg font-semibold text-sm min-w-[60px] active:bg-dark-400 transition-colors"
                         >
-                            GİR
+                            ⌫
                         </motion.button>
                     )}
 
@@ -59,14 +59,14 @@ export default function GameKeyboard({
                         )
                     })}
 
-                    {/* Backspace button (last row only) */}
+                    {/* Enter button (right side, row 3 - ORANGE) */}
                     {rowIndex === 2 && (
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={onBackspace}
-                            className="px-3 py-4 bg-dark-200 hover:bg-dark-300 rounded-lg font-semibold text-sm min-w-[60px] active:bg-dark-400 transition-colors"
+                            onClick={onEnter}
+                            className="px-3 py-4 bg-orange-600 hover:bg-orange-700 rounded-lg font-semibold text-sm min-w-[60px] active:bg-orange-800 transition-colors text-white"
                         >
-                            ⌫
+                            GİR
                         </motion.button>
                     )}
                 </div>

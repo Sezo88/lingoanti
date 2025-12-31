@@ -45,6 +45,7 @@ export type Game = {
     player1_score: number
     player2_score: number
     mixed_mode: boolean
+    round_message: string | null
     created_at: string
     finished_at: string | null
 }

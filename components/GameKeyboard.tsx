@@ -27,7 +27,7 @@ export default function GameKeyboard({ onKeyPress, onEnter, onBackspace, keyStat
             {rows.map((row, i) => (
                 <div key={i} className="flex gap-1 mb-1 justify-center">
                     {row.map((key) => {
-                        const state = keyStates.get(key)
+                        const state = keyStates?.get(key)
                         return (
                             <motion.button
                                 key={key}

@@ -10,7 +10,7 @@ import type { LetterResult } from '@/lib/supabase'
 
 export default function PracticePage() {
     const router = useRouter()
-    const [wordLength] = useState(5) // Başlangıç için 5 harf
+    const [wordLength, setWordLength] = useState(5) // Başlangıç için 5 harf
     const [targetWord, setTargetWord] = useState<string>('')
     const [guesses, setGuesses] = useState<string[]>([])
     const [currentGuess, setCurrentGuess] = useState('')
@@ -19,6 +19,17 @@ export default function PracticePage() {
     const [won, setWon] = useState(false)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [isFullscreen, setIsFullscreen] = useState(false)
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen()
+            setIsFullscreen(true)
+        } else {
+            document.exitFullscreen()
+            setIsFullscreen(false)
+        }
+    }
 
     // Oyun başlat
     useEffect(() => {
@@ -137,7 +148,7 @@ export default function PracticePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col">
             {/* Header */}
-            <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
+            <header className="glass-effect border-b border-dark-200">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button
                         onClick={() => router.push('/')}
@@ -145,7 +156,14 @@ export default function PracticePage() {
                     >
                         ← Geri
                     </button>
-                    <h1 className="text-xl font-bold gradient-text">Pratik Oyun</h1>
+                    <h1 className="text-xl font-bold gradient-text">Pratik Modu</h1>
+                    <button
+                        onClick={toggleFullscreen}
+                        className="text-dark-400 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
+                        title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
+                    >
+                        {isFullscreen ? '⊗' : '⛶'}
+                    </button>
                     <button
                         onClick={startNewGame}
                         className="text-primary-500 font-semibold hover:text-primary-400 transition-colors"

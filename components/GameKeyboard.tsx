@@ -15,62 +15,56 @@ const KEYBOARD_ROWS = [
     ['Z', 'C', 'V', 'B', 'N', 'M', 'Ö', 'Ç']
 ]
 
-export default function GameKeyboard({
-    onKeyPress,
-    onEnter,
-    onBackspace,
-    keyStates
-}: GameKeyboardProps) {
+export default function GameKeyboard({ onKeyPress, onEnter, onBackspace, keyStates }: GameKeyboardProps) {
+    const rows = [
+        ['E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'Ğ', 'Ü'],
+        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ş', 'İ'],
+        ['Z', 'C', 'V', 'B', 'N', 'M', 'Ö', 'Ç']
+    ]
+
     return (
         <div className="w-full max-w-2xl mx-auto pb-safe">
-            {KEYBOARD_ROWS.map((row, rowIndex) => (
-                <div key={rowIndex} className="flex gap-1 mb-2 justify-center">
-                    {/* Backspace button (left side, row 3) */}
-                    {rowIndex === 2 && (
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={onBackspace}
-                            className="px-3 py-4 bg-dark-200 hover:bg-dark-300 rounded-lg font-semibold text-sm min-w-[60px] active:bg-dark-400 transition-colors"
-                        >
-                            ⌫
-                        </motion.button>
-                    )}
-
-                    {/* Letter keys */}
-                    {row.map(key => {
-                        const status = keyStates?.get(key)
-
+            {rows.map((row, i) => (
+                <div key={i} className="flex gap-1 mb-1 justify-center">
+                    {row.map((key) => {
+                        const state = keyStates.get(key)
                         return (
                             <motion.button
                                 key={key}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => onKeyPress(key)}
-                                className={`
-                  px-3 py-4 rounded-lg font-bold text-lg min-w-[32px] sm:min-w-[40px]
-                  transition-colors active:scale-95
-                  ${status === 'correct' ? 'bg-success-600 text-white' : ''}
-                  ${status === 'present' ? 'bg-warning-500 text-white' : ''}
-                  ${status === 'absent' ? 'bg-dark-400 text-dark-700' : ''}
-                  ${!status ? 'bg-dark-200 hover:bg-dark-300 text-white' : ''}
-                `}
+                                className={`flex-1 h-12 rounded-lg font-bold hover:opacity-80 active:scale-95 transition-all text-sm sm:text-base
+                  ${state === 'correct' ? 'bg-success-600 text-white' :
+                                        state === 'present' ? 'bg-warning-600 text-white' :
+                                            state === 'absent' ? 'bg-dark-400 text-dark-600' :
+                                                'bg-dark-200 text-white'}`}
                             >
                                 {key}
                             </motion.button>
                         )
                     })}
-
-                    {/* Enter button (right side, row 3 - ORANGE) */}
-                    {rowIndex === 2 && (
+                    {i === 2 && (
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={onEnter}
-                            className="px-3 py-4 bg-orange-600 hover:bg-orange-700 rounded-lg font-semibold text-sm min-w-[60px] active:bg-orange-800 transition-colors text-white"
+                            onClick={onBackspace}
+                            className="flex-1 max-w-[60px] h-12 rounded-lg bg-dark-300 text-white font-bold hover:bg-dark-400 active:scale-95 transition-all text-lg"
                         >
-                            GÖNDER
+                            ⌫
                         </motion.button>
                     )}
                 </div>
             ))}
+
+            {/* Send button - standalone 4th row */}
+            <div className="flex justify-center mt-2">
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onEnter}
+                    className="w-full max-w-md h-14 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold active:scale-95 transition-all text-lg"
+                >
+                    GÖNDER
+                </motion.button>
+            </div>
         </div>
     )
 }

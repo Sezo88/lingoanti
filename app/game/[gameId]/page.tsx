@@ -240,7 +240,7 @@ export default function MultiplayerGamePage() {
                         </div>
                         <button
                             onClick={toggleFullscreen}
-                            className="text-dark-500 hover:text-white transition-colors text-xl"
+                            className="text-dark-400 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
                             title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
                         >
                             {isFullscreen ? '⊗' : '⛶'}
@@ -281,19 +281,6 @@ export default function MultiplayerGamePage() {
                                 </div>
                             </div>
                         )}
-
-                        <div className="mt-4 glass-effect rounded-xl p-3">
-                            <div className="flex justify-between text-sm">
-                                <div>
-                                    <p className="text-dark-500">Toplam Deneme</p>
-                                    <p className="text-xl font-bold text-primary-500">{totalMoves}/6</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-dark-500">Kalan Hak</p>
-                                    <p className="text-xl font-bold text-warning-500">{6 - totalMoves}</p>
-                                </div>
-                            </div>
-                        </div>
 
                         {isGameOver && (
                             <div className="text-center mt-6">

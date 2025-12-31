@@ -259,61 +259,62 @@ export default function MultiplayerGamePage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col justify-between p-4 pb-2 overflow-y-auto min-h-0">
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="w-full max-w-md">
-                        <GameBoard
-                            guesses={allGuesses}
-                            currentGuess={isMyTurn ? currentGuess : ''}
-                            wordLength={game.word_length}
-                            maxGuesses={6}
-                            results={allResults}
-                        />
+            <main className="flex-1 flex flex-col p-4 pb-2">
+                <div className="w-full max-w-md mx-auto">
+                    <GameBoard
+                        guesses={allGuesses}
+                        currentGuess={isMyTurn ? currentGuess : ''}
+                        wordLength={game.word_length}
+                        maxGuesses={6}
+                        results={allResults}
+                    />
 
 
-                        {(error || game.round_message) && (
-                            <div className="text-center mb-4 animate-pulse">
-                                <div className={`border-2 px-4 py-3 rounded-xl font-semibold ${error
-                                    ? 'bg-danger-500/20 border-danger-500 text-danger-400'
-                                    : 'bg-primary-500/20 border-primary-500 text-primary-300'
-                                    }`}>
-                                    {error || game.round_message}
-                                </div>
+                    {(error || game.round_message) && (
+                        <div className="text-center mb-4 animate-pulse">
+                            <div className={`border-2 px-4 py-3 rounded-xl font-semibold ${error
+                                ? 'bg-danger-500/20 border-danger-500 text-danger-400'
+                                : 'bg-primary-500/20 border-primary-500 text-primary-300'
+                                }`}>
+                                {error || game.round_message}
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        {isGameOver && (
-                            <div className="text-center mt-6">
-                                <div className="glass-effect rounded-2xl p-6">
-                                    <p className="text-3xl mb-2">{iWon ? '🎉' : '😢'}</p>
-                                    <h2 className={`text-2xl font-bold mb-2 ${iWon ? 'text-success-500' : 'text-danger-500'}`}>
-                                        {iWon ? 'Kazandın!' : 'Kaybettin!'}
-                                    </h2>
-                                    <p className="text-white font-bold text-xl mb-1">{game.target_word}</p>
-                                    <p className="text-dark-500 text-sm mb-4">Kelime buydu</p>
-                                    <button
-                                        onClick={() => router.push('/friends')}
-                                        className="px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
-                                    >
-                                        Arkadaşlar
-                                    </button>
-                                </div>
+                    {isGameOver && (
+                        <div className="text-center mt-6">
+                            <div className="glass-effect rounded-2xl p-6">
+                                <p className="text-3xl mb-2">{iWon ? '🎉' : '😢'}</p>
+                                <h2 className={`text-2xl font-bold mb-2 ${iWon ? 'text-success-500' : 'text-danger-500'}`}>
+                                    {iWon ? 'Kazandın!' : 'Kaybettin!'}
+                                </h2>
+                                <p className="text-white font-bold text-xl mb-1">{game.target_word}</p>
+                                <p className="text-dark-500 text-sm mb-4">Kelime buydu</p>
+                                <button
+                                    onClick={() => router.push('/friends')}
+                                    className="px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
+                                >
+                                    Arkadaşlar
+                                </button>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
-
-                {!isGameOver && isMyTurn && (
-                    <div className="pb-4">
-                        <GameKeyboard
-                            onKeyPress={handleKeyPress}
-                            onEnter={handleEnter}
-                            onBackspace={handleBackspace}
-                            keyStates={keyboardState}
-                        />
-                    </div>
-                )}
-            </main>
         </div>
+
+                {
+        !isGameOver && isMyTurn && (
+            <div className="pb-4">
+                <GameKeyboard
+                    onKeyPress={handleKeyPress}
+                    onEnter={handleEnter}
+                    onBackspace={handleBackspace}
+                    keyStates={keyboardState}
+                />
+            </div>
+        )
+    }
+            </main >
+        </div >
     )
 }

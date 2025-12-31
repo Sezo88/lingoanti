@@ -174,75 +174,76 @@ export default function PracticePage() {
             </header>
 
             {/* Game Area */}
-            <main className="flex-1 flex flex-col justify-between p-4 pb-0">
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="w-full max-w-md">
-                        {/* Game Board */}
-                        <GameBoard
-                            guesses={guesses}
-                            currentGuess={currentGuess}
-                            wordLength={wordLength}
-                            maxGuesses={6}
-                            results={results}
-                        />
+            <main className="flex-1 flex flex-col p-4 pb-2">
+                <div className="w-full max-w-md mx-auto">
+                    {/* Game Board */}
+                    <GameBoard
+                        guesses={guesses}
+                        currentGuess={currentGuess}
+                        wordLength={wordLength}
+                        maxGuesses={6}
+                        results={results}
+                    />
 
-                        {/* Error Message */}
-                        {error && (
-                            <div className="text-center mb-4 animate-pulse">
-                                <div className="bg-danger-500/20 border-2 border-danger-500 text-danger-400 px-4 py-3 rounded-xl font-semibold">
-                                    {error}
+                    {/* Error Message */}
+                    {error && (
+                        <div className="text-center mb-4 animate-pulse">
+                            <div className="bg-danger-500/20 border-2 border-danger-500 text-danger-400 px-4 py-3 rounded-xl font-semibold">
+                                {error}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Game Over Message */}
+                    {gameOver && (
+                        <div className="text-center mb-6">
+                            {won ? (
+                                <div className="glass-effect rounded-2xl p-6">
+                                    <p className="text-3xl mb-2">🎉</p>
+                                    <h2 className="text-2xl font-bold text-success-500 mb-2">Kazandın!</h2>
+                                    <p className="text-dark-500">
+                                        {guesses.length} tahminde bildin
+                                    </p>
+                                    <button
+                                        onClick={startNewGame}
+                                        className="mt-4 px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
+                                    >
+                                        Tekrar Oyna
+                                    </button>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Game Over Message */}
-                        {gameOver && (
-                            <div className="text-center mb-6">
-                                {won ? (
-                                    <div className="glass-effect rounded-2xl p-6">
-                                        <p className="text-3xl mb-2">🎉</p>
-                                        <h2 className="text-2xl font-bold text-success-500 mb-2">Kazandın!</h2>
-                                        <p className="text-dark-500">
-                                            {guesses.length} tahminde bildin
-                                        </p>
-                                        <button
-                                            onClick={startNewGame}
-                                            className="mt-4 px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
-                                        >
-                                            Tekrar Oyna
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="glass-effect rounded-2xl p-6">
-                                        <p className="text-3xl mb-2">😢</p>
-                                        <h2 className="text-2xl font-bold text-danger-500 mb-2">Kaybettin!</h2>
-                                        <p className="text-white font-bold text-xl mb-1">{targetWord}</p>
-                                        <p className="text-dark-500 text-sm mb-4">Kelime buydu</p>
-                                        <button
-                                            onClick={startNewGame}
-                                            className="px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
-                                        >
-                                            Tekrar Oyna
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            ) : (
+                                <div className="glass-effect rounded-2xl p-6">
+                                    <p className="text-3xl mb-2">😢</p>
+                                    <h2 className="text-2xl font-bold text-danger-500 mb-2">Kaybettin!</h2>
+                                    <p className="text-white font-bold text-xl mb-1">{targetWord}</p>
+                                    <p className="text-dark-500 text-sm mb-4">Kelime buydu</p>
+                                    <button
+                                        onClick={startNewGame}
+                                        className="px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
+                                    >
+                                        Tekrar Oyna
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
-
-                {/* Keyboard */}
-                {!gameOver && (
-                    <div className="pb-4">
-                        <GameKeyboard
-                            onKeyPress={handleKeyPress}
-                            onEnter={handleEnter}
-                            onBackspace={handleBackspace}
-                            keyStates={keyboardState}
-                        />
-                    </div>
-                )}
-            </main>
         </div>
+
+                {/* Keyboard */ }
+    {
+        !gameOver && (
+            <div className="pb-4">
+                <GameKeyboard
+                    onKeyPress={handleKeyPress}
+                    onEnter={handleEnter}
+                    onBackspace={handleBackspace}
+                    keyStates={keyboardState}
+                />
+            </div>
+        )
+    }
+            </main >
+        </div >
     )
 }

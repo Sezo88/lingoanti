@@ -1,0 +1,306 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRealtimeGame } from '@/hooks/useRealtimeGame'
+import { submitGuess, switchTurn, finishGame } from '@/lib/games'
+import { isValidWord } from '@/lib/words'
+import { evaluateGuess, isCorrectGuess } from '@/lib/gameLogic'
+import { supabase } from '@/lib/supabase'
+import GameBoard from '@/components/GameBoard'
+import GameKeyboard from '@/components/GameKeyboard'
+import type { LetterResult } from '@/lib/supabase'
+
+export default function MultiplayerGamePage() {
+    const params = useParams()
+    const gameId = params?.gameId as string
+    const { user } = useAuth()
+    const router = useRouter()
+
+    const { game, moves, loading } = useRealtimeGame(gameId)
+
+    const [currentGuess, setCurrentGuess] = useState('')
+    const [error, setError] = useState('')
+    const [submitting, setSubmitting] = useState(false)
+
+    const isPlayer1 = user?.id === game?.player1_id
+    const isMyTurn = game?.current_turn === user?.id
+    const opponent = isPlayer1 ? game?.player2_id : game?.player1_id
+
+    const totalMoves = moves.length
+
+    const allGuesses = moves.map(m => m.guess)
+    const allResults = moves.map(m => m.result as LetterResult[])
+
+    const handleKeyPress = (key: string) => {
+        if (!isMyTurn || currentGuess.length >= (game?.word_length || 5)) return
+        setCurrentGuess(prev => prev + key)
+    }
+
+    const handleBackspace = () => {
+        setCurrentGuess(prev => prev.slice(0, -1))
+    }
+
+    const handleEnter = async () => {
+        if (!game || !user) return
+        if (currentGuess.length !== game.word_length) {
+            setError(`${game.word_length} harfli kelime giriniz`)
+            setTimeout(() => setError(''), 2000)
+            return
+        }
+
+        const valid = await isValidWord(currentGuess)
+        if (!valid) {
+            setError('Geçersiz kelime! Hak kaybettiniz.')
+
+            const invalidResult = currentGuess.split('').map(letter => ({
+                letter,
+                status: 'invalid' as const
+            }))
+
+            setSubmitting(true)
+            await submitGuess(gameId, user.id, currentGuess, invalidResult)
+            setCurrentGuess('')
+
+            // 6. hamle bitti - kimse kazanamadı
+            if (totalMoves + 1 >= 6) {
+                const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
+                await finishRound(gameId, null) // Beraberlik
+
+                const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
+                if (updatedGame.data) {
+                    const matchResult = isMatchFinished(updatedGame.data.player1_score, updatedGame.data.player2_score, game.best_of)
+
+                    if (!matchResult.isFinished) {
+                        // Yeni el başlat
+                        await startNextRound(gameId)
+                    } else {
+                        // Maç bitti
+                        await finishGame(gameId, matchResult.winnerId === 'player1' ? updatedGame.data.player1_id : updatedGame.data.player2_id)
+                    }
+                }
+            } else {
+                await switchTurn(gameId, opponent!)
+            }
+
+            setSubmitting(false)
+            setTimeout(() => setError(''), 3000)
+            return
+        }
+
+        const evalResult = evaluateGuess(currentGuess, game.target_word)
+
+        setSubmitting(true)
+        await submitGuess(gameId, user.id, currentGuess, evalResult)
+        setCurrentGuess('')
+
+        // Kelimeyi buldu!
+        if (isCorrectGuess(currentGuess, game.target_word)) {
+            const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
+            await finishRound(gameId, user.id)
+
+            const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
+            if (updatedGame.data) {
+                const player1Score = user.id === updatedGame.data.player1_id ? updatedGame.data.player1_score : updatedGame.data.player2_score
+                const player2Score = user.id === updatedGame.data.player1_id ? updatedGame.data.player2_score : updatedGame.data.player1_score
+
+                const matchResult = isMatchFinished(player1Score, player2Score, game.best_of)
+
+                if (matchResult.isFinished) {
+                    // Maç tamamlandı
+                    await finishGame(gameId, user.id)
+                } else {
+                    // Eli kazandı mesajı göster
+                    setError(`🎉 Sen eli kazandın! Skor: ${player1Score}-${player2Score}`)
+
+                    // 3 saniye bekle, sonraki el
+                    await new Promise(resolve => setTimeout(resolve, 3000))
+                    await startNextRound(gameId)
+                    setError('')
+                }
+            }
+
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100])
+        } else if (totalMoves + 1 >= 6) {
+            // 6. hamle - kimse bulamadı, berabere
+            const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
+            await finishRound(gameId, null)
+
+            // Doğru cevabı göster
+            setError(`✋ Kimse bulamadı! Kelime: ${game.target_word.toUpperCase()}`)
+
+            const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
+            if (updatedGame.data) {
+                const matchResult = isMatchFinished(updatedGame.data.player1_score, updatedGame.data.player2_score, game.best_of)
+
+                if (!matchResult.isFinished) {
+                    // 3 saniye bekle, sonra yeni el başlat
+                    await new Promise(resolve => setTimeout(resolve, 3000))
+                    await startNextRound(gameId)
+                } else {
+                    // Maç bitti
+                    await finishGame(gameId, matchResult.winnerId === 'player1' ? updatedGame.data.player1_id : updatedGame.data.player2_id)
+                }
+            }
+
+            if (navigator.vibrate) navigator.vibrate(500)
+        } else {
+            // Sıra değiştir
+            await switchTurn(gameId, opponent!)
+        }
+
+        setSubmitting(false)
+    }
+
+    const getKeyboardStateFromResults = (results: LetterResult[][]): Map<string, 'correct' | 'present' | 'absent'> => {
+        const keyState = new Map<string, 'correct' | 'present' | 'absent'>()
+        results.forEach(guessResult => {
+            guessResult.forEach(({ letter, status }) => {
+                if (status === 'invalid') return
+                const currentStatus = keyState.get(letter)
+                if (status === 'correct') {
+                    keyState.set(letter, 'correct')
+                } else if (status === 'present' && currentStatus !== 'correct') {
+                    keyState.set(letter, 'present')
+                } else if (!currentStatus && status === 'absent') {
+                    keyState.set(letter, status)
+                }
+            })
+        })
+        return keyState
+    }
+
+    const keyboardState = getKeyboardStateFromResults(allResults)
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-500 mx-auto"></div>
+                    <p className="mt-4 text-dark-500">Oyun yükleniyor...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (!game) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-danger-500">Oyun bulunamadı</p>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="mt-4 px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold"
+                    >
+                        Ana Sayfa
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    const isGameOver = game.status === 'finished'
+    const iWon = game.winner_id === user?.id
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col">
+            <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
+                <div className="container mx-auto px-4 py-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <button onClick={() => router.push('/')} className="text-dark-500 hover:text-white transition-colors">
+                            ← Çık
+                        </button>
+                        <div className="text-center">
+                            <p className="text-xs text-dark-500">
+                                {game.best_of > 1 ? `Best of ${game.best_of} - El ${game.current_round}` : 'Tek El'}
+                            </p>
+                            <p className="font-semibold">{game.word_length} Harfli Kelime</p>
+                            {game.best_of > 1 && (
+                                <p className="text-xs text-primary-500 font-bold">
+                                    {game.player1_score} - {game.player2_score}
+                                </p>
+                            )}
+                        </div>
+                        <div className="w-16"></div>
+                    </div>
+
+                    {!isGameOver && (
+                        <div className="text-center">
+                            <div className={`inline-block px-4 py-2 rounded-lg ${isMyTurn ? 'bg-success-600' : 'bg-warning-600'}`}>
+                                <p className="text-white font-semibold text-sm">
+                                    {isMyTurn ? '✨ Senin Sıran!' : '⏳ Rakip oynuyor...'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </header>
+
+            <main className="flex-1 flex flex-col justify-between p-4 pb-0">
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="w-full max-w-md">
+                        <GameBoard
+                            guesses={allGuesses}
+                            currentGuess={isMyTurn ? currentGuess : ''}
+                            wordLength={game.word_length}
+                            maxGuesses={6}
+                            results={allResults}
+                        />
+
+                        {error && (
+                            <div className="text-center mb-4 animate-pulse">
+                                <div className="bg-danger-500/20 border-2 border-danger-500 text-danger-400 px-4 py-3 rounded-xl font-semibold">
+                                    {error}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="mt-4 glass-effect rounded-xl p-3">
+                            <div className="flex justify-between text-sm">
+                                <div>
+                                    <p className="text-dark-500">Toplam Deneme</p>
+                                    <p className="text-xl font-bold text-primary-500">{totalMoves}/6</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-dark-500">Kalan Hak</p>
+                                    <p className="text-xl font-bold text-warning-500">{6 - totalMoves}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {isGameOver && (
+                            <div className="text-center mt-6">
+                                <div className="glass-effect rounded-2xl p-6">
+                                    <p className="text-3xl mb-2">{iWon ? '🎉' : '😢'}</p>
+                                    <h2 className={`text-2xl font-bold mb-2 ${iWon ? 'text-success-500' : 'text-danger-500'}`}>
+                                        {iWon ? 'Kazandın!' : 'Kaybettin!'}
+                                    </h2>
+                                    <p className="text-white font-bold text-xl mb-1">{game.target_word}</p>
+                                    <p className="text-dark-500 text-sm mb-4">Kelime buydu</p>
+                                    <button
+                                        onClick={() => router.push('/friends')}
+                                        className="px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
+                                    >
+                                        Arkadaşlar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {!isGameOver && isMyTurn && (
+                    <div className="pb-4">
+                        <GameKeyboard
+                            onKeyPress={handleKeyPress}
+                            onEnter={handleEnter}
+                            onBackspace={handleBackspace}
+                            keyStates={keyboardState}
+                        />
+                    </div>
+                )}
+            </main>
+        </div>
+    )
+}

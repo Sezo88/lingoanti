@@ -10,9 +10,10 @@ import GameSettingsModal, { type GameSettings } from '@/components/GameSettingsM
 import { usePresence } from '@/hooks/usePresence'
 
 export default function FriendsPage() {
-    const { user } = useAuth()
+    const { user, onlineUsers } = useAuth()
     const router = useRouter()
-    const onlineUsers = usePresence(user?.id)
+
+    // ... usePresence call removed
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
     const [friends, setFriends] = useState<any[]>([])

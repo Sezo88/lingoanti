@@ -19,8 +19,7 @@ interface LeaderboardUser {
 
 export default function LeaderboardPage() {
     const router = useRouter()
-    const { user } = useAuth()
-    const onlineUsers = usePresence(user?.id)
+    const { user, onlineUsers } = useAuth()
     const [users, setUsers] = useState<LeaderboardUser[]>([])
     const [loading, setLoading] = useState(true)
 

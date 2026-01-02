@@ -140,8 +140,12 @@ export default function HomePage() {
                             Rastgele bir oyuncuyla hemen eşleş
                         </p>
                         <button
-                            onClick={findMatch}
-                            className="w-full py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all shadow-lg shadow-primary-500/20"
+                            onClick={() => {
+                                console.log('Button clicked!')
+                                alert('Butona basıldı!')
+                                findMatch()
+                            }}
+                            className="w-full py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all shadow-lg shadow-primary-500/20 relative z-10"
                         >
                             Hemen Oyna
                         </button>

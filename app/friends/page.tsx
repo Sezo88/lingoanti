@@ -16,6 +16,11 @@ export default function FriendsPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
     const [friends, setFriends] = useState<any[]>([])
+    const [expandedFriendId, setExpandedFriendId] = useState<string | null>(null)
+
+    const toggleFriend = (id: string) => {
+        setExpandedFriendId(expandedFriendId === id ? null : id)
+    }
     const [pendingRequests, setPendingRequests] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<'friends' | 'search' | 'requests'>('friends')
@@ -206,34 +211,54 @@ export default function FriendsPage() {
                                 </button>
                             </div>
                         ) : (
-                            friends.map((friendship) => (
-                                <div key={friendship.id} className="glass-effect rounded-xl p-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div>
-                                            <p className="font-semibold text-white flex items-center gap-2">
-                                                {friendship.friend.display_name}
-                                                {onlineUsers.has(friendship.friend.id) && (
-                                                    <span className="w-2.5 h-2.5 bg-success-500 rounded-full animate-pulse shadow-lg shadow-success-500/50" title="Online"></span>
-                                                )}
-                                            </p>
-                                            <p className="text-sm text-dark-500">@{friendship.friend.username}</p>
-                                        </div>
+                            friends.map((friendship) => {
+                                const isOnline = onlineUsers.has(friendship.friend.id)
+                                const isExpanded = expandedFriendId === friendship.id
+
+                                return (
+                                    <div key={friendship.id} className="glass-effect rounded-xl overflow-hidden transition-all">
                                         <button
-                                            onClick={() => handleRemoveFriend(friendship.id)}
-                                            className="text-danger-500 text-sm hover:underline"
+                                            onClick={() => toggleFriend(friendship.id)}
+                                            className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors text-left"
                                         >
-                                            Kaldır
+                                            <div>
+                                                <p className="font-semibold text-white">{friendship.friend.display_name}</p>
+                                                <p className="text-sm text-dark-500">@{friendship.friend.username}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`text-xs font-semibold flex items-center gap-1 ${isOnline ? 'text-success-400' : 'text-dark-400'
+                                                    }`}>
+                                                    <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-success-500 animate-pulse' : 'bg-dark-400'}`}></span>
+                                                    {isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
+                                                </div>
+                                                <div className={`text-dark-400 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                    ▼
+                                                </div>
+                                            </div>
                                         </button>
+
+                                        {isExpanded && (
+                                            <div className="p-4 pt-0 border-t border-white/5 bg-black/20 animate-in slide-in-from-top-2 duration-200">
+                                                <div className="flex gap-2 mt-2">
+                                                    <button
+                                                        onClick={() => handlePlayWithFriend(friendship.friend.id, friendship.friend.display_name)}
+                                                        disabled={loading}
+                                                        className="flex-1 py-2 rounded-lg bg-success-600 text-white font-semibold hover:bg-success-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                                    >
+                                                        <span>🎮</span> Oyun Başlat
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRemoveFriend(friendship.id)}
+                                                        className="px-4 py-2 rounded-lg bg-danger-500/10 text-danger-400 font-semibold hover:bg-danger-500/20 transition-colors border border-danger-500/20"
+                                                    >
+                                                        Kaldır
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <button
-                                        onClick={() => handlePlayWithFriend(friendship.friend.id, friendship.friend.display_name)}
-                                        disabled={loading}
-                                        className="w-full py-3 rounded-xl bg-success-600 text-white font-semibold hover:bg-success-700 transition-colors disabled:opacity-50"
-                                    >
-                                        🎮 Oyun Başlat
-                                    </button>
-                                </div>
-                            ))
+                                )
+                            })
                         )}
                     </div>
                 )}

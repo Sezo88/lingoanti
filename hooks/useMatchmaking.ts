@@ -10,13 +10,19 @@ export function useMatchmaking() {
     const subscriptionRef = useRef<any>(null)
 
     const findMatch = async () => {
-        if (!user) return
+        if (!user) {
+            console.error('findMatch called but user is not logged in')
+            return
+        }
 
-        setIsSearching(true)
+        console.log('Starting matchmaking search for user:', user.id)
 
         try {
+            setIsSearching(true)
             // 1. Önce RPC yöntemini dene (Atomic eşleşme)
             const { data: gameId, error } = await supabase.rpc('find_match', { p_user_id: user.id })
+
+            console.log('find_match RPC result:', { data: gameId, error })
 
             if (error) {
                 console.error('Eşleşme hatası:', error)

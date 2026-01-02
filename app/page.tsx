@@ -20,19 +20,25 @@ export default function HomePage() {
         }
 
         if (user) {
+            console.log('Fetching stats for user:', user.id)
             fetchStats()
         }
     }, [user, loading, router])
 
     const fetchStats = async () => {
         if (!user) return
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('users')
             .select('score, wins, losses, total_games')
             .eq('id', user.id)
             .single()
 
+        if (error) {
+            console.error('Error fetching stats:', error)
+        }
+
         if (data) {
+            console.log('Stats received:', data)
             setStats(data)
         }
     }

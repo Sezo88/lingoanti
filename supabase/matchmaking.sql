@@ -58,8 +58,9 @@ BEGIN
     END IF;
 
     -- B. Oyunu oluştur
+    -- B. Oyunu oluştur
     INSERT INTO games (player1_id, player2_id, current_turn, status, word_length, target_word)
-    VALUES (v_opponent_id, p_user_id, v_opponent_id, 'playing', v_word_length, v_word)
+    VALUES (v_opponent_id, p_user_id, v_opponent_id, 'active', v_word_length, v_word)
     RETURNING id INTO v_game_id;
 
     -- C. İki oyuncuyu da kuyruktan sil

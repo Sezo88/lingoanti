@@ -11,12 +11,10 @@ export function useMatchmaking() {
 
     const findMatch = async () => {
         if (!user) {
-            alert('Hata: Kullanıcı girişi yapılmamış!')
             console.error('findMatch called but user is not logged in')
             return
         }
 
-        alert(`Eşleşme aranıyor... User ID: ${user.id}`)
         console.log('Starting matchmaking search for user:', user.id)
 
         try {

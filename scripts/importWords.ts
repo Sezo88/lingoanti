@@ -36,10 +36,14 @@ async function importWords() {
 
     console.log(`✅ ${allWords.length.toLocaleString('tr-TR')} kelime bulundu`)
 
+    // Kelimeleri unique yap (Set kullanarak)
+    const uniqueWords = Array.from(new Set(allWords.map(w => w.toLowerCase())))
+    console.log(`✅ ${uniqueWords.length.toLocaleString('tr-TR')} benzersiz kelime bulundu (Toplam: ${allWords.length.toLocaleString('tr-TR')})`)
+
     // Kelimeleri uzunluğa göre grupla
     const wordsByLength: { [key: number]: string[] } = {}
 
-    allWords.forEach(word => {
+    uniqueWords.forEach(word => {
         const len = word.length
         if (!wordsByLength[len]) {
             wordsByLength[len] = []
@@ -77,7 +81,7 @@ async function importWords() {
 
         const { error } = await supabase
             .from('words')
-            .insert(batch)
+            .upsert(batch, { onConflict: 'word,length', ignoreDuplicates: true })
 
         if (error) {
             console.error(`❌ Hata (batch ${Math.floor(i / batchSize) + 1}):`, error.message)

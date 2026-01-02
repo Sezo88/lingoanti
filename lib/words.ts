@@ -5,7 +5,7 @@ import { supabase } from './supabase'
  */
 export async function getRandomWord(length: number): Promise<string | null> {
     const { data, error } = await supabase
-        .from('words')
+        .from('game_words') // Soru havuzundan seç
         .select('word')
         .eq('length', length)
         .limit(100) // 100 kelime çek, sonra random seç
@@ -28,7 +28,7 @@ export async function isValidWord(word: string): Promise<boolean> {
     const normalizedWord = word.toLocaleLowerCase('tr-TR')
 
     const { data, error } = await supabase
-        .from('words')
+        .from('words') // Geniş sözlükten kontrol et
         .select('word')
         .eq('word', normalizedWord)
         .maybeSingle()
@@ -41,7 +41,7 @@ export async function isValidWord(word: string): Promise<boolean> {
  */
 export async function getWordCount(length: number): Promise<number> {
     const { count, error } = await supabase
-        .from('words')
+        .from('game_words') // Soru havuzundaki sayı
         .select('*', { count: 'exact', head: true })
         .eq('length', length)
 

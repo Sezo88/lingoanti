@@ -1,3 +1,6 @@
+-- Extension kontrolü
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- 1. Eşleşme Kuyruğu Tablosu
 CREATE TABLE IF NOT EXISTS matchmaking_queue (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -8,12 +11,15 @@ CREATE TABLE IF NOT EXISTS matchmaking_queue (
 -- RLS Politikaları
 ALTER TABLE matchmaking_queue ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can insert themselves" ON matchmaking_queue;
 CREATE POLICY "Users can insert themselves" ON matchmaking_queue
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete themselves" ON matchmaking_queue;
 CREATE POLICY "Users can delete themselves" ON matchmaking_queue
   FOR DELETE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view queue" ON matchmaking_queue;
 CREATE POLICY "Users can view queue" ON matchmaking_queue
   FOR SELECT USING (true); -- Bekleyen sayısını görmek için
 

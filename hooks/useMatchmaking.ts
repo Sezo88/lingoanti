@@ -26,6 +26,7 @@ export function useMatchmaking() {
 
             if (error) {
                 console.error('Eşleşme hatası:', error)
+                alert(`Eşleşme Hatası: ${error.message || error.details || 'Bilinmeyen hata'}`)
                 setIsSearching(false)
                 return
             }

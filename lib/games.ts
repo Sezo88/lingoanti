@@ -214,3 +214,18 @@ export async function getActiveGames(userId: string): Promise<{ games: Game[]; e
 
     return { games: data || [], error }
 }
+
+/**
+ * Kullanıcının tamamlanmış oyunlarını getir
+ */
+export async function getCompletedGames(userId: string): Promise<{ games: Game[]; error: any }> {
+    const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .or(`player1_id.eq.${userId},player2_id.eq.${userId}`)
+        .eq('status', 'finished')
+        .order('finished_at', { ascending: false })
+        .limit(20)
+
+    return { games: data || [], error }
+}

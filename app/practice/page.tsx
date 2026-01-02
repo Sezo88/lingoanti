@@ -158,7 +158,7 @@ export default function PracticePage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col p-4 pb-2">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
                 <div className="w-full max-w-md mx-auto">
                     <GameBoard
                         guesses={guesses}
@@ -210,10 +210,10 @@ export default function PracticePage() {
                     )}
                 </div>
 
-                <div className="flex-1 min-h-4"></div>
+
 
                 {!gameOver && (
-                    <div className="pb-2">
+                    <div className="w-full max-w-md mx-auto pb-12">
                         <GameKeyboard
                             onKeyPress={handleKeyPress}
                             onEnter={handleEnter}

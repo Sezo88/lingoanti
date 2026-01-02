@@ -48,6 +48,7 @@ export type Game = {
     round_message: string | null
     created_at: string
     finished_at: string | null
+    forfeited_by?: string
 }
 
 export type GameMove = {

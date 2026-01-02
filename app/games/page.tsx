@@ -1,9 +1,7 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { getActiveGames, acceptGameInvite, rejectGameInvite, forfeitGame } from '@/lib/games'
+import { getActiveGames, getCompletedGames, acceptGameInvite, rejectGameInvite, forfeitGame } from '@/lib/games'
 import { supabase } from '@/lib/supabase'
 import type { Game } from '@/lib/supabase'
 
@@ -11,6 +9,7 @@ export default function ActiveGamesPage() {
     const { user } = useAuth()
     const router = useRouter()
     const [games, setGames] = useState<Game[]>([])
+    const [completedGames, setCompletedGames] = useState<Game[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -20,7 +19,9 @@ export default function ActiveGamesPage() {
     const loadGames = async () => {
         if (!user) return
         const { games: activeGames } = await getActiveGames(user.id)
+        const { games: finishedGames } = await getCompletedGames(user.id)
         setGames(activeGames)
+        setCompletedGames(finishedGames)
         setLoading(false)
     }
 
@@ -57,23 +58,31 @@ export default function ActiveGamesPage() {
     useEffect(() => {
         const fetchOpponentNames = async () => {
             const names: Record<string, string> = {}
-            for (const game of games) {
-                const opponentId = getOpponentId(game)
-                const { data } = await supabase
-                    .from('users')
-                    .select('display_name')
-                    .eq('id', opponentId)
-                    .single()
-                if (data) {
-                    names[opponentId] = data.display_name
-                }
+            const allGames = [...games, ...completedGames]
+
+            // Collect unique opponent IDs
+            const opponentIds = new Set<string>()
+            allGames.forEach(game => opponentIds.add(getOpponentId(game)))
+
+            if (opponentIds.size === 0) return
+
+            const { data } = await supabase
+                .from('users')
+                .select('id, display_name')
+                .in('id', Array.from(opponentIds))
+
+            if (data) {
+                data.forEach(u => {
+                    names[u.id] = u.display_name
+                })
             }
             setOpponentNames(names)
         }
-        if (games.length > 0) {
+
+        if (games.length > 0 || completedGames.length > 0) {
             fetchOpponentNames()
         }
-    }, [games])
+    }, [games, completedGames])
 
     const waitingGames = games.filter(g => g.status === 'waiting')
     const activeOngoingGames = games.filter(g => g.status === 'active')
@@ -158,7 +167,7 @@ export default function ActiveGamesPage() {
 
                 {/* Active Games */}
                 {activeOngoingGames.length > 0 && (
-                    <div>
+                    <div className="mb-8">
                         <h2 className="text-lg font-semibold mb-3 text-white">
                             🎮 Devam Eden Oyunlar ({activeOngoingGames.length})
                         </h2>
@@ -210,10 +219,51 @@ export default function ActiveGamesPage() {
                     </div>
                 )}
 
+                {/* Completed Games */}
+                {completedGames.length > 0 && (
+                    <div>
+                        <h2 className="text-lg font-semibold mb-3 text-dark-400">
+                            🏁 Biten Oyunlar
+                        </h2>
+                        <div className="space-y-2">
+                            {completedGames.map((game) => {
+                                const opponentId = getOpponentId(game)
+                                const isWinner = game.winner_id === user?.id
+                                const isForfeit = !!game.forfeited_by
+
+                                return (
+                                    <div key={game.id} className="glass-effect rounded-xl p-4 opacity-75 hover:opacity-100 transition-all">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-white font-semibold">
+                                                    vs {opponentNames[opponentId] || 'Yükleniyor...'}
+                                                </p>
+                                                <p className="text-xs text-dark-500">
+                                                    {new Date(game.finished_at || '').toLocaleDateString('tr-TR')}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className={`font-bold ${isWinner ? 'text-success-500' : 'text-danger-500'}`}>
+                                                    {isWinner ? 'KAZANDIN' : 'KAYBETTİN'}
+                                                </div>
+                                                {isForfeit && (
+                                                    <div className="text-xs text-dark-500">
+                                                        (Pes Edildi)
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* Empty State */}
-                {games.length === 0 && (
+                {games.length === 0 && completedGames.length === 0 && (
                     <div className="text-center py-12">
-                        <p className="text-dark-500 mb-4">Aktif oyun yok</p>
+                        <p className="text-dark-500 mb-4">Henüz bir oyun bulunmuyor.</p>
                         <button
                             onClick={() => router.push('/friends')}
                             className="px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"

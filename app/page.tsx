@@ -1,19 +1,41 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+
+import { useMatchmaking } from '@/hooks/useMatchmaking'
 
 export default function HomePage() {
     const { user, loading, signOut } = useAuth()
     const router = useRouter()
+    const { isSearching, findMatch, cancelSearch } = useMatchmaking()
+    const [stats, setStats] = useState({ score: 0, wins: 0, losses: 0, total_games: 0 })
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/auth/login')
         }
+
+        if (user) {
+            fetchStats()
+        }
     }, [user, loading, router])
+
+    const fetchStats = async () => {
+        if (!user) return
+        const { data } = await supabase
+            .from('users')
+            .select('score, wins, losses, total_games')
+            .eq('id', user.id)
+            .single()
+
+        if (data) {
+            setStats(data)
+        }
+    }
 
     if (loading) {
         return (
@@ -29,9 +51,26 @@ export default function HomePage() {
     if (!user) return null
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50">
+        <main className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 relative">
+            {/* Matchmaking Overlay */}
+            {isSearching && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+                    <div className="glass-effect p-8 rounded-3xl max-w-sm w-full text-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-500 mx-auto mb-6"></div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Rakip Aranıyor...</h2>
+                        <p className="text-dark-400 mb-8">Uygun bir rakip bekleniyor</p>
+                        <button
+                            onClick={cancelSearch}
+                            className="w-full py-3 rounded-xl font-semibold bg-dark-200 text-white hover:bg-dark-300 transition-colors"
+                        >
+                            İptal Et
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
-            <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
+            <header className="glass-effect border-b border-dark-200 sticky top-0 z-40">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <h1 className="text-2xl font-bold gradient-text">Lingo Türkiye</h1>
                     <button
@@ -85,13 +124,20 @@ export default function HomePage() {
                         </Link>
                     </div>
 
-                    <div className="glass-effect rounded-2xl p-6 opacity-60">
-                        <h3 className="text-xl font-semibold mb-2">🎲 Hızlı Oyun</h3>
+                    <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-primary-500/30 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-primary-500/5 group-hover:bg-primary-500/10 transition-colors"></div>
+                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                            🎲 Hızlı Oyun
+                            <span className="text-xs px-2 py-1 bg-primary-500/20 text-primary-300 rounded-full">Popüler</span>
+                        </h3>
                         <p className="text-dark-500 text-sm mb-4">
-                            Rastgele oyuncuyla eşleş (yakında)
+                            Rastgele bir oyuncuyla hemen eşleş
                         </p>
-                        <button className="w-full py-3 rounded-xl font-semibold bg-dark-300 text-dark-500 cursor-not-allowed">
-                            Yakında
+                        <button
+                            onClick={findMatch}
+                            className="w-full py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all shadow-lg shadow-primary-500/20"
+                        >
+                            Hemen Oyna
                         </button>
                     </div>
 
@@ -102,7 +148,7 @@ export default function HomePage() {
                         </p>
                         <Link
                             href="/friends"
-                            className="block w-full py-3 rounded-xl font-semibold text-white gradient-bg text-center hover:opacity-90 transition-all"
+                            className="block w-full py-3 rounded-xl font-semibold text-white bg-dark-200 text-center hover:bg-dark-300 transition-all"
                         >
                             Arkadaşlar
                         </Link>
@@ -112,17 +158,23 @@ export default function HomePage() {
                 {/* Stats */}
                 <div className="mt-10 max-w-md mx-auto grid grid-cols-3 gap-4">
                     <div className="glass-effect rounded-xl p-4 text-center">
-                        <div className="text-2xl font-bold text-primary-500">0</div>
+                        <div className="text-2xl font-bold text-primary-500">{stats.wins}</div>
                         <div className="text-xs text-dark-500 mt-1">Kazandım</div>
                     </div>
                     <div className="glass-effect rounded-xl p-4 text-center">
-                        <div className="text-2xl font-bold text-danger-500">0</div>
+                        <div className="text-2xl font-bold text-danger-500">{stats.losses}</div>
                         <div className="text-xs text-dark-500 mt-1">Kaybettim</div>
                     </div>
                     <div className="glass-effect rounded-xl p-4 text-center">
-                        <div className="text-2xl font-bold text-warning-500">0</div>
+                        <div className="text-2xl font-bold text-warning-500">{stats.total_games}</div>
                         <div className="text-xs text-dark-500 mt-1">Toplam</div>
                     </div>
+                </div>
+
+                <div className="mt-6 text-center">
+                    <Link href="/leaderboard" className="text-primary-400 hover:text-white text-sm font-semibold transition-colors">
+                        🏆 Liderlik Tablosunu Gör
+                    </Link>
                 </div>
             </div>
         </main>

@@ -7,9 +7,12 @@ import { searchUsers, sendFriendRequest, getFriends, getPendingRequests, acceptF
 import { createGame } from '@/lib/games'
 import GameSettingsModal, { type GameSettings } from '@/components/GameSettingsModal'
 
+import { usePresence } from '@/hooks/usePresence'
+
 export default function FriendsPage() {
     const { user } = useAuth()
     const router = useRouter()
+    const onlineUsers = usePresence(user?.id)
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
     const [friends, setFriends] = useState<any[]>([])
@@ -207,7 +210,12 @@ export default function FriendsPage() {
                                 <div key={friendship.id} className="glass-effect rounded-xl p-4">
                                     <div className="flex items-center justify-between mb-3">
                                         <div>
-                                            <p className="font-semibold text-white">{friendship.friend.display_name}</p>
+                                            <p className="font-semibold text-white flex items-center gap-2">
+                                                {friendship.friend.display_name}
+                                                {onlineUsers.has(friendship.friend.id) && (
+                                                    <span className="w-2.5 h-2.5 bg-success-500 rounded-full animate-pulse shadow-lg shadow-success-500/50" title="Online"></span>
+                                                )}
+                                            </p>
                                             <p className="text-sm text-dark-500">@{friendship.friend.username}</p>
                                         </div>
                                         <button

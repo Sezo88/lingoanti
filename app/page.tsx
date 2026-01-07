@@ -214,7 +214,6 @@ export default function HomePage() {
                     🏆 Liderlik Tablosunu Gör
                 </Link>
             </div>
-        </div>
-        </main >
+        </main>
     )
 }

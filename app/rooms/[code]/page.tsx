@@ -13,7 +13,7 @@ interface Participant {
     status: string
     score: number
     display_name: string
-    current_word_index?: number // Progress bar için
+    current_word_index?: number
 }
 
 export default function RoomLobbyPage() {
@@ -25,6 +25,31 @@ export default function RoomLobbyPage() {
     const [participants, setParticipants] = useState<Participant[]>([])
     const [loading, setLoading] = useState(true)
     const [isHost, setIsHost] = useState(false)
+
+    // Oyun Durumu (Hooklar en üstte)
+    const [gameWords, setGameWords] = useState<string[]>([])
+    const [fetchingGame, setFetchingGame] = useState(false)
+
+    // Oyun başladığında kelimeleri çek
+    useEffect(() => {
+        if (room?.status === 'playing' && gameWords.length === 0 && !fetchingGame) {
+            const fetchGame = async () => {
+                setFetchingGame(true)
+                const { data } = await supabase
+                    .from('room_games')
+                    .select('words')
+                    .eq('room_id', room.id)
+                    .single()
+
+                if (data?.words) {
+                    const wordsArray = Array.isArray(data.words) ? data.words : JSON.parse(data.words as string)
+                    setGameWords(wordsArray)
+                }
+                setFetchingGame(false)
+            }
+            fetchGame()
+        }
+    }, [room?.status, room?.id, gameWords.length, fetchingGame])
 
     // Odayı ve katılımcıları yükle
     useEffect(() => {
@@ -61,7 +86,7 @@ export default function RoomLobbyPage() {
                 if (partsError) throw partsError
 
                 if (parts && mounted) {
-                    // Kullanıcı bilgilerini ayrı çek (Join hatasını önlemek için)
+                    // Kullanıcı bilgilerini ayrı çek
                     const userIds = parts.map(p => p.user_id)
                     const { data: usersData } = await supabase
                         .from('users')
@@ -97,10 +122,8 @@ export default function RoomLobbyPage() {
                 event: '*',
                 schema: 'public',
                 table: 'room_participants',
-                filter: `room_id=eq.${room?.id}` // room.id başta null olduğu için burada çalışmayabilir, aşağıda tekrar fetch içinde manage edilebilir.
+                filter: `room_id=eq.${room?.id}`
             }, () => {
-                // Basitlik için her değişiklikte yeniden fetch yapalım
-                // (İleride optimize edilebilir)
                 fetchRoomData()
             })
             .on('postgres_changes', {
@@ -110,7 +133,6 @@ export default function RoomLobbyPage() {
                 filter: `code=eq.${code}`
             }, (payload) => {
                 if (payload.new.status === 'playing') {
-                    // Oyun başladı!
                     console.log('Oyun başladı!')
                     setRoom(payload.new)
                 }
@@ -120,7 +142,7 @@ export default function RoomLobbyPage() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [code, user, router]) // room dependency removed to avoid loop
+    }, [code, user, router]) // room dependency removed
 
     const startGame = async () => {
         if (!room) return
@@ -144,39 +166,10 @@ export default function RoomLobbyPage() {
         alert('Oda kodu kopyalandı!')
     }
 
-    if (loading) return <div className="text-center p-10 text-white">Yükleniyor...</div>
-
-    // Oyun Durumu
-    const [gameWords, setGameWords] = useState<string[]>([])
-    const [fetchingGame, setFetchingGame] = useState(false)
-
-    // Oyun başladığında kelimeleri çek
-    useEffect(() => {
-        if (room?.status === 'playing' && gameWords.length === 0 && !fetchingGame) {
-            const fetchGame = async () => {
-                setFetchingGame(true)
-                const { data } = await supabase
-                    .from('room_games')
-                    .select('words')
-                    .eq('room_id', room.id)
-                    .single()
-
-                if (data?.words) {
-                    // JSONB array, string array'e cast edilmeli
-                    const wordsArray = Array.isArray(data.words) ? data.words : JSON.parse(data.words as string)
-                    setGameWords(wordsArray)
-                }
-                setFetchingGame(false)
-            }
-            fetchGame()
-        }
-    }, [room?.status, room?.id])
-
     // İlerleme Güncelleme
     const handleProgress = async (wordIndex: number, isFinished: boolean) => {
         if (!user || !room) return
 
-        // DB güncelle
         await supabase
             .from('room_participants')
             .update({
@@ -187,7 +180,6 @@ export default function RoomLobbyPage() {
             .eq('user_id', user.id)
 
         if (isFinished) {
-            // Konfeti patlatılabilir :)
             alert('Tebrikler bitirdiniz!')
         }
     }
@@ -198,7 +190,6 @@ export default function RoomLobbyPage() {
     if (room?.status === 'playing' && gameWords.length > 0) {
         return (
             <div className="min-h-screen bg-dark-50 text-white flex flex-col md:flex-row">
-                {/* SOL: OYUN ALANI */}
                 <div className="flex-1 p-4 border-r border-white/5 bg-gradient-to-b from-dark-50 to-black/30">
                     <ArenaBoard
                         targetWords={gameWords}
@@ -206,7 +197,6 @@ export default function RoomLobbyPage() {
                     />
                 </div>
 
-                {/* SAĞ: CANLI SKOR TABLOSU */}
                 <div className="w-full md:w-80 p-6 bg-dark-100 border-l border-white/5 overflow-y-auto">
                     <h3 className="text-xl font-bold mb-6 text-warning-400 flex items-center gap-2">
                         <span>🏁</span> YARIŞ DURUMU
@@ -214,11 +204,8 @@ export default function RoomLobbyPage() {
 
                     <div className="space-y-4">
                         {participants
-                            .sort((a, b) => (b.score || 0) - (a.score || 0)) // Basit sıralama
+                            .sort((a, b) => (b.score || 0) - (a.score || 0))
                             .map((p) => {
-                                // Realtime ile güncellenen 'participants' state'inden verileri alıyoruz
-                                // Ancak 'current_word_index' henüz participants state'inde yok, onu eklememiz lazım
-                                // Şimdilik status üzerinden gidelim, bir sonraki adımda state'i düzelteceğiz
                                 const isFinished = p.status === 'finished'
                                 const isSelf = p.user_id === user?.id
 
@@ -233,7 +220,6 @@ export default function RoomLobbyPage() {
                                             {isFinished && <span className="text-xl">🏆</span>}
                                         </div>
 
-                                        {/* Progress Bar */}
                                         <div className="w-full bg-dark-300 rounded-full h-2 mb-1 overflow-hidden">
                                             <div
                                                 className={`h-full transition-all duration-500 ${isFinished ? 'bg-success-500' : 'bg-warning-500'}`}
@@ -253,7 +239,6 @@ export default function RoomLobbyPage() {
     }
 
     // --- LOBBY MODU ---
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 p-4">
             <div className="max-w-4xl mx-auto pt-10">
@@ -264,7 +249,7 @@ export default function RoomLobbyPage() {
                     <div className="flex items-center gap-4">
                         <div className="bg-dark-200 px-4 py-2 rounded-lg border border-white/5">
                             <span className="text-dark-400 text-sm mr-2">ODA KODU:</span>
-                            <span className="font-mono font-bold text-xl tracking-widest text-primary-500">{room.code}</span>
+                            <span className="font-mono font-bold text-xl tracking-widest text-primary-500">{room?.code}</span>
                         </div>
                         <button onClick={copyCode} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                             📋
@@ -273,7 +258,6 @@ export default function RoomLobbyPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* KATILIMCILAR */}
                     <div className="md:col-span-2 space-y-4">
                         <h2 className="text-2xl font-bold text-white mb-4">Katılımcılar ({participants.length})</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -286,7 +270,7 @@ export default function RoomLobbyPage() {
                                         <div className="font-semibold text-white">{p.display_name}</div>
                                         <div className="text-xs text-primary-400">
                                             {p.status === 'ready' ? 'Hazır' : 'Bekliyor'}
-                                            {p.user_id === room.host_id && ' (Kurucu)'}
+                                            {p.user_id === room?.host_id && ' (Kurucu)'}
                                         </div>
                                     </div>
                                 </div>
@@ -294,10 +278,8 @@ export default function RoomLobbyPage() {
                         </div>
                     </div>
 
-                    {/* AYARLAR VE BAŞLAT */}
                     <div className="glass-effect p-6 rounded-2xl h-fit">
                         <h3 className="text-xl font-semibold text-white mb-6">Oda Ayarları</h3>
-
                         <div className="space-y-4 mb-8">
                             <div className="flex justify-between text-dark-300">
                                 <span>Kelime Sayısı</span>

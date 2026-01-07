@@ -137,7 +137,24 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
 
     const handleTimeUp = () => {
         if (gameStatus !== 'playing') return
-        handleLose()
+
+        // Süre doldu: Bir hak yak
+        const invalidResult = Array(targetWord.length).fill({ letter: '?', status: 'invalid' })
+        const placeholderGuess = '?'.repeat(targetWord.length)
+
+        const newGuesses = [...guesses, placeholderGuess]
+        const newResults = [...results, invalidResult]
+
+        setGuesses(newGuesses)
+        setResults(newResults)
+        setCurrentGuess('')
+
+        setError('Süre Doldu! -1 Hak')
+        setTimeout(() => setError(''), 2000)
+
+        if (newGuesses.length >= 6) {
+            handleLose()
+        }
     }
 
     if (gameStatus === 'finished') {
@@ -176,6 +193,7 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
             {/* Timer - Multiplayer için şimdilik opsiyonel, ileride prop olarak alınabilir */}
             <div className="px-4">
                 <BearTimer
+                    key={guesses.length}
                     duration={60}
                     onTimeUp={handleTimeUp}
                     isRunning={gameStatus === 'playing' && !showModal}

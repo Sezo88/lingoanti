@@ -91,7 +91,24 @@ export default function PracticePage() {
 
     const handleTimeUp = () => {
         if (gameOver) return
-        handleLose()
+
+        // Süre doldu: Bir hak yak
+        const invalidResult = Array(wordLength).fill({ letter: '?', status: 'invalid' })
+        const newGuesses = [...guesses, '?'.repeat(wordLength)]
+        const newResults = [...results, invalidResult]
+
+        setGuesses(newGuesses)
+        setResults(newResults)
+        setCurrentGuess('')
+
+        setError('Süre Doldu! -1 Hak')
+        setTimeout(() => setError(''), 2000)
+
+        if (navigator.vibrate) navigator.vibrate([50, 50, 50])
+
+        if (newGuesses.length >= 6) {
+            handleLose()
+        }
     }
 
     const handleLose = () => {
@@ -297,8 +314,10 @@ export default function PracticePage() {
             <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
                 <div className="w-full max-w-md mx-auto relative">
                     {/* Timer Logic */}
+                    {/* KEY ekleyerek her tahminde sayacın sıfırlanmasını sağlıyoruz */}
                     {gameMode === 'timed' && !loading && (
                         <BearTimer
+                            key={guesses.length}
                             duration={timeLimit}
                             onTimeUp={handleTimeUp}
                             isRunning={isTimerRunning && !gameOver}

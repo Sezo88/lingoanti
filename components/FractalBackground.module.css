@@ -1,6 +1,6 @@
 /* Word Game Themed Background */
 .bg {
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #fb923c 60%, #f97316 100%);
     height: 100vh;
     width: 100vw;
     position: fixed;
@@ -74,22 +74,22 @@
 }
 
 .cell:nth-child(4n + 1) {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1));
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
     animation: float1 8s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 2) {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.1));
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(249, 115, 22, 0.1));
     animation: float2 10s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 3) {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.1));
+    background: linear-gradient(135deg, rgba(252, 211, 77, 0.15), rgba(251, 191, 36, 0.1));
     animation: float3 7s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 4) {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.1));
+    background: linear-gradient(135deg, rgba(254, 215, 170, 0.15), rgba(253, 186, 116, 0.1));
     animation: float4 9s ease-in-out infinite;
 }
 
@@ -110,7 +110,7 @@
     transform: translate(-50%, -50%);
     width: 40vmin;
     height: 40vmin;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
     border-radius: 50%;
     z-index: 5;
     pointer-events: none;

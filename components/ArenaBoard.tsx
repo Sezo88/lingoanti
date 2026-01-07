@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import GameKeyboard from './GameKeyboard'
+import AnswerModal from './AnswerModal'
+import BearTimer from './BearTimer'
 import { isCorrectGuess, evaluateGuess, getKeyboardState } from '@/lib/gameLogic'
 import { isValidWord } from '@/lib/words'
 import type { LetterResult } from '@/lib/supabase'
@@ -18,6 +20,10 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
     const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'finished'>('playing')
     const [shakeRow, setShakeRow] = useState(false)
     const [error, setError] = useState('')
+
+    // Modal State
+    const [showModal, setShowModal] = useState(false)
+    const [isWin, setIsWin] = useState(false)
 
     // Şu anki hedef kelime
     const targetWord = targetWords[wordIndex]
@@ -96,36 +102,42 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
         // Doğru tahmin mi?
         if (isCorrectGuess(currentGuess, targetWord)) {
             // Kelime bilindi!
-            setTimeout(() => {
-                const nextIndex = wordIndex + 1
-                setWordIndex(nextIndex)
-                setGuesses([]) // Yeni kelime için temizle
-                setResults([])
-
-                // Üst bileşene bildir
-                onProgress(nextIndex, nextIndex >= targetWords.length)
-
-                if (nextIndex >= targetWords.length) {
-                    setGameStatus('finished')
-                }
-            }, 1000) // 1 saniye kutlama
+            handleWin()
         } else if (newGuesses.length >= 6) {
             handleLose()
         }
     }
 
+    const handleWin = () => {
+        setIsWin(true)
+        setShowModal(true)
+        setGameStatus('won') // Geçici durum
+    }
+
     const handleLose = () => {
-        // Haklar bitti
+        setIsWin(false)
+        setShowModal(true)
         setGameStatus('lost')
-        // Cevabı göster ve bekle
-        setTimeout(() => {
-            const nextIndex = wordIndex + 1
-            setWordIndex(nextIndex)
-            setGuesses([])
-            setResults([])
-            setGameStatus('playing')
-            onProgress(nextIndex, nextIndex >= targetWords.length)
-        }, 3000) // 3 saniye cevabı görsün
+    }
+
+    const handleNextWord = () => {
+        setShowModal(false)
+        const nextIndex = wordIndex + 1
+        setWordIndex(nextIndex)
+        setGuesses([])
+        setResults([])
+        setGameStatus('playing')
+
+        onProgress(nextIndex, nextIndex >= targetWords.length)
+
+        if (nextIndex >= targetWords.length) {
+            setGameStatus('finished')
+        }
+    }
+
+    const handleTimeUp = () => {
+        if (gameStatus !== 'playing') return
+        handleLose()
     }
 
     if (gameStatus === 'finished') {
@@ -144,14 +156,31 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
 
     return (
         <div className="flex flex-col h-full max-w-lg mx-auto w-full relative">
+            {/* Modal */}
+            <AnswerModal
+                isOpen={showModal}
+                isWin={isWin}
+                targetWord={targetWord}
+                onNext={handleNextWord}
+            />
+
             {/* Hata Mesajı (Toast) */}
             {error && (
-                <div className="absolute top-10 left-1/2 transform -translate-x-1/2 z-50">
+                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50">
                     <div className="bg-danger-500/90 text-white px-4 py-2 rounded-lg shadow-lg font-bold animate-pulse">
                         {error}
                     </div>
                 </div>
             )}
+
+            {/* Timer - Multiplayer için şimdilik opsiyonel, ileride prop olarak alınabilir */}
+            <div className="px-4">
+                <BearTimer
+                    duration={60}
+                    onTimeUp={handleTimeUp}
+                    isRunning={gameStatus === 'playing' && !showModal}
+                />
+            </div>
 
             {/* Header: Kaçıncı kelime */}
             <div className="text-center mb-4">
@@ -159,17 +188,6 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
                     Kelime {wordIndex + 1} / {targetWords.length}
                 </span>
             </div>
-
-            {/* Kaybedince Doğru Cevabı Göster */}
-            {gameStatus === 'lost' && (
-                <div className="absolute inset-0 z-40 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                    <div className="bg-dark-200 p-6 rounded-2xl border border-danger-500/50 text-center animate-in zoom-in">
-                        <p className="text-danger-500 font-bold mb-2">Bilemedin!</p>
-                        <p className="text-dark-400 text-sm mb-1">Doğru Cevap:</p>
-                        <p className="text-3xl font-bold text-white tracking-widest">{targetWord}</p>
-                    </div>
-                </div>
-            )}
 
             {/* Grid */}
             <div className="flex-1 overflow-y-auto min-h-[400px] flex items-center justify-center">

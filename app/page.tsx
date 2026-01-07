@@ -109,7 +109,7 @@ export default function HomePage() {
                         <img
                             src="/lingo_logo.png"
                             alt="Lingo Türkiye"
-                            className="w-64 h-auto"
+                            className="w-64 h-auto mix-blend-multiply"
                         />
                     </div>
                     <p className="text-dark-400">Kelime tahmin oyunu</p>

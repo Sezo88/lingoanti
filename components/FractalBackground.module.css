@@ -1,28 +1,35 @@
+/* Word Game Themed Background */
 .bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
     height: 100vh;
     width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     position: fixed;
     top: 0;
     left: 0;
     z-index: -10;
-    animation: gradientShift 15s ease infinite;
+    overflow: hidden;
 }
 
-@keyframes gradientShift {
+/* Subtle grid pattern overlay */
+.bg::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+}
 
-    0%,
-    100% {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+@keyframes gridMove {
+    0% {
+        transform: translate(0, 0);
     }
 
-    50% {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 25%, #667eea 50%, #764ba2 75%, #f093fb 100%);
+    100% {
+        transform: translate(50px, 50px);
     }
 }
 
@@ -32,234 +39,196 @@
     height: 100%;
 }
 
+/* Floating letter tiles */
 .fractal {
     position: absolute;
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: repeat(12, 1fr);
     grid-template-rows: repeat(8, 1fr);
-    gap: 0.5vmin;
-    transform: rotate(0deg);
-    transition: transform 1s ease;
+    gap: 1vmin;
+    padding: 2vmin;
 }
 
 .cell {
     position: relative;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
     overflow: hidden;
-    transition: all 0.4s ease;
-    backdrop-filter: blur(5px);
+    transition: all 0.5s ease;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(1rem, 2vmin, 2rem);
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.4);
 }
 
 .cell::before {
-    content: "";
+    content: attr(data-letter);
     position: absolute;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at center,
-            transparent 40%,
-            currentColor 100%);
-    opacity: 0.3;
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .cell:nth-child(4n + 1) {
-    background: linear-gradient(135deg,
-            rgba(102, 126, 234, 0.4),
-            rgba(118, 75, 162, 0.3));
-    color: #667eea;
-    animation: pulse1 6s infinite alternate;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1));
+    animation: float1 8s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 2) {
-    background: linear-gradient(135deg,
-            rgba(240, 147, 251, 0.4),
-            rgba(245, 87, 108, 0.3));
-    color: #f093fb;
-    animation: pulse2 7s infinite alternate;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.1));
+    animation: float2 10s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 3) {
-    background: linear-gradient(135deg,
-            rgba(79, 172, 254, 0.4),
-            rgba(0, 242, 254, 0.3));
-    color: #4facfe;
-    animation: pulse3 5s infinite alternate;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.1));
+    animation: float3 7s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 4) {
-    background: linear-gradient(135deg,
-            rgba(250, 208, 196, 0.4),
-            rgba(255, 209, 255, 0.3));
-    color: #fad0c4;
-    animation: pulse4 8s infinite alternate;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.1));
+    animation: float4 9s ease-in-out infinite;
 }
 
-/* Nested grid inside each cell */
+/* Nested grid removed for cleaner look */
 .nestedGrid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 1px;
+    display: none;
 }
 
 .miniCell {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 1px;
+    display: none;
 }
 
-/* Central focus element */
+/* Central decorative element - subtle */
 .centerElement {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 30vmin;
-    height: 30vmin;
-    background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #4facfe);
+    width: 40vmin;
+    height: 40vmin;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
     border-radius: 50%;
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow:
-        0 0 60px rgba(102, 126, 234, 0.8),
-        0 0 100px rgba(240, 147, 251, 0.5),
-        inset 0 0 40px rgba(255, 255, 255, 0.4);
-    animation: rotate 20s linear infinite;
+    z-index: 5;
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite;
 }
 
 .centerElement::before {
-    content: "";
-    position: absolute;
-    width: 80%;
-    height: 80%;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    animation: rotate-reverse 15s linear infinite;
+    display: none;
 }
 
 .centerElement::after {
-    content: "";
-    position: absolute;
-    width: 50%;
-    height: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    display: none;
 }
 
-/* Animation definitions */
-@keyframes pulse1 {
-    0% {
+/* Floating animations */
+@keyframes float1 {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
         opacity: 0.6;
-        transform: scale(1);
     }
 
-    100% {
-        opacity: 1;
-        transform: scale(1.05);
+    50% {
+        transform: translateY(-10px) rotate(2deg);
+        opacity: 0.8;
     }
 }
 
-@keyframes pulse2 {
-    0% {
+@keyframes float2 {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(-2deg);
+        opacity: 0.7;
+    }
+}
+
+@keyframes float3 {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: translateY(-8px) rotate(1deg);
+        opacity: 0.9;
+    }
+}
+
+@keyframes float4 {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
         opacity: 0.6;
-        transform: scale(1) rotate(0deg);
     }
 
-    100% {
-        opacity: 1;
-        transform: scale(1.03) rotate(5deg);
-    }
-}
-
-@keyframes pulse3 {
-    0% {
-        opacity: 0.6;
-        transform: scale(1);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(0.97);
+    50% {
+        transform: translateY(-12px) rotate(-1deg);
+        opacity: 0.8;
     }
 }
 
-@keyframes pulse4 {
-    0% {
-        opacity: 0.6;
-        transform: scale(1) rotate(0deg);
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.3;
     }
 
-    100% {
-        opacity: 1;
-        transform: scale(1.02) rotate(-3deg);
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.5;
     }
 }
 
-@keyframes rotate {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-
-    100% {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-@keyframes rotate-reverse {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(-360deg);
-    }
-}
-
-/* Corner elements */
+/* Corner elements - minimized */
 .corner {
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     z-index: 20;
+    opacity: 0.3;
 }
 
 .cornerTl {
     top: 20px;
     left: 20px;
-    border-top: 4px solid #667eea;
-    border-left: 4px solid #667eea;
-    box-shadow: 0 0 15px rgba(102, 126, 234, 0.6);
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    border-left: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .cornerTr {
     top: 20px;
     right: 20px;
-    border-top: 4px solid #f093fb;
-    border-right: 4px solid #f093fb;
-    box-shadow: 0 0 15px rgba(240, 147, 251, 0.6);
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    border-right: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .cornerBr {
     bottom: 20px;
     right: 20px;
-    border-bottom: 4px solid #4facfe;
-    border-right: 4px solid #4facfe;
-    box-shadow: 0 0 15px rgba(79, 172, 254, 0.6);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    border-right: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .cornerBl {
     bottom: 20px;
     left: 20px;
-    border-bottom: 4px solid #00f2fe;
-    border-left: 4px solid #00f2fe;
-    box-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    border-left: 2px solid rgba(255, 255, 255, 0.2);
 }

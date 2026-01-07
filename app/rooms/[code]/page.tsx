@@ -51,98 +51,105 @@ export default function RoomLobbyPage() {
         }
     }, [room?.status, room?.id, gameWords.length, fetchingGame])
 
-    // Odayı ve katılımcıları yükle
+    // Veri çekme fonksiyonu
+    const fetchRoomData = async () => {
+        if (!user) return
+
+        try {
+            // 1. Odayı bul
+            const { data: roomData, error: roomError } = await supabase
+                .from('rooms')
+                .select('*')
+                .eq('code', code)
+                .single()
+
+            if (roomError || !roomData) {
+                console.error('Oda bulunamadı:', roomError)
+                router.push('/rooms')
+                return
+            }
+
+            setRoom(roomData)
+            setIsHost(roomData.host_id === user.id)
+
+            // 2. Katılımcıları bul
+            const { data: parts, error: partsError } = await supabase
+                .from('room_participants')
+                .select('id, user_id, status, score, current_word_index')
+                .eq('room_id', roomData.id)
+
+            if (partsError) throw partsError
+
+            if (parts) {
+                const userIds = parts.map(p => p.user_id)
+                const { data: usersData } = await supabase
+                    .from('users')
+                    .select('id, display_name')
+                    .in('id', userIds)
+
+                const userMap = new Map(usersData?.map(u => [u.id, u.display_name]) || [])
+
+                const formatted = parts.map((p: any) => ({
+                    id: p.id,
+                    user_id: p.user_id,
+                    status: p.status,
+                    score: p.score,
+                    current_word_index: p.current_word_index,
+                    display_name: userMap.get(p.user_id) || 'Bilinmeyen Oyuncu'
+                }))
+
+                setParticipants(formatted)
+            }
+        } catch (e) {
+            console.error('Veri çekme hatası:', e)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // İlk yükleme
     useEffect(() => {
         if (!code || !user) return
-
-        let mounted = true
-
-        const fetchRoomData = async () => {
-            try {
-                // 1. Odayı bul
-                const { data: roomData, error: roomError } = await supabase
-                    .from('rooms')
-                    .select('*')
-                    .eq('code', code)
-                    .single()
-
-                if (roomError || !roomData) {
-                    console.error('Oda bulunamadı:', roomError)
-                    if (mounted) router.push('/rooms')
-                    return
-                }
-
-                if (mounted) {
-                    setRoom(roomData)
-                    setIsHost(roomData.host_id === user.id)
-                }
-
-                // 2. Katılımcıları bul
-                const { data: parts, error: partsError } = await supabase
-                    .from('room_participants')
-                    .select('id, user_id, status, score, current_word_index')
-                    .eq('room_id', roomData.id)
-
-                if (partsError) throw partsError
-
-                if (parts && mounted) {
-                    // Kullanıcı bilgilerini ayrı çek
-                    const userIds = parts.map(p => p.user_id)
-                    const { data: usersData } = await supabase
-                        .from('users')
-                        .select('id, display_name')
-                        .in('id', userIds)
-
-                    const userMap = new Map(usersData?.map(u => [u.id, u.display_name]) || [])
-
-                    const formatted = parts.map((p: any) => ({
-                        id: p.id,
-                        user_id: p.user_id,
-                        status: p.status,
-                        score: p.score,
-                        current_word_index: p.current_word_index,
-                        display_name: userMap.get(p.user_id) || 'Bilinmeyen Oyuncu'
-                    }))
-
-                    setParticipants(formatted)
-                }
-            } catch (e) {
-                console.error('Veri çekme hatası:', e)
-            } finally {
-                if (mounted) setLoading(false)
-            }
-        }
-
         fetchRoomData()
+    }, [code, user])
 
-        // REALTIME SUBSCRIPTION
+    // REALTIME ABONELİĞİ (Sadece room.id gelince başlar)
+    useEffect(() => {
+        if (!room?.id) return
+
+        console.log('Realtime aboneliği başlatılıyor, Room ID:', room.id)
+
         const channel = supabase
-            .channel(`room_${code}`)
+            .channel(`room_${room.id}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'room_participants',
-                filter: `room_id=eq.${room?.id}`
+                filter: `room_id=eq.${room.id}`
             }, () => {
+                console.log('Değişiklik algılandı, veriler güncelleniyor...')
                 fetchRoomData()
             })
             .on('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
                 table: 'rooms',
-                filter: `code=eq.${code}`
+                filter: `id=eq.${room.id}`
             }, (payload) => {
                 if (payload.new.status === 'playing') {
                     console.log('Oyun başladı!')
                     setRoom(payload.new)
                 }
             })
-            .subscribe()
+            .subscribe((status) => {
+                console.log('Abonelik durumu:', status)
+            })
 
         return () => {
+            console.log('Abonelik sonlandırılıyor')
             supabase.removeChannel(channel)
         }
-    }, [code, user, router]) // room dependency removed
+    }, [room?.id]) // Sadece ID değişince çalışır
 
     const startGame = async () => {
         if (!room) return

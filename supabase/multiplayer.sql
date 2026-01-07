@@ -126,3 +126,13 @@ BEGIN
   UPDATE room_participants SET status = 'playing' WHERE room_id = p_room_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Fonksiyon: Eski Odaları Temizle
+CREATE OR REPLACE FUNCTION cleanup_stale_rooms()
+RETURNS VOID AS $$
+BEGIN
+  -- 24 saatten eski odaları sil
+  DELETE FROM rooms 
+  WHERE created_at < NOW() - INTERVAL '24 hours';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

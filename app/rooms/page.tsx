@@ -1,14 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useMultiplayer } from '@/hooks/useMultiplayer'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function RoomsPage() {
     const { user } = useAuth()
     const { createRoom, joinRoom, loading, error } = useMultiplayer()
     const [roomCode, setRoomCode] = useState('')
+
+    useEffect(() => {
+        // Sayfaya girildiğinde eski odaları temizle (Maintenance)
+        supabase.rpc('cleanup_stale_rooms')
+    }, [])
+
 
     if (!user) {
         return (

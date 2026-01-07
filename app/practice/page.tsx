@@ -16,6 +16,7 @@ export default function PracticePage() {
     // Setup State
     const [isSetup, setIsSetup] = useState(false)
     const [gameMode, setGameMode] = useState<'untimed' | 'timed'>('untimed')
+    const [showDurationSelect, setShowDurationSelect] = useState(false)
 
     // Game State
     const [wordLength, setWordLength] = useState(5)
@@ -30,7 +31,7 @@ export default function PracticePage() {
     const [isFullscreen, setIsFullscreen] = useState(false)
 
     // Timer State
-    const TIME_LIMIT = 60 // 60 saniye
+    const [timeLimit, setTimeLimit] = useState(60) // Default 60
     const [isTimerRunning, setIsTimerRunning] = useState(false)
 
     // Modal State
@@ -48,8 +49,19 @@ export default function PracticePage() {
 
     const startRun = (mode: 'untimed' | 'timed') => {
         setGameMode(mode)
+        if (mode === 'timed') {
+            setShowDurationSelect(true)
+        } else {
+            setIsSetup(true)
+            startNewGame(false)
+        }
+    }
+
+    const confirmDuration = (seconds: number) => {
+        setTimeLimit(seconds)
+        setShowDurationSelect(false)
         setIsSetup(true)
-        startNewGame(mode === 'timed')
+        startNewGame(true)
     }
 
     const startNewGame = async (shouldStartTimer = false) => {
@@ -72,7 +84,7 @@ export default function PracticePage() {
         setShowModal(false)
         setLoading(false)
 
-        if (shouldStartTimer || gameMode === 'timed') {
+        if (shouldStartTimer || (gameMode === 'timed' && isSetup)) {
             setIsTimerRunning(true)
         }
     }
@@ -167,6 +179,37 @@ export default function PracticePage() {
     const keyboardState = getKeyboardState(results)
 
     if (!isSetup) {
+        if (showDurationSelect) {
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col items-center justify-center p-4">
+                    <header className="absolute top-0 w-full p-4 flex justify-between items-center glass-effect border-b border-dark-200">
+                        <button onClick={() => setShowDurationSelect(false)} className="text-dark-500 hover:text-white transition-colors">
+                            ← Geri
+                        </button>
+                        <h1 className="text-xl font-bold gradient-text">Süre Seçimi</h1>
+                        <div className="w-10"></div>
+                    </header>
+
+                    <div className="max-w-md w-full glass-effect rounded-3xl p-8 text-center animate-in zoom-in duration-300">
+                        <h2 className="text-3xl font-bold text-white mb-2">Süreyi Seç</h2>
+                        <p className="text-dark-400 mb-8">Her kelime için kaç saniyen olsun?</p>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            {[20, 30, 40, 60].map((sec) => (
+                                <button
+                                    key={sec}
+                                    onClick={() => confirmDuration(sec)}
+                                    className="py-4 rounded-xl bg-dark-200 hover:bg-dark-300 border-2 border-transparent hover:border-primary-500 transition-all font-bold text-xl text-white"
+                                >
+                                    {sec} sn
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
         return (
             <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col items-center justify-center p-4">
                 <header className="absolute top-0 w-full p-4 flex justify-between items-center glass-effect border-b border-dark-200">
@@ -203,7 +246,7 @@ export default function PracticePage() {
                                 <span className="text-2xl">⚡</span>
                                 <div className="text-left">
                                     <div className="font-bold text-white group-hover:text-danger-400 transition-colors">Süreli Meydan Okuma</div>
-                                    <div className="text-xs text-dark-500">Her kelime için 60 saniye!</div>
+                                    <div className="text-xs text-dark-500">Kendini sına!</div>
                                 </div>
                             </div>
                         </button>
@@ -256,7 +299,7 @@ export default function PracticePage() {
                     {/* Timer Logic */}
                     {gameMode === 'timed' && !loading && (
                         <BearTimer
-                            duration={TIME_LIMIT}
+                            duration={timeLimit}
                             onTimeUp={handleTimeUp}
                             isRunning={isTimerRunning && !gameOver}
                         />

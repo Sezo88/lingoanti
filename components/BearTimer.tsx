@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 
 interface BearTimerProps {
     duration: number // saniye cinsinden
@@ -36,49 +35,26 @@ export default function BearTimer({ duration, onTimeUp, isRunning = true }: Bear
     // Progress yüzdesi (100 -> 0)
     const progress = (timeLeft / duration) * 100
 
-    // Ayının pozisyonu (0 -> 100%)
-    // Ayı sağa doğru yürüsün: left: (100 - progress)%
-    const bearPosition = 100 - progress
+    // Renk belirle
+    // > %50 Yeşil, < %50 Sarı, < %20 Kırmızı
+    let colorClass = 'bg-success-500'
+    if (progress < 20) colorClass = 'bg-danger-500'
+    else if (progress < 50) colorClass = 'bg-warning-500'
 
     return (
-        <div className="w-full max-w-md mx-auto mb-6">
-            <div className="flex justify-between text-xs text-dark-400 mb-1 font-mono">
-                <span>Başlangıç</span>
-                <span className={`${timeLeft <= 10 ? 'text-danger-500 animate-pulse font-bold' : ''}`}>
-                    {timeLeft}sn
+        <div className="w-full mb-6 relative">
+            <div className="flex justify-between items-end text-xs text-dark-400 mb-1 font-mono">
+                <span>Süre</span>
+                <span className={`text-lg font-bold ${timeLeft <= 10 ? 'text-danger-500 animate-pulse' : 'text-white'}`}>
+                    {timeLeft}s
                 </span>
-                <span>Bitiş</span>
             </div>
 
-            <div className="relative h-4 bg-dark-300 rounded-full overflow-visible">
-                {/* Progress Bar Background */}
+            <div className="relative h-3 bg-dark-200/50 rounded-full overflow-hidden border border-white/5">
                 <div
-                    className="absolute top-0 left-0 h-full bg-primary-500/30 rounded-full transition-all duration-1000 ease-linear"
+                    className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(var(--color),0.5)] ${colorClass}`}
                     style={{ width: `${progress}%` }}
                 ></div>
-
-                {/* Yürüyen Ayı */}
-                <motion.div
-                    className="absolute -top-3 text-2xl"
-                    style={{ left: `${bearPosition}%` }}
-                    animate={{
-                        // Hafif zıplama efekti (yürüyüş)
-                        y: [0, -2, 0]
-                    }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 0.5
-                    }}
-                >
-                    <div className="transform -translate-x-1/2">
-                        🐻
-                    </div>
-                </motion.div>
-
-                {/* Hedef Bayrağı */}
-                <div className="absolute -right-2 -top-3 text-xl">
-                    🏁
-                </div>
             </div>
         </div>
     )

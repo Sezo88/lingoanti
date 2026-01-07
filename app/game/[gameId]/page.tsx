@@ -220,7 +220,7 @@ export default function MultiplayerGamePage() {
     const iWon = game.winner_id === user?.id
 
     return (
-        <div className="min-h-screen max-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col overflow-hidden">
+        <div className="min-h-screen max-h-screen flex flex-col overflow-hidden">
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between mb-2">

@@ -282,7 +282,7 @@ export default function PracticePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col">
+        <div className="min-h-screen flex flex-col">
             {/* Modal */}
             <AnswerModal
                 isOpen={showModal}
@@ -291,7 +291,7 @@ export default function PracticePage() {
                 onNext={() => startNewGame(gameMode === 'timed')}
             />
 
-            <header className="glass-effect border-b border-dark-200">
+            <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button
                         onClick={() => setIsSetup(false)}
@@ -311,10 +311,10 @@ export default function PracticePage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-20">
                 <div className="w-full max-w-md mx-auto relative">
                     {/* Timer Logic */}
-                    {/* KEY ekleyerek her tahminde sayacın sıfırlanmasını sağlıyoruz */}
+                    {/* KEY ekleyerek her tahminde sayacın sıfırlandığını sağlıyoruz */}
                     {gameMode === 'timed' && !loading && (
                         <BearTimer
                             key={guesses.length}
@@ -342,7 +342,7 @@ export default function PracticePage() {
                 </div>
 
                 {!gameOver && (
-                    <div className="w-full max-w-md mx-auto pb-12">
+                    <div className="w-full max-w-md mx-auto pb-4">
                         <GameKeyboard
                             onKeyPress={handleKeyPress}
                             onEnter={handleEnter}

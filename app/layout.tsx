@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
+import FractalBackground from '@/components/FractalBackground'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,6 +26,7 @@ export default function RootLayout({
                 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
             </head>
             <body className={inter.className}>
+                <FractalBackground />
                 <AuthProvider>{children}</AuthProvider>
             </body>
         </html>

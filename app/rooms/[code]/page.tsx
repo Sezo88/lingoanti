@@ -196,8 +196,8 @@ export default function RoomLobbyPage() {
     // --- GAME ARENA MODU ---
     if (room?.status === 'playing' && gameWords.length > 0) {
         return (
-            <div className="min-h-screen bg-dark-50 text-white flex flex-col md:flex-row">
-                <div className="flex-1 p-4 border-r border-white/5 bg-gradient-to-b from-dark-50 to-black/30">
+            <div className="min-h-screen text-white flex flex-col md:flex-row">
+                <div className="flex-1 p-4 border-r border-white/5 bg-black/30">
                     <ArenaBoard
                         targetWords={gameWords}
                         onProgress={handleProgress}
@@ -247,7 +247,7 @@ export default function RoomLobbyPage() {
 
     // --- LOBBY MODU ---
     return (
-        <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 p-4">
+        <div className="min-h-screen p-4">
             <div className="max-w-4xl mx-auto pt-10">
                 <div className="flex justify-between items-center mb-8">
                     <Link href="/rooms" className="text-dark-400 hover:text-white transition-colors">

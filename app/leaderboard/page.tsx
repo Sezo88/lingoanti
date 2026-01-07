@@ -47,7 +47,7 @@ export default function LeaderboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col">
+        <div className="min-h-screen flex flex-col">
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <Link href="/" className="text-dark-500 hover:text-white transition-colors">

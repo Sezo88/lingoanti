@@ -45,10 +45,23 @@ export default function HomePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-500 mx-auto"></div>
-                    <p className="mt-4 text-dark-500">Yükleniyor...</p>
+            <div className="min-h-screen text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                {/* Background Animation - Kaldırıldı, global arka plan var */}
+
+                <div className="z-10 text-center space-y-8 max-w-md w-full animate-in zoom-in duration-500">
+                    {/* Logo & Title */}
+                    <div className="space-y-4">
+                        <div className="w-24 h-24 bg-gradient-to-tr from-primary-500 to-accent-500 rounded-3xl mx-auto shadow-2xl flex items-center justify-center transform rotate-12 hover:rotate-0 transition-transform duration-300">
+                            <span className="text-5xl">L</span>
+                        </div>
+                        <h1 className="text-5xl font-extrabold tracking-tight gradient-text">Lingo Türkiye</h1>
+                        <p className="text-dark-400 text-lg">Yükleniyor...</p>
+                    </div>
+
+                    {/* Loading Spinner */}
+                    <div className="flex justify-center items-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-500"></div>
+                    </div>
                 </div>
             </div>
         )
@@ -57,7 +70,7 @@ export default function HomePage() {
     if (!user) return null
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 relative">
+        <main className="min-h-screen relative">
             {/* Matchmaking Overlay */}
             {isSearching && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">

@@ -120,7 +120,7 @@ export default function FriendsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50">
+        <div className="min-h-screen">
             {/* Header */}
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">

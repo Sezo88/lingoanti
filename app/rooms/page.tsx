@@ -31,7 +31,7 @@ export default function RoomsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 p-4">
+        <div className="min-h-screen p-4">
             <div className="max-w-md mx-auto pt-10">
                 <Link href="/" className="inline-flex items-center text-dark-400 hover:text-white mb-8 transition-colors">
                     ← Ana Sayfa

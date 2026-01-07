@@ -30,45 +30,62 @@ export default function RoomLobbyPage() {
     useEffect(() => {
         if (!code || !user) return
 
+        let mounted = true
+
         const fetchRoomData = async () => {
-            // 1. Odayı bul
-            const { data: roomData, error: roomError } = await supabase
-                .from('rooms')
-                .select('*')
-                .eq('code', code)
-                .single()
+            try {
+                // 1. Odayı bul
+                const { data: roomData, error: roomError } = await supabase
+                    .from('rooms')
+                    .select('*')
+                    .eq('code', code)
+                    .single()
 
-            if (roomError || !roomData) {
-                console.error('Oda bulunamadı:', roomError)
-                router.push('/rooms')
-                return
+                if (roomError || !roomData) {
+                    console.error('Oda bulunamadı:', roomError)
+                    if (mounted) router.push('/rooms')
+                    return
+                }
+
+                if (mounted) {
+                    setRoom(roomData)
+                    setIsHost(roomData.host_id === user.id)
+                }
+
+                // 2. Katılımcıları bul
+                const { data: parts, error: partsError } = await supabase
+                    .from('room_participants')
+                    .select('id, user_id, status, score, current_word_index')
+                    .eq('room_id', roomData.id)
+
+                if (partsError) throw partsError
+
+                if (parts && mounted) {
+                    // Kullanıcı bilgilerini ayrı çek (Join hatasını önlemek için)
+                    const userIds = parts.map(p => p.user_id)
+                    const { data: usersData } = await supabase
+                        .from('users')
+                        .select('id, display_name')
+                        .in('id', userIds)
+
+                    const userMap = new Map(usersData?.map(u => [u.id, u.display_name]) || [])
+
+                    const formatted = parts.map((p: any) => ({
+                        id: p.id,
+                        user_id: p.user_id,
+                        status: p.status,
+                        score: p.score,
+                        current_word_index: p.current_word_index,
+                        display_name: userMap.get(p.user_id) || 'Bilinmeyen Oyuncu'
+                    }))
+
+                    setParticipants(formatted)
+                }
+            } catch (e) {
+                console.error('Veri çekme hatası:', e)
+            } finally {
+                if (mounted) setLoading(false)
             }
-
-            setRoom(roomData)
-            setIsHost(roomData.host_id === user.id)
-
-            // 2. Katılımcıları bul (display_name ile)
-            const { data: parts, error: partsError } = await supabase
-                .from('room_participants')
-                .select(`
-                    id, user_id, status, score, current_word_index,
-                    users:users(display_name)
-                `)
-                .eq('room_id', roomData.id)
-
-            if (parts) {
-                const formatted = parts.map((p: any) => ({
-                    id: p.id,
-                    user_id: p.user_id,
-                    status: p.status,
-                    score: p.score,
-                    current_word_index: p.current_word_index,
-                    display_name: p.users?.display_name || 'İsimsiz'
-                }))
-                setParticipants(formatted)
-            }
-
-            setLoading(false)
         }
 
         fetchRoomData()

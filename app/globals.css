@@ -29,10 +29,10 @@ body {
   }
 
   .glass-effect {
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, rgba(49, 46, 129, 0.8), rgba(67, 56, 202, 0.8));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(30, 27, 75, 0.25);
   }
 
   .gradient-text {

@@ -91,7 +91,7 @@ export default function HomePage() {
             {/* Header */}
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-40">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold gradient-text">Lingo Türkiye</h1>
+                    <h1 className="text-2xl font-bold gradient-text">Söz Ebesi</h1>
                     <button
                         onClick={signOut}
                         className="px-4 py-2 rounded-xl bg-dark-200 hover:bg-dark-300 transition-colors text-sm"
@@ -105,118 +105,116 @@ export default function HomePage() {
             <div className="container mx-auto px-4 py-8">
                 {/* Welcome Section */}
                 <div className="text-center mb-8">
-                    <div className="mb-4 flex justify-center">
-                        <img
-                            src="/lingo_logo.png"
-                            alt="Lingo Türkiye"
-                            className="w-64 h-auto mix-blend-multiply"
-                        />
-                    </div>
-                    <p className="text-dark-400">Kelime tahmin oyunu</p>
+                    <img
+                        src="/lingo_logo.png"
+                        alt="Söz Ebesi"
+                        className="w-72 h-auto mix-blend-multiply"
+                    />
                 </div>
+            </div>
 
-                {/* Active Games Notification */}
-                <Link
-                    href="/games"
-                    className="max-w-md mx-auto mb-6 block glass-effect rounded-xl p-4 hover:bg-white/10 transition-all"
-                >
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="text-2xl">🎮</div>
-                            <div>
-                                <p className="font-semibold text-white">Oyunlarım</p>
-                                <p className="text-sm text-dark-500">Devam eden ve davetler</p>
-                            </div>
+            {/* Active Games Notification */}
+            <Link
+                href="/games"
+                className="max-w-md mx-auto mb-6 block glass-effect rounded-xl p-4 hover:bg-white/10 transition-all"
+            >
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="text-2xl">🎮</div>
+                        <div>
+                            <p className="font-semibold text-white">Oyunlarım</p>
+                            <p className="text-sm text-dark-500">Devam eden ve davetler</p>
                         </div>
-                        <div className="text-primary-500">→</div>
                     </div>
-                </Link>
+                    <div className="text-primary-500">→</div>
+                </div>
+            </Link>
 
-                {/* Game Modes */}
-                <div className="space-y-4 max-w-md mx-auto">
-                    <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95">
-                        <h3 className="text-xl font-semibold mb-2">🎯 Pratik Yap</h3>
-                        <p className="text-dark-500 text-sm mb-4">
-                            Tek başına pratik yap, oyunu öğren
-                        </p>
-                        <Link
-                            href="/practice"
-                            className="block w-full py-3 rounded-xl font-semibold text-white bg-primary-600 text-center hover:bg-primary-700 transition-all"
-                        >
-                            Başla
-                        </Link>
-                    </div>
-
-                    <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-primary-500/30 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-primary-500/5 group-hover:bg-primary-500/10 transition-colors"></div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                            🎲 Hızlı Oyun
-                            <span className="text-xs px-2 py-1 bg-primary-500/20 text-primary-300 rounded-full">Popüler</span>
-                        </h3>
-                        <p className="text-dark-500 text-sm mb-4">
-                            Rastgele bir oyuncuyla hemen eşleş
-                        </p>
-                        <button
-                            onClick={findMatch}
-                            className="w-full py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all shadow-lg shadow-primary-500/20 relative z-10"
-                        >
-                            Hemen Oyna
-                        </button>
-                    </div>
-
-                    <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-indigo-500/30 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
-                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                            🏁 Kelime Yarışı
-                            <span className="text-xs px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full">Yeni</span>
-                        </h3>
-                        <p className="text-dark-500 text-sm mb-4">
-                            Oda kur, arkadaşlarınla aynı anda yarış
-                        </p>
-                        <Link
-                            href="/rooms"
-                            className="block w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 text-center hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20 relative z-10"
-                        >
-                            Oda Kur / Katıl
-                        </Link>
-                    </div>
-
-                    <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95">
-                        <h3 className="text-xl font-semibold mb-2">👥 Arkadaşlarınla Oyna</h3>
-                        <p className="text-dark-500 text-sm mb-4">
-                            Arkadaşlarla eşleş ve oyna
-                        </p>
-                        <Link
-                            href="/friends"
-                            className="block w-full py-3 rounded-xl font-semibold text-white bg-dark-200 text-center hover:bg-dark-300 transition-all"
-                        >
-                            Arkadaşlar
-                        </Link>
-                    </div>
+            {/* Game Modes */}
+            <div className="space-y-4 max-w-md mx-auto">
+                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95">
+                    <h3 className="text-xl font-semibold mb-2">🎯 Pratik Yap</h3>
+                    <p className="text-dark-500 text-sm mb-4">
+                        Tek başına pratik yap, oyunu öğren
+                    </p>
+                    <Link
+                        href="/practice"
+                        className="block w-full py-3 rounded-xl font-semibold text-white bg-primary-600 text-center hover:bg-primary-700 transition-all"
+                    >
+                        Başla
+                    </Link>
                 </div>
 
-                {/* Stats */}
-                <div className="mt-10 max-w-md mx-auto grid grid-cols-3 gap-4">
-                    <div className="glass-effect rounded-xl p-4 text-center">
-                        <div className="text-2xl font-bold text-primary-500">{stats.wins}</div>
-                        <div className="text-xs text-dark-500 mt-1">Kazandım</div>
-                    </div>
-                    <div className="glass-effect rounded-xl p-4 text-center">
-                        <div className="text-2xl font-bold text-danger-500">{stats.losses}</div>
-                        <div className="text-xs text-dark-500 mt-1">Kaybettim</div>
-                    </div>
-                    <div className="glass-effect rounded-xl p-4 text-center">
-                        <div className="text-2xl font-bold text-warning-500">{stats.total_games}</div>
-                        <div className="text-xs text-dark-500 mt-1">Toplam</div>
-                    </div>
+                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-primary-500/30 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-primary-500/5 group-hover:bg-primary-500/10 transition-colors"></div>
+                    <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                        🎲 Hızlı Oyun
+                        <span className="text-xs px-2 py-1 bg-primary-500/20 text-primary-300 rounded-full">Popüler</span>
+                    </h3>
+                    <p className="text-dark-500 text-sm mb-4">
+                        Rastgele bir oyuncuyla hemen eşleş
+                    </p>
+                    <button
+                        onClick={findMatch}
+                        className="w-full py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all shadow-lg shadow-primary-500/20 relative z-10"
+                    >
+                        Hemen Oyna
+                    </button>
                 </div>
 
-                <div className="mt-6 text-center">
-                    <Link href="/leaderboard" className="text-primary-400 hover:text-white text-sm font-semibold transition-colors">
-                        🏆 Liderlik Tablosunu Gör
+                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-indigo-500/30 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
+                    <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                        🏁 Kelime Yarışı
+                        <span className="text-xs px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full">Yeni</span>
+                    </h3>
+                    <p className="text-dark-500 text-sm mb-4">
+                        Oda kur, arkadaşlarınla aynı anda yarış
+                    </p>
+                    <Link
+                        href="/rooms"
+                        className="block w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 text-center hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20 relative z-10"
+                    >
+                        Oda Kur / Katıl
+                    </Link>
+                </div>
+
+                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95">
+                    <h3 className="text-xl font-semibold mb-2">👥 Arkadaşlarınla Oyna</h3>
+                    <p className="text-dark-500 text-sm mb-4">
+                        Arkadaşlarla eşleş ve oyna
+                    </p>
+                    <Link
+                        href="/friends"
+                        className="block w-full py-3 rounded-xl font-semibold text-white bg-dark-200 text-center hover:bg-dark-300 transition-all"
+                    >
+                        Arkadaşlar
                     </Link>
                 </div>
             </div>
-        </main>
+
+            {/* Stats */}
+            <div className="mt-10 max-w-md mx-auto grid grid-cols-3 gap-4">
+                <div className="glass-effect rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-primary-500">{stats.wins}</div>
+                    <div className="text-xs text-dark-500 mt-1">Kazandım</div>
+                </div>
+                <div className="glass-effect rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-danger-500">{stats.losses}</div>
+                    <div className="text-xs text-dark-500 mt-1">Kaybettim</div>
+                </div>
+                <div className="glass-effect rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-warning-500">{stats.total_games}</div>
+                    <div className="text-xs text-dark-500 mt-1">Toplam</div>
+                </div>
+            </div>
+
+            <div className="mt-6 text-center">
+                <Link href="/leaderboard" className="text-primary-400 hover:text-white text-sm font-semibold transition-colors">
+                    🏆 Liderlik Tablosunu Gör
+                </Link>
+            </div>
+        </div>
+        </main >
     )
 }

@@ -105,10 +105,14 @@ export default function HomePage() {
             <div className="container mx-auto px-4 py-8">
                 {/* Welcome Section */}
                 <div className="text-center mb-8">
-                    <h1 className="text-5xl font-bold mb-2 gradient-text">
-                        Lingo Türkiye
-                    </h1>
-                    <p className="text-dark-500">Kelime tahmin oyunu</p>
+                    <div className="mb-4 flex justify-center">
+                        <img
+                            src="/lingo_logo.png"
+                            alt="Lingo Türkiye"
+                            className="w-64 h-auto"
+                        />
+                    </div>
+                    <p className="text-dark-400">Kelime tahmin oyunu</p>
                 </div>
 
                 {/* Active Games Notification */}

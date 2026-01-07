@@ -147,6 +147,23 @@ export default function HomePage() {
                         </button>
                     </div>
 
+                    <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-indigo-500/30 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
+                        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                            🏁 Kelime Yarışı
+                            <span className="text-xs px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full">Yeni</span>
+                        </h3>
+                        <p className="text-dark-500 text-sm mb-4">
+                            Oda kur, arkadaşlarınla aynı anda yarış
+                        </p>
+                        <Link
+                            href="/rooms"
+                            className="block w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 text-center hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20 relative z-10"
+                        >
+                            Oda Kur / Katıl
+                        </Link>
+                    </div>
+
                     <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95">
                         <h3 className="text-xl font-semibold mb-2">👥 Arkadaşlarınla Oyna</h3>
                         <p className="text-dark-500 text-sm mb-4">

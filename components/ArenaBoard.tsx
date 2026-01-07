@@ -1,9 +1,9 @@
-'use client'
-
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import GameKeyboard from './GameKeyboard'
-import { isCorrectGuess, evaluateGuess } from '@/lib/gameLogic'
+import { isCorrectGuess, evaluateGuess, getKeyboardState } from '@/lib/gameLogic'
+import { isValidWord } from '@/lib/words'
+import type { LetterResult } from '@/lib/supabase'
 
 interface ArenaBoardProps {
     targetWords: string[] // Sırasıyla sorulacak kelimeler
@@ -13,9 +13,11 @@ interface ArenaBoardProps {
 export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps) {
     const [wordIndex, setWordIndex] = useState(0)
     const [guesses, setGuesses] = useState<string[]>([])
+    const [results, setResults] = useState<LetterResult[][]>([]) // Sonuçları tutmak için
     const [currentGuess, setCurrentGuess] = useState('')
     const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'finished'>('playing')
     const [shakeRow, setShakeRow] = useState(false)
+    const [error, setError] = useState('')
 
     // Şu anki hedef kelime
     const targetWord = targetWords[wordIndex]
@@ -37,9 +39,9 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
         }
     }
 
-    const handleEnter = () => {
+    const handleEnter = async () => {
         if (gameStatus !== 'playing') return
-        submitGuess()
+        await submitGuess()
     }
 
     const handleBackspace = () => {
@@ -47,15 +49,48 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
         setCurrentGuess(prev => prev.slice(0, -1))
     }
 
-    const submitGuess = () => {
+    const submitGuess = async () => {
         if (currentGuess.length !== targetWord.length) {
             setShakeRow(true)
             setTimeout(() => setShakeRow(false), 500)
             return
         }
 
+        const valid = await isValidWord(currentGuess)
+
+        // GEÇERSİZ KELİME MANTIĞI (Hak yer)
+        if (!valid) {
+            setShakeRow(true)
+            setTimeout(() => setShakeRow(false), 500)
+            setError('Geçersiz kelime!')
+            setTimeout(() => setError(''), 2000)
+
+            const invalidResult = currentGuess.split('').map(letter => ({
+                letter,
+                status: 'invalid' as const
+            }))
+
+            const newGuesses = [...guesses, currentGuess]
+            const newResults = [...results, invalidResult]
+
+            setGuesses(newGuesses)
+            setResults(newResults)
+            setCurrentGuess('')
+
+            // Hak bitti mi?
+            if (newGuesses.length >= 6) {
+                handleLose()
+            }
+            return
+        }
+
+        // GEÇERLİ KELİME
+        const evalResult = evaluateGuess(currentGuess, targetWord)
         const newGuesses = [...guesses, currentGuess]
+        const newResults = [...results, evalResult]
+
         setGuesses(newGuesses)
+        setResults(newResults)
         setCurrentGuess('')
 
         // Doğru tahmin mi?
@@ -65,6 +100,7 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
                 const nextIndex = wordIndex + 1
                 setWordIndex(nextIndex)
                 setGuesses([]) // Yeni kelime için temizle
+                setResults([])
 
                 // Üst bileşene bildir
                 onProgress(nextIndex, nextIndex >= targetWords.length)
@@ -74,17 +110,22 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
                 }
             }, 1000) // 1 saniye kutlama
         } else if (newGuesses.length >= 6) {
-            // Haklar bitti ama bir sonraki kelimeye geçmek zorundayız (Race modu olduğu için elenmek yok, ceza var)
-            // Ceza: 3 saniye bekle ve geç
-            setGameStatus('lost') // Kısa süreliğine lost göster
-            setTimeout(() => {
-                const nextIndex = wordIndex + 1
-                setWordIndex(nextIndex)
-                setGuesses([])
-                setGameStatus('playing')
-                onProgress(nextIndex, nextIndex >= targetWords.length)
-            }, 2000)
+            handleLose()
         }
+    }
+
+    const handleLose = () => {
+        // Haklar bitti
+        setGameStatus('lost')
+        // Cevabı göster ve bekle
+        setTimeout(() => {
+            const nextIndex = wordIndex + 1
+            setWordIndex(nextIndex)
+            setGuesses([])
+            setResults([])
+            setGameStatus('playing')
+            onProgress(nextIndex, nextIndex >= targetWords.length)
+        }, 3000) // 3 saniye cevabı görsün
     }
 
     if (gameStatus === 'finished') {
@@ -98,8 +139,20 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
         )
     }
 
+    // Klavye durumunu hesapla
+    const keyboardState = getKeyboardState(results)
+
     return (
-        <div className="flex flex-col h-full max-w-lg mx-auto w-full">
+        <div className="flex flex-col h-full max-w-lg mx-auto w-full relative">
+            {/* Hata Mesajı (Toast) */}
+            {error && (
+                <div className="absolute top-10 left-1/2 transform -translate-x-1/2 z-50">
+                    <div className="bg-danger-500/90 text-white px-4 py-2 rounded-lg shadow-lg font-bold animate-pulse">
+                        {error}
+                    </div>
+                </div>
+            )}
+
             {/* Header: Kaçıncı kelime */}
             <div className="text-center mb-4">
                 <span className="bg-dark-200 text-primary-400 px-3 py-1 rounded-full text-sm font-bold border border-white/5">
@@ -107,12 +160,29 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
                 </span>
             </div>
 
+            {/* Kaybedince Doğru Cevabı Göster */}
+            {gameStatus === 'lost' && (
+                <div className="absolute inset-0 z-40 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-dark-200 p-6 rounded-2xl border border-danger-500/50 text-center animate-in zoom-in">
+                        <p className="text-danger-500 font-bold mb-2">Bilemedin!</p>
+                        <p className="text-dark-400 text-sm mb-1">Doğru Cevap:</p>
+                        <p className="text-3xl font-bold text-white tracking-widest">{targetWord}</p>
+                    </div>
+                </div>
+            )}
+
             {/* Grid */}
             <div className="flex-1 overflow-y-auto min-h-[400px] flex items-center justify-center">
                 <div className="grid gap-2 p-4">
                     {/* Geçmiş tahminler */}
                     {guesses.map((guess, i) => (
-                        <Row key={i} word={guess} target={targetWord} submitted={true} />
+                        <Row
+                            key={i}
+                            word={guess}
+                            target={targetWord}
+                            submitted={true}
+                            result={results[i]} // Sonucu pass et
+                        />
                     ))}
 
                     {/* Şu anki tahmin */}
@@ -139,7 +209,7 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
                     onKeyPress={handleKeyPress}
                     onEnter={handleEnter}
                     onBackspace={handleBackspace}
-                    keyStates={undefined} // İstersen daha sonra hesapla
+                    keyStates={keyboardState}
                 />
             </div>
         </div>
@@ -147,12 +217,12 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
 }
 
 // Yardımcı Row Bileşeni
-function Row({ word, target, submitted, shake, length = 5 }: any) {
+function Row({ word, target, submitted, shake, length = 5, result }: any) {
     const letters = word.split('')
     const emptyCount = length - letters.length
 
-    // Feedback hesapla
-    const feedback = submitted ? evaluateGuess(word, target) : []
+    // Eğer result prop geldiyse (geçmiş tahmin) onu kullan, yoksa boş array
+    const feedback = result || []
 
     return (
         <motion.div
@@ -160,12 +230,14 @@ function Row({ word, target, submitted, shake, length = 5 }: any) {
             animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
             transition={{ duration: 0.4 }}
         >
-            {/* ... letters mapping ... (same as before) */}
+            {/* ... letters mapping ... */}
             {letters.map((letter: string, i: number) => {
                 let bgColor = 'bg-dark-200/50 border-white/10'
+
                 if (submitted && feedback[i]) {
                     if (feedback[i].status === 'correct') bgColor = 'bg-success-500 border-success-500'
                     else if (feedback[i].status === 'present') bgColor = 'bg-warning-500 border-warning-500'
+                    else if (feedback[i].status === 'invalid') bgColor = 'bg-danger-500 border-danger-500' // Kırmızı
                     else bgColor = 'bg-dark-300 border-dark-300'
                 }
 

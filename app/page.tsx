@@ -89,12 +89,12 @@ export default function HomePage() {
             )}
 
             {/* Header */}
-            <header className="glass-effect border-b border-dark-200 sticky top-0 z-40">
+            <header className="glass-effect border-b border-white/10 sticky top-0 z-40">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold gradient-text">Söz Ebesi</h1>
+                    <h1 className="text-2xl font-bold text-white shadow-text">Lingo Master</h1>
                     <button
                         onClick={signOut}
-                        className="px-4 py-2 rounded-xl bg-dark-200 hover:bg-dark-300 transition-colors text-sm"
+                        className="px-4 py-2 rounded-xl bg-black/20 hover:bg-black/30 text-white transition-colors text-sm backdrop-blur-md"
                     >
                         Çıkış
                     </button>
@@ -105,11 +105,13 @@ export default function HomePage() {
             <div className="container mx-auto px-4 py-8">
                 {/* Welcome Section */}
                 <div className="text-center mb-8">
-                    <img
-                        src="/lingo_logo.png"
-                        alt="Söz Ebesi"
-                        className="w-72 h-auto mix-blend-multiply"
-                    />
+                    <div className="mb-4 flex justify-center">
+                        <img
+                            src="/lingo_logo.png"
+                            alt="Lingo Master"
+                            className="w-72 h-auto"
+                        />
+                    </div>
                 </div>
             </div>
 

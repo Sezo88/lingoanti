@@ -22,7 +22,7 @@ export default function RoomsPage() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex items-center justify-center p-4">
                 <div className="text-center">
-                    <p className="text-dark-400 mb-4">Devam etmek için giriş yapmalısınız</p>
+                    <p className="text-white/80 mb-4">Devam etmek için giriş yapmalısınız</p>
                     <Link href="/auth/login" className="text-primary-500 hover:text-primary-400 font-semibold">
                         Giriş Yap
                     </Link>
@@ -34,12 +34,12 @@ export default function RoomsPage() {
     return (
         <div className="min-h-screen p-4">
             <div className="max-w-md mx-auto pt-10">
-                <Link href="/" className="inline-flex items-center text-dark-400 hover:text-white mb-8 transition-colors">
+                <Link href="/" className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors">
                     ← Ana Sayfa
                 </Link>
 
                 <h1 className="text-3xl font-bold mb-2 gradient-text">Çok Oyunculu Mod</h1>
-                <p className="text-dark-400 mb-8">Arkadaşlarınla yarış veya turnuvaya katıl</p>
+                <p className="text-white/80 mb-8">Arkadaşlarınla yarış veya turnuvaya katıl</p>
 
                 {error && (
                     <div className="bg-danger-500/10 border border-danger-500/20 text-danger-500 p-4 rounded-xl mb-6">
@@ -51,17 +51,17 @@ export default function RoomsPage() {
                     {/* Oda Oluştur */}
                     <div className="glass-effect p-6 rounded-2xl">
                         <h2 className="text-xl font-semibold mb-4 text-white">Yeni Oda Kur</h2>
-                        <p className="text-sm text-dark-400 mb-6">
+                        <p className="text-sm text-white/80 mb-6">
                             Kendi odanı oluştur ve arkadaşlarını davet et.
                         </p>
                         <div className="mb-6">
-                            <label className="block text-sm text-dark-400 mb-2">Süre (Saniye)</label>
+                            <label className="block text-sm text-white/80 mb-2">Süre (Saniye)</label>
                             <div className="flex bg-black/20 rounded-xl p-1 gap-1">
                                 {[20, 30, 40, 60].map(d => (
                                     <button
                                         key={d}
                                         onClick={() => setDuration(d)}
-                                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${duration === d ? 'bg-primary-600 text-white shadow-lg' : 'text-dark-400 hover:text-white hover:bg-white/5'}`}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${duration === d ? 'bg-primary-600 text-white shadow-lg' : 'text-white/80 hover:text-white hover:bg-white/5'}`}
                                     >
                                         {d}
                                     </button>
@@ -80,7 +80,7 @@ export default function RoomsPage() {
 
                     <div className="relative flex items-center justify-center">
                         <div className="h-px bg-white/10 w-full absolute"></div>
-                        <span className="bg-dark-100 px-4 text-dark-500 relative text-sm">VEYA</span>
+                        <span className="bg-dark-100 px-4 text-white/70 relative text-sm">VEYA</span>
                     </div>
 
                     {/* Odaya Katıl */}

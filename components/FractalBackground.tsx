@@ -1,28 +1,20 @@
 import styles from './FractalBackground.module.css'
 
 export default function FractalBackground() {
-    // 9 columns * 8 rows = 72 cells
-    const cells = Array.from({ length: 72 })
-
-    // 2x2 nested grid for each cell
-    const nestedCells = Array.from({ length: 4 })
+    const letters = 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ'.split('')
 
     return (
         <div className={styles.bg}>
             <div className={styles.container}>
-                {/* Fractal Grid */}
                 <div className={styles.fractal}>
-                    {cells.map((_, i) => (
-                        <div key={i} className={styles.cell}>
-                            <div className={styles.nestedGrid}>
-                                {nestedCells.map((_, j) => (
-                                    <div key={j} className={styles.miniCell}></div>
-                                ))}
-                            </div>
-                        </div>
+                    {Array.from({ length: 24 }).map((_, i) => (
+                        <div
+                            key={i}
+                            className={styles.cell}
+                            data-letter={letters[i % letters.length]}
+                        />
                     ))}
                 </div>
-
                 {/* Central Element */}
                 <div className={styles.centerElement}></div>
 

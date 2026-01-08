@@ -200,7 +200,7 @@ export default function PracticePage() {
             return (
                 <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col items-center justify-center p-4">
                     <header className="absolute top-0 w-full p-4 flex justify-between items-center glass-effect border-b border-dark-200">
-                        <button onClick={() => setShowDurationSelect(false)} className="text-dark-500 hover:text-white transition-colors">
+                        <button onClick={() => setShowDurationSelect(false)} className="text-white/70 hover:text-white transition-colors">
                             ← Geri
                         </button>
                         <h1 className="text-xl font-bold gradient-text">Süre Seçimi</h1>
@@ -209,7 +209,7 @@ export default function PracticePage() {
 
                     <div className="max-w-md w-full glass-effect rounded-3xl p-8 text-center animate-in zoom-in duration-300">
                         <h2 className="text-3xl font-bold text-white mb-2">Süreyi Seç</h2>
-                        <p className="text-dark-400 mb-8">Her kelime için kaç saniyen olsun?</p>
+                        <p className="text-white/80 mb-8">Her kelime için kaç saniyen olsun?</p>
 
                         <div className="grid grid-cols-2 gap-4">
                             {[20, 30, 40, 60].map((sec) => (
@@ -230,7 +230,7 @@ export default function PracticePage() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col items-center justify-center p-4">
                 <header className="absolute top-0 w-full p-4 flex justify-between items-center glass-effect border-b border-dark-200">
-                    <button onClick={() => router.push('/')} className="text-dark-500 hover:text-white transition-colors">
+                    <button onClick={() => router.push('/')} className="text-white/70 hover:text-white transition-colors">
                         ← Geri
                     </button>
                     <h1 className="text-xl font-bold gradient-text">Pratik Modu</h1>
@@ -239,7 +239,7 @@ export default function PracticePage() {
 
                 <div className="max-w-md w-full glass-effect rounded-3xl p-8 text-center animate-in zoom-in duration-300">
                     <h2 className="text-3xl font-bold text-white mb-2">Nasıl Oynamak İstersin?</h2>
-                    <p className="text-dark-400 mb-8">Kendi hızında veya zamana karşı yarış.</p>
+                    <p className="text-white/80 mb-8">Kendi hızında veya zamana karşı yarış.</p>
 
                     <div className="space-y-4">
                         <button
@@ -250,7 +250,7 @@ export default function PracticePage() {
                                 <span className="text-2xl">🧘</span>
                                 <div className="text-left">
                                     <div className="font-bold text-white group-hover:text-primary-400 transition-colors">Süresiz Pratik</div>
-                                    <div className="text-xs text-dark-500">Rahat rahat, acele etmeden çöz</div>
+                                    <div className="text-xs text-white/70">Rahat rahat, acele etmeden çöz</div>
                                 </div>
                             </div>
                         </button>
@@ -263,7 +263,7 @@ export default function PracticePage() {
                                 <span className="text-2xl">⚡</span>
                                 <div className="text-left">
                                     <div className="font-bold text-white group-hover:text-danger-400 transition-colors">Süreli Meydan Okuma</div>
-                                    <div className="text-xs text-dark-500">Kendini sına!</div>
+                                    <div className="text-xs text-white/70">Kendini sına!</div>
                                 </div>
                             </div>
                         </button>
@@ -295,7 +295,7 @@ export default function PracticePage() {
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button
                         onClick={() => setIsSetup(false)}
-                        className="text-dark-500 hover:text-white transition-colors"
+                        className="text-white/70 hover:text-white transition-colors"
                     >
                         ← Menü
                     </button>
@@ -304,7 +304,7 @@ export default function PracticePage() {
                     </h1>
                     <button
                         onClick={toggleFullscreen}
-                        className="text-dark-400 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
+                        className="text-white/80 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
                     >
                         {isFullscreen ? '⊗' : '⛶'}
                     </button>

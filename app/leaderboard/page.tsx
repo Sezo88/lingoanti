@@ -50,7 +50,7 @@ export default function LeaderboardPage() {
         <div className="min-h-screen flex flex-col">
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link href="/" className="text-dark-500 hover:text-white transition-colors">
+                    <Link href="/" className="text-white/70 hover:text-white transition-colors">
                         ← Geri
                     </Link>
                     <h1 className="text-xl font-bold gradient-text">Liderlik Tablosu</h1>
@@ -67,7 +67,7 @@ export default function LeaderboardPage() {
                     <div className="glass-effect rounded-2xl overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-white/5 text-dark-400 text-sm">
+                                <thead className="bg-white/5 text-white/80 text-sm">
                                     <tr>
                                         <th className="px-6 py-4 font-semibold">#</th>
                                         <th className="px-6 py-4 font-semibold">Oyuncu</th>
@@ -78,7 +78,7 @@ export default function LeaderboardPage() {
                                 <tbody className="divide-y divide-dark-200">
                                     {users.map((lbUser, index) => (
                                         <tr key={lbUser.id} className="hover:bg-white/5 transition-colors">
-                                            <td className="px-6 py-4 text-dark-400 font-mono">
+                                            <td className="px-6 py-4 text-white/80 font-mono">
                                                 {index + 1}
                                             </td>
                                             <td className="px-6 py-4">
@@ -97,13 +97,13 @@ export default function LeaderboardPage() {
                                                                 <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse shadow-lg shadow-success-500/50" title="Online"></span>
                                                             )}
                                                         </div>
-                                                        <div className="text-xs text-dark-500">
+                                                        <div className="text-xs text-white/70">
                                                             @{lbUser.username}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-center text-dark-300">
+                                            <td className="px-6 py-4 text-center text-white/90">
                                                 {lbUser.wins} / {lbUser.total_games}
                                             </td>
                                             <td className="px-6 py-4 text-right font-bold text-primary-400">
@@ -114,7 +114,7 @@ export default function LeaderboardPage() {
 
                                     {users.length === 0 && (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-dark-500">
+                                            <td colSpan={4} className="px-6 py-12 text-center text-white/70">
                                                 Henüz sıralama oluşmadı.
                                             </td>
                                         </tr>

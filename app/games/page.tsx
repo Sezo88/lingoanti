@@ -103,7 +103,7 @@ export default function ActiveGamesPage() {
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button
                         onClick={() => router.push('/')}
-                        className="text-dark-500 hover:text-white transition-colors"
+                        className="text-white/70 hover:text-white transition-colors"
                     >
                         ← Geri
                     </button>
@@ -130,7 +130,7 @@ export default function ActiveGamesPage() {
                                             <p className="text-white font-semibold">
                                                 {isInviter ? '📤 Gönderilen Davet' : '📥 Gelen Davet'}
                                             </p>
-                                            <p className="text-sm text-dark-500">
+                                            <p className="text-sm text-white/70">
                                                 {opponentNames[opponentId] || 'Yükleniyor...'}
                                             </p>
                                             <p className="text-xs text-dark-600 mt-1">
@@ -188,7 +188,7 @@ export default function ActiveGamesPage() {
                                                 <p className="text-white font-semibold">
                                                     vs {opponentNames[opponentId] || 'Yükleniyor...'}
                                                 </p>
-                                                <p className="text-xs text-dark-500">
+                                                <p className="text-xs text-white/70">
                                                     {game.mixed_mode ? '🎲 Karışık' : `${game.word_length} harf`} • Best of {game.best_of} • El {game.current_round}
                                                 </p>
                                             </div>
@@ -224,7 +224,7 @@ export default function ActiveGamesPage() {
                 {/* Completed Games */}
                 {completedGames.length > 0 && (
                     <div>
-                        <h2 className="text-lg font-semibold mb-3 text-dark-400">
+                        <h2 className="text-lg font-semibold mb-3 text-white/80">
                             🏁 Biten Oyunlar
                         </h2>
                         <div className="space-y-2">
@@ -240,7 +240,7 @@ export default function ActiveGamesPage() {
                                                 <p className="text-white font-semibold">
                                                     vs {opponentNames[opponentId] || 'Yükleniyor...'}
                                                 </p>
-                                                <p className="text-xs text-dark-500">
+                                                <p className="text-xs text-white/70">
                                                     {new Date(game.finished_at || '').toLocaleDateString('tr-TR')}
                                                 </p>
                                             </div>
@@ -249,7 +249,7 @@ export default function ActiveGamesPage() {
                                                     {isWinner ? 'KAZANDIN' : 'KAYBETTİN'}
                                                 </div>
                                                 {isForfeit && (
-                                                    <div className="text-xs text-dark-500">
+                                                    <div className="text-xs text-white/70">
                                                         (Pes Edildi)
                                                     </div>
                                                 )}
@@ -265,7 +265,7 @@ export default function ActiveGamesPage() {
                 {/* Empty State */}
                 {games.length === 0 && completedGames.length === 0 && (
                     <div className="text-center py-12">
-                        <p className="text-dark-500 mb-4">Henüz bir oyun bulunmuyor.</p>
+                        <p className="text-white/70 mb-4">Henüz bir oyun bulunmuyor.</p>
                         <button
                             onClick={() => router.push('/friends')}
                             className="px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"

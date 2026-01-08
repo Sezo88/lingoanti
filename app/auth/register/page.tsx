@@ -42,7 +42,7 @@ export default function RegisterPage() {
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <h1 className="text-5xl font-bold gradient-text mb-2">Lingo Türkiye</h1>
-                    <p className="text-dark-500">Arkadaşlarınla kelime yarışı!</p>
+                    <p className="text-white/70">Arkadaşlarınla kelime yarışı!</p>
                 </div>
 
                 {/* Register Form */}
@@ -127,7 +127,7 @@ export default function RegisterPage() {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-dark-500">
+                        <p className="text-white/70">
                             Zaten hesabın var mı?{' '}
                             <Link href="/auth/login" className="text-primary-500 font-semibold hover:underline">
                                 Giriş Yap

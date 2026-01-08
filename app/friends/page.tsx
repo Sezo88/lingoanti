@@ -126,7 +126,7 @@ export default function FriendsPage() {
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button
                         onClick={() => router.push('/')}
-                        className="text-dark-500 hover:text-white transition-colors"
+                        className="text-white/70 hover:text-white transition-colors"
                     >
                         ← Geri
                     </button>
@@ -142,7 +142,7 @@ export default function FriendsPage() {
                         onClick={() => setActiveTab('friends')}
                         className={`flex-1 py-3 rounded-xl font-semibold transition-all ${activeTab === 'friends'
                             ? 'bg-primary-600 text-white'
-                            : 'bg-dark-200 text-dark-500'
+                            : 'bg-dark-200 text-white/70'
                             }`}
                     >
                         Arkadaşlar ({friends.length})
@@ -151,7 +151,7 @@ export default function FriendsPage() {
                         onClick={() => setActiveTab('search')}
                         className={`flex-1 py-3 rounded-xl font-semibold transition-all ${activeTab === 'search'
                             ? 'bg-primary-600 text-white'
-                            : 'bg-dark-200 text-dark-500'
+                            : 'bg-dark-200 text-white/70'
                             }`}
                     >
                         Ara
@@ -160,7 +160,7 @@ export default function FriendsPage() {
                         onClick={() => setActiveTab('requests')}
                         className={`flex-1 py-3 rounded-xl font-semibold transition-all ${activeTab === 'requests'
                             ? 'bg-primary-600 text-white'
-                            : 'bg-dark-200 text-dark-500'
+                            : 'bg-dark-200 text-white/70'
                             }`}
                     >
                         İstekler ({pendingRequests.length})
@@ -183,7 +183,7 @@ export default function FriendsPage() {
                                 <div key={user.id} className="glass-effect rounded-xl p-4 flex items-center justify-between">
                                     <div>
                                         <p className="font-semibold text-white">{user.display_name}</p>
-                                        <p className="text-sm text-dark-500">@{user.username}</p>
+                                        <p className="text-sm text-white/70">@{user.username}</p>
                                     </div>
                                     <button
                                         onClick={() => handleAddFriend(user.id)}
@@ -203,7 +203,7 @@ export default function FriendsPage() {
                     <div className="max-w-md mx-auto space-y-2">
                         {friends.length === 0 ? (
                             <div className="text-center py-12">
-                                <p className="text-dark-500">Henüz arkadaşın yok</p>
+                                <p className="text-white/70">Henüz arkadaşın yok</p>
                                 <button
                                     onClick={() => setActiveTab('search')}
                                     className="mt-4 px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"
@@ -224,15 +224,15 @@ export default function FriendsPage() {
                                         >
                                             <div>
                                                 <p className="font-semibold text-white">{friendship.friend.display_name}</p>
-                                                <p className="text-sm text-dark-500">@{friendship.friend.username}</p>
+                                                <p className="text-sm text-white/70">@{friendship.friend.username}</p>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <div className={`text-xs font-semibold flex items-center gap-1 ${isOnline ? 'text-success-400' : 'text-dark-400'
+                                                <div className={`text-xs font-semibold flex items-center gap-1 ${isOnline ? 'text-success-400' : 'text-white/80'
                                                     }`}>
                                                     <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-success-500 animate-pulse' : 'bg-dark-400'}`}></span>
                                                     {isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
                                                 </div>
-                                                <div className={`text-dark-400 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                <div className={`text-white/80 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
                                                     ▼
                                                 </div>
                                             </div>
@@ -269,14 +269,14 @@ export default function FriendsPage() {
                     <div className="max-w-md mx-auto space-y-2">
                         {pendingRequests.length === 0 ? (
                             <div className="text-center py-12">
-                                <p className="text-dark-500">Bekleyen istek yok</p>
+                                <p className="text-white/70">Bekleyen istek yok</p>
                             </div>
                         ) : (
                             pendingRequests.map((request) => (
                                 <div key={request.id} className="glass-effect rounded-xl p-4">
                                     <div className="mb-3">
                                         <p className="font-semibold text-white">{request.user.display_name}</p>
-                                        <p className="text-sm text-dark-500">@{request.user.username}</p>
+                                        <p className="text-sm text-white/70">@{request.user.username}</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <button

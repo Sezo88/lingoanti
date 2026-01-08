@@ -83,22 +83,22 @@
 }
 
 .miniCell {
-    display: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
 }
 
-/* Central decorative element - subtle */
+/* Glow effect */
 .centerElement {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 40vmin;
-    height: 40vmin;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.2), transparent);
     border-radius: 50%;
-    z-index: 5;
+    filter: blur(40px);
     pointer-events: none;
-    animation: pulse 4s ease-in-out infinite;
 }
 
 .centerElement::before {
@@ -110,22 +110,6 @@
 }
 
 /* Floating animations */
-}
-
-@keyframes float4 {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.6;
-    }
-
-    50% {
-        transform: translateY(-12px) rotate(-1deg);
-        opacity: 0.8;
-    }
-}
-
 @keyframes pulse {
 
     0%,

@@ -68,11 +68,11 @@ export default function HomePage() {
                 {/* Header */}
                 <header className="flex items-center justify-between px-6 pt-8 pb-6">
                     <div className="flex items-center">
-                        <div className="h-16 relative flex items-center justify-center -ml-4">
+                        <div className="h-16 relative flex items-center justify-center ml-2">
                             <img
                                 src="/lingo_logo.png"
                                 alt="Lingo Master"
-                                className="h-full w-auto object-contain drop-shadow-md scale-[1.8]"
+                                className="h-full w-auto object-contain drop-shadow-md scale-[2]"
                             />
                         </div>
                     </div>

@@ -34,7 +34,7 @@ export default function RoomsPage() {
     }
 
     return (
-        <div className="min-h-screen p-4">
+        <div className="min-h-screen p-4 pb-24">
             <div className="max-w-md mx-auto pt-10">
                 <Link href="/" className="inline-flex items-center px-3 py-2 rounded-lg bg-black/20 hover:bg-black/30 text-white/80 hover:text-white mb-8 transition-colors backdrop-blur-sm border border-white/10">
                     ← Ana Sayfa
@@ -129,21 +129,24 @@ export default function RoomsPage() {
                     {/* Odaya Katıl */}
                     <div className="glass-effect p-6 rounded-2xl">
                         <h2 className="text-xl font-semibold mb-4 text-white">Odaya Katıl</h2>
+                        <p className="text-sm text-white/80 mb-6">
+                            Arkadaşının oda kodunu gir ve katıl.
+                        </p>
                         <div className="flex gap-2">
                             <input
                                 type="text"
-                                placeholder="Oda Kodu (Örn: A1B2)"
+                                placeholder="Oda Kodu"
                                 value={roomCode}
                                 onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                                className="flex-1 px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder-white/50 focus:outline-none focus:border-primary-500 transition-colors max-w-[140px]"
                                 maxLength={6}
-                                className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 uppercase tracking-widest text-center font-bold"
                             />
                             <button
                                 onClick={() => joinRoom(roomCode)}
                                 disabled={loading || !roomCode}
-                                className="px-6 py-3 rounded-xl font-semibold bg-dark-200 hover:bg-dark-300 text-white transition-all disabled:opacity-50"
+                                className="flex-1 py-3 rounded-xl font-semibold bg-success-600 hover:bg-success-500 text-white transition-all disabled:opacity-50"
                             >
-                                Katıl
+                                {loading ? 'Katılıyor...' : 'Katıl'}
                             </button>
                         </div>
                     </div>

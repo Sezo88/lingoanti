@@ -26,7 +26,7 @@ export function useMultiplayer() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const createRoom = useCallback(async (isPublic = false, duration = 60) => {
+    const createRoom = useCallback(async (isPublic = false, duration = 60, gameMode: 'arena' | 'turn_based' = 'arena', wordLength = 5) => {
         if (!user) return
 
         setLoading(true)
@@ -37,7 +37,8 @@ export function useMultiplayer() {
                 .from('rooms')
                 .insert({
                     host_id: user.id,
-                    config: { isPublic, wordCount: 5, wordLength: 5, duration },
+                    game_mode: gameMode,
+                    config: { isPublic, wordCount: 5, wordLength, duration },
                     status: 'waiting'
                 })
                 .select()

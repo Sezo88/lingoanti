@@ -11,6 +11,8 @@ export default function RoomsPage() {
     const { createRoom, joinRoom, loading, error } = useMultiplayer()
     const [roomCode, setRoomCode] = useState('')
     const [duration, setDuration] = useState(60)
+    const [gameMode, setGameMode] = useState<'arena' | 'turn_based'>('arena')
+    const [wordLength, setWordLength] = useState(5)
 
     useEffect(() => {
         // Sayfaya girildiğinde eski odaları temizle (Maintenance)
@@ -56,6 +58,45 @@ export default function RoomsPage() {
                         <p className="text-sm text-white/80 mb-6">
                             Kendi odanı oluştur ve arkadaşlarını davet et.
                         </p>
+
+                        {/* Mod Seçimi */}
+                        <div className="mb-6">
+                            <label className="block text-sm text-white/80 mb-2">Oyun Modu</label>
+                            <div className="grid grid-cols-2 gap-2 bg-black/20 rounded-xl p-1">
+                                <button
+                                    onClick={() => setGameMode('arena')}
+                                    className={`py-3 rounded-lg text-sm font-semibold transition-all ${gameMode === 'arena' ? 'bg-primary-600 text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
+                                >
+                                    Kelime Yarışı
+                                </button>
+                                <button
+                                    onClick={() => setGameMode('turn_based')}
+                                    className={`py-3 rounded-lg text-sm font-semibold transition-all ${gameMode === 'turn_based' ? 'bg-primary-600 text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
+                                >
+                                    Sıra Sende
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Kelime Uzunluğu (Sadece Sıra Sende için) */}
+                        {gameMode === 'turn_based' && (
+                            <div className="mb-6">
+                                <label className="block text-sm text-white/80 mb-2">Kelime Uzunluğu</label>
+                                <div className="flex bg-black/20 rounded-xl p-1 gap-1">
+                                    {[4, 5, 6, 7].map(len => (
+                                        <button
+                                            key={len}
+                                            onClick={() => setWordLength(len)}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${wordLength === len ? 'bg-primary-600 text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
+                                        >
+                                            {len}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Süre Seçimi */}
                         <div className="mb-6">
                             <label className="block text-sm text-white/80 mb-2">Süre (Saniye)</label>
                             <div className="flex bg-black/20 rounded-xl p-1 gap-1">
@@ -63,7 +104,7 @@ export default function RoomsPage() {
                                     <button
                                         key={d}
                                         onClick={() => setDuration(d)}
-                                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${duration === d ? 'bg-primary-600 text-white shadow-lg' : 'text-white/80 hover:text-white hover:bg-white/5'}`}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${duration === d ? 'bg-primary-600 text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
                                     >
                                         {d}
                                     </button>
@@ -72,7 +113,7 @@ export default function RoomsPage() {
                         </div>
 
                         <button
-                            onClick={() => createRoom(false, duration)}
+                            onClick={() => createRoom(false, duration, gameMode, wordLength)}
                             disabled={loading}
                             className="w-full py-3 rounded-xl font-semibold bg-primary-600 hover:bg-primary-500 text-white transition-all disabled:opacity-50"
                         >

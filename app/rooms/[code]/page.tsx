@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import ArenaBoard from '@/components/ArenaBoard'
+import TurnBasedBoard from '@/components/TurnBasedBoard'
 
 interface Participant {
     id: string
@@ -212,8 +213,8 @@ export default function RoomLobbyPage() {
 
     if (loading || fetchingGame) return <div className="text-center p-10 text-white font-mono animate-pulse">Yükleniyor...</div>
 
-    // --- GAME ARENA MODU ---
-    if (room?.status === 'playing' && gameWords.length > 0) {
+    // --- GAME ARENA MODU (Kelime Yarışı) ---
+    if (room?.status === 'playing' && room?.game_mode === 'arena' && gameWords.length > 0) {
         return (
             <div className="min-h-screen text-white flex flex-col md:flex-row">
                 <div className="flex-1 p-4 border-r border-white/5 bg-black/30">
@@ -258,12 +259,99 @@ export default function RoomLobbyPage() {
                                                 style={{ width: isFinished ? '100%' : `${((p.current_word_index || 0) / (gameWords.length || 5)) * 100}%` }}
                                             ></div>
                                         </div>
-                                        <div className="text-xs text-right text-dark-400">
+                                        <div className="text-xs text-right text-white/80">
                                             {isFinished ? 'Bitirdi' : `${p.current_word_index || 0} / ${gameWords.length || 5}`}
                                         </div>
                                     </div>
                                 )
                             })}
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // --- GAME TURN-BASED MODU (Sıra Sende) ---
+    if (room?.status === 'playing' && room?.game_mode === 'turn_based' && gameWords.length > 0) {
+        const config = room.config || {}
+        const turnOrder = config.turnOrder || []
+        const currentTurn = config.currentTurn || 0
+        const currentRound = config.currentRound || 0
+
+        const currentPlayerId = turnOrder[currentTurn % turnOrder.length]
+        const isMyTurn = currentPlayerId === user?.id
+        const currentPlayer = participants.find(p => p.user_id === currentPlayerId)
+        const currentWordIndex = currentRound
+
+        const handleTurnComplete = async (success: boolean, attempts: number) => {
+            if (!room) return
+
+            // Sırayı bir sonraki oyuncuya geç
+            const nextTurn = currentTurn + 1
+            const nextRound = Math.floor(nextTurn / turnOrder.length)
+
+            await supabase
+                .from('rooms')
+                .update({
+                    config: {
+                        ...config,
+                        currentTurn: nextTurn,
+                        currentRound: nextRound
+                    }
+                })
+                .eq('id', room.id)
+        }
+
+        const handleTimeUp = () => {
+            handleTurnComplete(false, 6)
+        }
+
+        return (
+            <div className="min-h-screen text-white flex flex-col md:flex-row">
+                <div className="flex-1 p-4 border-r border-white/5 bg-black/30">
+                    <TurnBasedBoard
+                        targetWord={gameWords[currentWordIndex] || ''}
+                        isMyTurn={isMyTurn}
+                        currentPlayerName={currentPlayer?.display_name || 'Oyuncu'}
+                        onTurnComplete={handleTurnComplete}
+                        onTimeUp={handleTimeUp}
+                    />
+                </div>
+
+                <div className="w-full md:w-80 p-6 bg-dark-100 border-l border-white/5 overflow-y-auto">
+                    <h3 className="text-xl font-bold mb-6 text-primary-400 flex items-center gap-2">
+                        <span>🎯</span> SIRA DURUMU
+                    </h3>
+
+                    <div className="mb-6 p-4 bg-black/20 rounded-xl border border-white/10">
+                        <div className="text-sm text-white/70 mb-1">Şu Anki Sıra:</div>
+                        <div className="text-xl font-bold text-white">{currentPlayer?.display_name}</div>
+                        <div className="text-xs text-white/50 mt-2">El {currentRound + 1} / {config.roundsTotal || 0}</div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {participants.map((p, index) => {
+                            const isCurrent = p.user_id === currentPlayerId
+                            const isSelf = p.user_id === user?.id
+
+                            return (
+                                <div key={p.id} className={`p-3 rounded-xl border transition-all ${isCurrent ? 'bg-primary-500/20 border-primary-500/50 shadow-lg' :
+                                        isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
+                                    }`}>
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            {isCurrent && <span className="text-lg">▶️</span>}
+                                            <span className={`font-semibold ${isSelf ? 'text-primary-400' : 'text-white'}`}>
+                                                {p.display_name}
+                                            </span>
+                                        </div>
+                                        <span className="text-sm text-yellow-500 font-bold">
+                                            {p.score || 0}P
+                                        </span>
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             </div>

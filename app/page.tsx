@@ -67,15 +67,14 @@ export default function HomePage() {
             <div className="relative flex flex-col w-full max-w-md mx-auto min-h-screen">
                 {/* Header */}
                 <header className="flex items-center justify-between px-6 pt-8 pb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 relative flex items-center justify-center">
+                    <div className="flex items-center">
+                        <div className="h-16 relative flex items-center justify-center -ml-4">
                             <img
                                 src="/lingo_logo.png"
                                 alt="Lingo Master"
-                                className="w-full h-full object-contain drop-shadow-md"
+                                className="h-full w-auto object-contain drop-shadow-md scale-125"
                             />
                         </div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-md">Lingo Master</h1>
                     </div>
                     <button
                         onClick={signOut}
@@ -213,28 +212,6 @@ export default function HomePage() {
                     </div>
                 </footer>
             </div>
-
-            {/* Bottom Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 glass-nav z-50 px-6 pb-6 pt-3 border-t border-white/5">
-                <div className="flex justify-between items-center max-w-md mx-auto">
-                    <button className="flex flex-col items-center gap-1 text-[#f86516] group">
-                        <span className="material-symbols-outlined symbol-filled text-2xl group-hover:scale-110 transition-transform">home</span>
-                        <span className="text-[10px] font-bold">Ana Sayfa</span>
-                    </button>
-                    <Link href="/leaderboard" className="flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors group">
-                        <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">leaderboard</span>
-                        <span className="text-[10px] font-medium">Liderlik</span>
-                    </Link>
-                    <Link href="/friends" className="flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors group">
-                        <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">group</span>
-                        <span className="text-[10px] font-medium">Arkadaşlar</span>
-                    </Link>
-                    <button className="flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors group">
-                        <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">settings</span>
-                        <span className="text-[10px] font-medium">Ayarlar</span>
-                    </button>
-                </div>
-            </nav>
         </main>
     )
 }

@@ -38,49 +38,25 @@ export default function HomePage() {
         }
 
         if (data) {
-            console.log('Stats received:', data)
             setStats(data)
         }
     }
 
-    if (loading) {
-        return (
-            <div className="min-h-screen text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
-                {/* Background Animation - Kaldırıldı, global arka plan var */}
-
-                <div className="z-10 text-center space-y-8 max-w-md w-full animate-in zoom-in duration-500">
-                    {/* Logo & Title */}
-                    <div className="space-y-4">
-                        <div className="w-24 h-24 bg-gradient-to-tr from-primary-500 to-accent-500 rounded-3xl mx-auto shadow-2xl flex items-center justify-center transform rotate-12 hover:rotate-0 transition-transform duration-300">
-                            <span className="text-5xl">L</span>
-                        </div>
-                        <h1 className="text-5xl font-extrabold tracking-tight gradient-text">Lingo Türkiye</h1>
-                        <p className="text-dark-400 text-lg">Yükleniyor...</p>
-                    </div>
-
-                    {/* Loading Spinner */}
-                    <div className="flex justify-center items-center">
-                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-500"></div>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
+    if (loading) return null // Loading state handled by layout/suspense mostly, or can add a spinner here if needed
     if (!user) return null
 
     return (
-        <main className="min-h-screen relative">
+        <main className="min-h-screen relative font-display pb-28">
             {/* Matchmaking Overlay */}
             {isSearching && (
-                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-                    <div className="glass-effect p-8 rounded-3xl max-w-sm w-full text-center">
-                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-500 mx-auto mb-6"></div>
+                <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center">
+                    <div className="glass-card p-8 rounded-[24px] max-w-sm w-full text-center m-4">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white mx-auto mb-6"></div>
                         <h2 className="text-2xl font-bold text-white mb-2">Rakip Aranıyor...</h2>
-                        <p className="text-dark-400 mb-8">Uygun bir rakip bekleniyor</p>
+                        <p className="text-white/80 mb-8">Uygun bir rakip bekleniyor</p>
                         <button
                             onClick={cancelSearch}
-                            className="w-full py-3 rounded-xl font-semibold bg-dark-200 text-white hover:bg-dark-300 transition-colors"
+                            className="w-full py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/20 transition-colors"
                         >
                             İptal Et
                         </button>
@@ -88,134 +64,177 @@ export default function HomePage() {
                 </div>
             )}
 
-            {/* Header */}
-            <header className="glass-effect border-b border-white/10 sticky top-0 z-40">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-white shadow-text">Lingo Master</h1>
+            <div className="relative flex flex-col w-full max-w-md mx-auto min-h-screen">
+                {/* Header */}
+                <header className="flex items-center justify-between px-6 pt-8 pb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 relative flex items-center justify-center">
+                            <img
+                                src="/lingo_logo.png"
+                                alt="Lingo Master"
+                                className="w-full h-full object-contain drop-shadow-md"
+                            />
+                        </div>
+                        <h1 className="text-2xl font-extrabold tracking-tight text-white drop-shadow-md">Lingo Master</h1>
+                    </div>
                     <button
                         onClick={signOut}
-                        className="px-4 py-2 rounded-xl bg-black/20 hover:bg-black/30 text-white transition-colors text-sm backdrop-blur-md"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 hover:bg-black/30 transition-colors backdrop-blur-sm border border-white/10"
                     >
-                        Çıkış
+                        <span className="text-xs font-bold uppercase tracking-wider text-white/90">Çıkış</span>
+                        <span className="material-symbols-outlined text-[18px] text-white/90">logout</span>
                     </button>
-                </div>
-            </header>
+                </header>
 
-            {/* Main Content */}
-            <div className="container mx-auto px-4 py-8">
-                {/* Welcome Section */}
-                <div className="text-center mb-8">
-                    <div className="mb-4 flex justify-center">
-                        <img
-                            src="/lingo_logo.png"
-                            alt="Lingo Master"
-                            className="w-72 h-auto"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Active Games Notification */}
-            <Link
-                href="/games"
-                className="max-w-md mx-auto mb-6 block glass-effect rounded-xl p-4 hover:bg-white/10 transition-all"
-            >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="text-2xl">🎮</div>
-                        <div>
-                            <p className="font-semibold text-white">Oyunlarım</p>
-                            <p className="text-sm text-dark-500">Devam eden ve davetler</p>
+                <div className="flex-1 px-4 space-y-4">
+                    {/* Hızlı Oyun Card */}
+                    <div className="glass-card rounded-[28px] p-5 shadow-2xl relative overflow-hidden border-white/40 border-2 transition-transform active:scale-[0.98]">
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white shadow-inner">
+                                        <span className="material-symbols-outlined text-3xl">casino</span>
+                                    </div>
+                                    <div>
+                                        <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-yellow-400/90 text-yellow-900 text-[10px] font-black tracking-wide uppercase mb-1 shadow-sm">
+                                            Popüler
+                                        </div>
+                                        <h3 className="text-xl font-extrabold leading-none text-white">Hızlı Oyun</h3>
+                                        <p className="text-white/80 text-sm mt-1">Rastgele rakip bul</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={findMatch}
+                                className="w-full bg-[#f86516] hover:bg-[#e05810] text-white py-3.5 rounded-full text-base font-bold shadow-[0_4px_14px_rgba(248,101,22,0.5)] flex items-center justify-center gap-2 transition-all"
+                            >
+                                <span className="material-symbols-outlined text-xl">play_arrow</span>
+                                Hemen Oyna
+                            </button>
                         </div>
                     </div>
-                    <div className="text-primary-500">→</div>
-                </div>
-            </Link>
 
-            {/* Game Modes */}
-            <div className="space-y-4 max-w-md mx-auto">
-                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95">
-                    <h3 className="text-xl font-semibold mb-2">🎯 Pratik Yap</h3>
-                    <p className="text-dark-500 text-sm mb-4">
-                        Tek başına pratik yap, oyunu öğren
-                    </p>
-                    <Link
-                        href="/practice"
-                        className="block w-full py-3 rounded-xl font-semibold text-white bg-primary-600 text-center hover:bg-primary-700 transition-all"
-                    >
-                        Başla
+                    {/* Oyunlarım Card */}
+                    <Link href="/games" className="block glass-card rounded-[24px] p-4 shadow-xl transition-transform active:scale-[0.98]">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
+                                    <span className="material-symbols-outlined text-2xl">sports_esports</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <h3 className="text-lg font-bold leading-tight text-white">Oyunlarım</h3>
+                                    <p className="text-white/80 text-sm font-medium">Devam eden oyunlar</p>
+                                </div>
+                            </div>
+                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10">
+                                <span className="material-symbols-outlined text-white">chevron_right</span>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Kelime Yarışı Card */}
+                    <div className="glass-card rounded-[24px] p-5 shadow-xl transition-transform active:scale-[0.98]">
+                        <div className="flex flex-col gap-3">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
+                                        <span className="material-symbols-outlined text-2xl">flag</span>
+                                    </div>
+                                    <div>
+                                        <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-500/90 text-white text-[10px] font-black tracking-wide uppercase mb-1 shadow-sm">
+                                            Yeni
+                                        </div>
+                                        <h3 className="text-lg font-bold leading-tight text-white">Kelime Yarışı</h3>
+                                        <p className="text-white/80 text-sm">Arkadaşlarınla yarış</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 mt-1">
+                                <Link href="/rooms" className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2.5 rounded-full text-sm font-bold shadow-md text-center">
+                                    Oda Kur
+                                </Link>
+                                <Link href="/rooms" className="px-6 py-2.5 rounded-full text-sm font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm text-center">
+                                    Katıl
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Pratik Yap Card */}
+                    <div className="glass-card rounded-[24px] p-5 shadow-xl transition-transform active:scale-[0.98]">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-4 flex-1">
+                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
+                                    <span className="material-symbols-outlined text-2xl">track_changes</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <h3 className="text-lg font-bold leading-tight text-white">Pratik Yap</h3>
+                                    <p className="text-white/80 text-sm">Tek başına pratik yap</p>
+                                </div>
+                            </div>
+                            <Link href="/practice" className="bg-white text-[#991b1b] px-5 py-2 rounded-full text-sm font-bold shadow-lg whitespace-nowrap hover:bg-gray-100 transition-colors">
+                                Başla
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Arkadaşlarınla Oyna Card */}
+                    <Link href="/friends" className="block glass-card rounded-[24px] p-4 shadow-xl transition-transform active:scale-[0.98]">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
+                                    <span className="material-symbols-outlined text-2xl">group</span>
+                                </div>
+                                <h3 className="text-lg font-bold text-white">Arkadaşlarınla Oyna</h3>
+                            </div>
+                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10">
+                                <span className="material-symbols-outlined text-white">chevron_right</span>
+                            </div>
+                        </div>
                     </Link>
                 </div>
 
-                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-primary-500/30 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-primary-500/5 group-hover:bg-primary-500/10 transition-colors"></div>
-                    <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                        🎲 Hızlı Oyun
-                        <span className="text-xs px-2 py-1 bg-primary-500/20 text-primary-300 rounded-full">Popüler</span>
-                    </h3>
-                    <p className="text-dark-500 text-sm mb-4">
-                        Rastgele bir oyuncuyla hemen eşleş
-                    </p>
-                    <button
-                        onClick={findMatch}
-                        className="w-full py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all shadow-lg shadow-primary-500/20 relative z-10"
-                    >
-                        Hemen Oyna
+                {/* Footer Stats */}
+                <footer className="mt-6 px-4">
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                        <div className="glass-card rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-lg">
+                            <span className="text-[10px] text-white/70 font-semibold uppercase tracking-wide">Kazandım</span>
+                            <span className="text-xl font-black text-green-400 drop-shadow-sm">{stats.wins}</span>
+                        </div>
+                        <div className="glass-card rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-lg">
+                            <span className="text-[10px] text-white/70 font-semibold uppercase tracking-wide">Kaybettim</span>
+                            <span className="text-xl font-black text-red-200 drop-shadow-sm">{stats.losses}</span>
+                        </div>
+                        <div className="glass-card rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-lg">
+                            <span className="text-[10px] text-white/70 font-semibold uppercase tracking-wide">Toplam</span>
+                            <span className="text-xl font-black text-yellow-300 drop-shadow-sm">{stats.total_games}</span>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+
+            {/* Bottom Navigation */}
+            <nav className="fixed bottom-0 left-0 right-0 glass-nav z-50 px-6 pb-6 pt-3 border-t border-white/5">
+                <div className="flex justify-between items-center max-w-md mx-auto">
+                    <button className="flex flex-col items-center gap-1 text-[#f86516] group">
+                        <span className="material-symbols-outlined symbol-filled text-2xl group-hover:scale-110 transition-transform">home</span>
+                        <span className="text-[10px] font-bold">Ana Sayfa</span>
+                    </button>
+                    <Link href="/leaderboard" className="flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors group">
+                        <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">leaderboard</span>
+                        <span className="text-[10px] font-medium">Liderlik</span>
+                    </Link>
+                    <Link href="/friends" className="flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors group">
+                        <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">group</span>
+                        <span className="text-[10px] font-medium">Arkadaşlar</span>
+                    </Link>
+                    <button className="flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors group">
+                        <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">settings</span>
+                        <span className="text-[10px] font-medium">Ayarlar</span>
                     </button>
                 </div>
-
-                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95 border border-indigo-500/30 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
-                    <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                        🏁 Kelime Yarışı
-                        <span className="text-xs px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-full">Yeni</span>
-                    </h3>
-                    <p className="text-dark-500 text-sm mb-4">
-                        Oda kur, arkadaşlarınla aynı anda yarış
-                    </p>
-                    <Link
-                        href="/rooms"
-                        className="block w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-violet-600 text-center hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20 relative z-10"
-                    >
-                        Oda Kur / Katıl
-                    </Link>
-                </div>
-
-                <div className="glass-effect rounded-2xl p-6 hover:bg-white/10 transition-all active:scale-95">
-                    <h3 className="text-xl font-semibold mb-2">👥 Arkadaşlarınla Oyna</h3>
-                    <p className="text-dark-500 text-sm mb-4">
-                        Arkadaşlarla eşleş ve oyna
-                    </p>
-                    <Link
-                        href="/friends"
-                        className="block w-full py-3 rounded-xl font-semibold text-white bg-dark-200 text-center hover:bg-dark-300 transition-all"
-                    >
-                        Arkadaşlar
-                    </Link>
-                </div>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-10 max-w-md mx-auto grid grid-cols-3 gap-4">
-                <div className="glass-effect rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-primary-500">{stats.wins}</div>
-                    <div className="text-xs text-dark-500 mt-1">Kazandım</div>
-                </div>
-                <div className="glass-effect rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-danger-500">{stats.losses}</div>
-                    <div className="text-xs text-dark-500 mt-1">Kaybettim</div>
-                </div>
-                <div className="glass-effect rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-warning-500">{stats.total_games}</div>
-                    <div className="text-xs text-dark-500 mt-1">Toplam</div>
-                </div>
-            </div>
-
-            <div className="mt-6 text-center">
-                <Link href="/leaderboard" className="text-primary-400 hover:text-white text-sm font-semibold transition-colors">
-                    🏆 Liderlik Tablosunu Gör
-                </Link>
-            </div>
+            </nav>
         </main>
     )
 }

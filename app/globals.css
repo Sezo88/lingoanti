@@ -29,15 +29,44 @@ body {
   }
 
   .glass-effect {
+    /* Legacy support */
     background: linear-gradient(135deg, rgba(153, 27, 27, 0.85), rgba(194, 65, 12, 0.85));
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px rgba(69, 10, 10, 0.3);
   }
 
-  /* Shadow for white text on colored background */
-  .shadow-text {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  .glass-card {
+    background-image: linear-gradient(135deg, rgba(153, 27, 27, 0.85), rgba(194, 65, 12, 0.85));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-nav {
+    background: rgba(30, 10, 5, 0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .symbol-filled {
+    font-variation-settings: 'FILL' 1;
+  }
+
+  /* Font overrides */
+  body {
+    font-family: 'Noto Sans', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .font-display {
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
   .gradient-text {

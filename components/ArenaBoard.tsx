@@ -32,7 +32,88 @@ export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }:
     const [showModal, setShowModal] = useState(false)
     const [isWin, setIsWin] = useState(false)
 
-    // ... (rest of the component)
+    // Şu anki hedef kelime
+    const targetWord = targetWords[wordIndex]
+
+    // Oyun bitti mi kontrolü
+    useEffect(() => {
+        if (wordIndex >= targetWords.length) {
+            setGameStatus('finished')
+        }
+    }, [wordIndex, targetWords.length])
+
+    const handleKeyPress = (key: string) => {
+        if (gameStatus !== 'playing') return
+        if (currentGuess.length < targetWord.length) {
+            // Sadece Türkçe karakterleri ve harfleri kabul et
+            if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
+                setCurrentGuess(prev => prev + key.toLocaleUpperCase('tr-TR'))
+            }
+        }
+    }
+
+    const handleEnter = async () => {
+        if (gameStatus !== 'playing') return
+        await submitGuess()
+    }
+
+    const handleBackspace = () => {
+        if (gameStatus !== 'playing') return
+        setCurrentGuess(prev => prev.slice(0, -1))
+    }
+
+    const submitGuess = async () => {
+        if (currentGuess.length !== targetWord.length) {
+            setShakeRow(true)
+            setTimeout(() => setShakeRow(false), 500)
+            return
+        }
+
+        const valid = await isValidWord(currentGuess)
+
+        // GEÇERSİZ KELİME MANTIĞI (Hak yer)
+        if (!valid) {
+            setShakeRow(true)
+            setTimeout(() => setShakeRow(false), 500)
+            setError('Geçersiz kelime!')
+            setTimeout(() => setError(''), 2000)
+
+            const invalidResult = currentGuess.split('').map(letter => ({
+                letter,
+                status: 'invalid' as const
+            }))
+
+            const newGuesses = [...guesses, currentGuess]
+            const newResults = [...results, invalidResult]
+
+            setGuesses(newGuesses)
+            setResults(newResults)
+            setCurrentGuess('')
+
+            // Hak bitti mi?
+            if (newGuesses.length >= 6) {
+                handleLose()
+            }
+            return
+        }
+
+        // GEÇERLİ KELİME
+        const evalResult = evaluateGuess(currentGuess, targetWord)
+        const newGuesses = [...guesses, currentGuess]
+        const newResults = [...results, evalResult]
+
+        setGuesses(newGuesses)
+        setResults(newResults)
+        setCurrentGuess('')
+
+        // Doğru tahmin mi?
+        if (isCorrectGuess(currentGuess, targetWord)) {
+            // Kelime bilindi!
+            handleWin()
+        } else if (newGuesses.length >= 6) {
+            handleLose()
+        }
+    }
 
     const handleWin = () => {
         setIsWin(true)

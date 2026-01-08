@@ -72,7 +72,7 @@ export default function HomePage() {
                             <img
                                 src="/lingo_logo.png"
                                 alt="Lingo Master"
-                                className="h-full w-auto object-contain drop-shadow-md scale-125"
+                                className="h-full w-auto object-contain drop-shadow-md scale-[1.8]"
                             />
                         </div>
                     </div>

@@ -151,7 +151,27 @@ export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }:
         }
     }
 
-    // ... (rest of methods)
+    const handleTimeUp = () => {
+        if (gameStatus !== 'playing') return
+
+        // Süre doldu: Bir hak yak
+        const invalidResult = Array(targetWord.length).fill({ letter: '?', status: 'invalid' })
+        const placeholderGuess = '?'.repeat(targetWord.length)
+
+        const newGuesses = [...guesses, placeholderGuess]
+        const newResults = [...results, invalidResult]
+
+        setGuesses(newGuesses)
+        setResults(newResults)
+        setCurrentGuess('')
+
+        setError('Süre Doldu! -1 Hak')
+        setTimeout(() => setError(''), 2000)
+
+        if (newGuesses.length >= 6) {
+            handleLose()
+        }
+    }
 
     if (gameStatus === 'finished') {
         return (
@@ -165,7 +185,8 @@ export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }:
         )
     }
 
-    // ...
+    // Klavye durumunu hesapla
+    const keyboardState = getKeyboardState(results)
 
     return (
         <div className="flex flex-col h-full max-w-lg mx-auto w-full relative">

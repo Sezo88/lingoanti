@@ -10,6 +10,7 @@ export default function RoomsPage() {
     const { user } = useAuth()
     const { createRoom, joinRoom, loading, error } = useMultiplayer()
     const [roomCode, setRoomCode] = useState('')
+    const [duration, setDuration] = useState(60)
 
     useEffect(() => {
         // Sayfaya girildiğinde eski odaları temizle (Maintenance)
@@ -53,8 +54,23 @@ export default function RoomsPage() {
                         <p className="text-sm text-dark-400 mb-6">
                             Kendi odanı oluştur ve arkadaşlarını davet et.
                         </p>
+                        <div className="mb-6">
+                            <label className="block text-sm text-dark-400 mb-2">Süre (Saniye)</label>
+                            <div className="flex bg-black/20 rounded-xl p-1 gap-1">
+                                {[20, 30, 40, 60].map(d => (
+                                    <button
+                                        key={d}
+                                        onClick={() => setDuration(d)}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${duration === d ? 'bg-primary-600 text-white shadow-lg' : 'text-dark-400 hover:text-white hover:bg-white/5'}`}
+                                    >
+                                        {d}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         <button
-                            onClick={() => createRoom(false)}
+                            onClick={() => createRoom(false, duration)}
                             disabled={loading}
                             className="w-full py-3 rounded-xl font-semibold bg-primary-600 hover:bg-primary-500 text-white transition-all disabled:opacity-50"
                         >

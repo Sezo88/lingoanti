@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS room_participants (
   current_word_index INTEGER DEFAULT 0, -- Kaçıncı kelimede?
   words_completed INTEGER DEFAULT 0, -- Kaç kelime tamamladı?
   score INTEGER DEFAULT 0,
+  word_times JSONB DEFAULT '[]'::jsonb, -- [{"wordIndex": 0, "timeSeconds": 45, "score": 150}, ...]
   joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   finished_at TIMESTAMP WITH TIME ZONE,
   UNIQUE(room_id, user_id)

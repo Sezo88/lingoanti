@@ -7,117 +7,44 @@ import { isCorrectGuess, evaluateGuess, getKeyboardState } from '@/lib/gameLogic
 import { isValidWord } from '@/lib/words'
 import type { LetterResult } from '@/lib/supabase'
 
+import { calculateWordScore } from '@/lib/scoring'
+
 interface ArenaBoardProps {
-    targetWords: string[] // Sırasıyla sorulacak kelimeler
-    onProgress: (wordIndex: number, isFinished: boolean) => void // İlerleme olduğunda (yeni kelimeye geçince) tetiklenir
+    targetWords: string[]
+    onProgress: (wordIndex: number, isFinished: boolean) => void
+    onWordCompleted: (wordIndex: number, timeSeconds: number, score: number) => void
 }
 
-export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps) {
+export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }: ArenaBoardProps) {
     const [wordIndex, setWordIndex] = useState(0)
     const [guesses, setGuesses] = useState<string[]>([])
-    const [results, setResults] = useState<LetterResult[][]>([]) // Sonuçları tutmak için
+    const [results, setResults] = useState<LetterResult[][]>([])
     const [currentGuess, setCurrentGuess] = useState('')
     const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'finished'>('playing')
     const [shakeRow, setShakeRow] = useState(false)
     const [error, setError] = useState('')
 
+    // Scoring State
+    const [totalScore, setTotalScore] = useState(0)
+    const [wordStartTime, setWordStartTime] = useState<number>(Date.now())
+
     // Modal State
     const [showModal, setShowModal] = useState(false)
     const [isWin, setIsWin] = useState(false)
 
-    // Şu anki hedef kelime
-    const targetWord = targetWords[wordIndex]
-
-    // Oyun bitti mi kontrolü
-    useEffect(() => {
-        if (wordIndex >= targetWords.length) {
-            setGameStatus('finished')
-        }
-    }, [wordIndex, targetWords.length])
-
-    const handleKeyPress = (key: string) => {
-        if (gameStatus !== 'playing') return
-        if (currentGuess.length < targetWord.length) {
-            // Sadece Türkçe karakterleri ve harfleri kabul et
-            if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
-                setCurrentGuess(prev => prev + key.toLocaleUpperCase('tr-TR'))
-            }
-        }
-    }
-
-    const handleEnter = async () => {
-        if (gameStatus !== 'playing') return
-        await submitGuess()
-    }
-
-    const handleBackspace = () => {
-        if (gameStatus !== 'playing') return
-        setCurrentGuess(prev => prev.slice(0, -1))
-    }
-
-    const submitGuess = async () => {
-        if (currentGuess.length !== targetWord.length) {
-            setShakeRow(true)
-            setTimeout(() => setShakeRow(false), 500)
-            return
-        }
-
-        const valid = await isValidWord(currentGuess)
-
-        // GEÇERSİZ KELİME MANTIĞI (Hak yer)
-        if (!valid) {
-            setShakeRow(true)
-            setTimeout(() => setShakeRow(false), 500)
-            setError('Geçersiz kelime!')
-            setTimeout(() => setError(''), 2000)
-
-            const invalidResult = currentGuess.split('').map(letter => ({
-                letter,
-                status: 'invalid' as const
-            }))
-
-            const newGuesses = [...guesses, currentGuess]
-            const newResults = [...results, invalidResult]
-
-            setGuesses(newGuesses)
-            setResults(newResults)
-            setCurrentGuess('')
-
-            // Hak bitti mi?
-            if (newGuesses.length >= 6) {
-                handleLose()
-            }
-            return
-        }
-
-        // GEÇERLİ KELİME
-        const evalResult = evaluateGuess(currentGuess, targetWord)
-        const newGuesses = [...guesses, currentGuess]
-        const newResults = [...results, evalResult]
-
-        setGuesses(newGuesses)
-        setResults(newResults)
-        setCurrentGuess('')
-
-        // Doğru tahmin mi?
-        if (isCorrectGuess(currentGuess, targetWord)) {
-            // Kelime bilindi!
-            handleWin()
-        } else if (newGuesses.length >= 6) {
-            handleLose()
-        }
-    }
+    // ... (rest of the component)
 
     const handleWin = () => {
         setIsWin(true)
         setShowModal(true)
-        setGameStatus('won') // Geçici durum
-    }
+        setGameStatus('won')
 
-    const handleLose = () => {
-        setIsWin(false)
-        setShowModal(true)
-        setGameStatus('lost')
+        // Calculate Score
+        const timeSeconds = (Date.now() - wordStartTime) / 1000
+        const wordScore = calculateWordScore(timeSeconds)
+        setTotalScore(prev => prev + wordScore)
+
+        onWordCompleted(wordIndex, timeSeconds, wordScore)
     }
 
     const handleNextWord = () => {
@@ -127,6 +54,7 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
         setGuesses([])
         setResults([])
         setGameStatus('playing')
+        setWordStartTime(Date.now()) // Reset timer
 
         onProgress(nextIndex, nextIndex >= targetWords.length)
 
@@ -135,44 +63,32 @@ export default function ArenaBoard({ targetWords, onProgress }: ArenaBoardProps)
         }
     }
 
-    const handleTimeUp = () => {
-        if (gameStatus !== 'playing') return
-
-        // Süre doldu: Bir hak yak
-        const invalidResult = Array(targetWord.length).fill({ letter: '?', status: 'invalid' })
-        const placeholderGuess = '?'.repeat(targetWord.length)
-
-        const newGuesses = [...guesses, placeholderGuess]
-        const newResults = [...results, invalidResult]
-
-        setGuesses(newGuesses)
-        setResults(newResults)
-        setCurrentGuess('')
-
-        setError('Süre Doldu! -1 Hak')
-        setTimeout(() => setError(''), 2000)
-
-        if (newGuesses.length >= 6) {
-            handleLose()
-        }
-    }
+    // ... (rest of methods)
 
     if (gameStatus === 'finished') {
         return (
             <div className="flex flex-col items-center justify-center p-10 text-center animate-in zoom-in">
                 <div className="text-6xl mb-4">🏆</div>
                 <h2 className="text-3xl font-bold text-white mb-2">Tebrikler!</h2>
+                <div className="text-4xl font-black text-yellow-400 mb-4">{totalScore} Puan</div>
                 <p className="text-dark-300">Tüm kelimeleri tamamladın.</p>
                 <p className="text-sm text-dark-400 mt-4">Diğerlerinin bitirmesi bekleniyor...</p>
             </div>
         )
     }
 
-    // Klavye durumunu hesapla
-    const keyboardState = getKeyboardState(results)
+    // ...
 
     return (
         <div className="flex flex-col h-full max-w-lg mx-auto w-full relative">
+            {/* Score Display */}
+            <div className="text-center mb-2 animate-in fade-in">
+                <div className="inline-block px-4 py-1 rounded-full bg-black/20 border border-white/5 backdrop-blur-sm">
+                    <span className="text-sm text-white/70 mr-2">PUAN:</span>
+                    <span className="text-xl font-bold text-yellow-400">{totalScore}</span>
+                </div>
+            </div>
+
             {/* Modal */}
             <AnswerModal
                 isOpen={showModal}

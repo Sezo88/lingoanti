@@ -191,6 +191,25 @@ export default function RoomLobbyPage() {
         }
     }
 
+    // Puan Kaydetme
+    const handleWordCompleted = async (wordIndex: number, timeSeconds: number, score: number) => {
+        if (!user || !room) return
+
+        const currentParticipant = participants.find(p => p.user_id === user.id)
+        const currentScore = currentParticipant?.score || 0
+        // @ts-ignore - word_times tipi tanımlı değilse
+        const currentWordTimes = currentParticipant?.word_times || []
+
+        await supabase
+            .from('room_participants')
+            .update({
+                score: currentScore + score,
+                word_times: [...currentWordTimes, { wordIndex, timeSeconds, score }]
+            })
+            .eq('room_id', room.id)
+            .eq('user_id', user.id)
+    }
+
     if (loading || fetchingGame) return <div className="text-center p-10 text-white font-mono animate-pulse">Yükleniyor...</div>
 
     // --- GAME ARENA MODU ---
@@ -201,6 +220,7 @@ export default function RoomLobbyPage() {
                     <ArenaBoard
                         targetWords={gameWords}
                         onProgress={handleProgress}
+                        onWordCompleted={handleWordCompleted}
                     />
                 </div>
 
@@ -221,9 +241,14 @@ export default function RoomLobbyPage() {
                                         isSelf ? 'bg-primary-500/10 border-primary-500/30' : 'bg-dark-200 border-white/5'
                                         }`}>
                                         <div className="flex justify-between items-center mb-2">
-                                            <span className={`font-bold ${isSelf ? 'text-primary-400' : 'text-white'}`}>
-                                                {p.display_name}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className={`font-bold ${isSelf ? 'text-primary-400' : 'text-white'}`}>
+                                                    {p.display_name}
+                                                </span>
+                                                <span className="text-xs text-yellow-500 font-bold">
+                                                    {p.score || 0} Puan
+                                                </span>
+                                            </div>
                                             {isFinished && <span className="text-xl">🏆</span>}
                                         </div>
 

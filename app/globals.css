@@ -36,6 +36,15 @@ body {
     box-shadow: 0 8px 32px rgba(69, 10, 10, 0.3);
   }
 
+  /* Shadow for white text on colored background */
+  .shadow-text {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-shadow-strong {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);
+  }
+
   .glass-card {
     background-image: linear-gradient(135deg, rgba(153, 27, 27, 0.85), rgba(194, 65, 12, 0.85));
     backdrop-filter: blur(12px);

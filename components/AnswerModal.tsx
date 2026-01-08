@@ -23,7 +23,7 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext }: Answe
                     {isWin ? '🎉' : '🤔'}
                 </div>
 
-                <h2 className={`text-2xl font-bold mb-2 ${isWin ? 'text-success-500' : 'text-danger-500'}`}>
+                <h2 className={`text-2xl font-bold mb-2 ${isWin ? 'text-green-400' : 'text-white'}`}>
                     {isWin ? 'Tebrikler!' : 'Bilemedin!'}
                 </h2>
 

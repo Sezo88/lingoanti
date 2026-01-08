@@ -62,6 +62,42 @@ export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }:
         setCurrentGuess(prev => prev.slice(0, -1))
     }
 
+    // Helper functions defined before usage
+    const handleWin = () => {
+        setIsWin(true)
+        setShowModal(true)
+        setGameStatus('won')
+
+        // Calculate Score
+        const timeSeconds = (Date.now() - wordStartTime) / 1000
+        const wordScore = calculateWordScore(timeSeconds)
+        setTotalScore(prev => prev + wordScore)
+
+        onWordCompleted(wordIndex, timeSeconds, wordScore)
+    }
+
+    const handleLose = () => {
+        setIsWin(false)
+        setShowModal(true)
+        setGameStatus('lost')
+    }
+
+    const handleNextWord = () => {
+        setShowModal(false)
+        const nextIndex = wordIndex + 1
+        setWordIndex(nextIndex)
+        setGuesses([])
+        setResults([])
+        setGameStatus('playing')
+        setWordStartTime(Date.now()) // Reset timer
+
+        onProgress(nextIndex, nextIndex >= targetWords.length)
+
+        if (nextIndex >= targetWords.length) {
+            setGameStatus('finished')
+        }
+    }
+
     const submitGuess = async () => {
         if (currentGuess.length !== targetWord.length) {
             setShakeRow(true)
@@ -112,35 +148,6 @@ export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }:
             handleWin()
         } else if (newGuesses.length >= 6) {
             handleLose()
-        }
-    }
-
-    const handleWin = () => {
-        setIsWin(true)
-        setShowModal(true)
-        setGameStatus('won')
-
-        // Calculate Score
-        const timeSeconds = (Date.now() - wordStartTime) / 1000
-        const wordScore = calculateWordScore(timeSeconds)
-        setTotalScore(prev => prev + wordScore)
-
-        onWordCompleted(wordIndex, timeSeconds, wordScore)
-    }
-
-    const handleNextWord = () => {
-        setShowModal(false)
-        const nextIndex = wordIndex + 1
-        setWordIndex(nextIndex)
-        setGuesses([])
-        setResults([])
-        setGameStatus('playing')
-        setWordStartTime(Date.now()) // Reset timer
-
-        onProgress(nextIndex, nextIndex >= targetWords.length)
-
-        if (nextIndex >= targetWords.length) {
-            setGameStatus('finished')
         }
     }
 

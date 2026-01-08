@@ -34,12 +34,14 @@ export default function RoomsPage() {
     return (
         <div className="min-h-screen p-4">
             <div className="max-w-md mx-auto pt-10">
-                <Link href="/" className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors">
+                <Link href="/" className="inline-flex items-center px-3 py-2 rounded-lg bg-black/20 hover:bg-black/30 text-white/80 hover:text-white mb-8 transition-colors backdrop-blur-sm border border-white/10">
                     ← Ana Sayfa
                 </Link>
 
-                <h1 className="text-3xl font-bold mb-2 gradient-text">Çok Oyunculu Mod</h1>
-                <p className="text-white/80 mb-8">Arkadaşlarınla yarış veya turnuvaya katıl</p>
+                <div className="mb-8 text-center">
+                    <h1 className="text-3xl font-bold mb-2 text-white drop-shadow-lg">Çok Oyunculu Mod</h1>
+                    <p className="text-white/80 text-shadow-strong">Arkadaşlarınla yarış veya turnuvaya katıl</p>
+                </div>
 
                 {error && (
                     <div className="bg-danger-500/10 border border-danger-500/20 text-danger-500 p-4 rounded-xl mb-6">

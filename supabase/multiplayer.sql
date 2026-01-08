@@ -3,10 +3,21 @@
 -- 1. Odalar Tablosu
 CREATE TABLE IF NOT EXISTS rooms (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  code TEXT UNIQUE NOT NULL, -- Odaya katılmak için kısa kod (Örn: "A1B2")
-  host_id UUID REFERENCES users(id) NOT NULL,
+  code TEXT UNIQUE NOT NULL DEFAULT generate_room_code(),
+  host_id UUID REFERENCES users(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'playing', 'finished')),
-  config JSONB DEFAULT '{"wordCount": 5, "wordLength": 5, "isPublic": false}'::jsonb,
+  game_mode TEXT NOT NULL DEFAULT 'arena' CHECK (game_mode IN ('arena', 'turn_based')),
+  config JSONB DEFAULT '{
+    "isPublic": false,
+    "wordCount": 5,
+    "wordLength": 5,
+    "duration": 60,
+    "turnOrder": [],
+    "currentTurn": 0,
+    "roundsTotal": 0,
+    "currentRound": 0
+  }'::jsonb,
+  game_words TEXT[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   ended_at TIMESTAMP WITH TIME ZONE
 );
@@ -20,6 +31,7 @@ CREATE TABLE IF NOT EXISTS room_participants (
   current_word_index INTEGER DEFAULT 0, -- Kaçıncı kelimede?
   words_completed INTEGER DEFAULT 0, -- Kaç kelime tamamladı?
   score INTEGER DEFAULT 0,
+  turn_score INTEGER DEFAULT 0, -- Turn-based modda her elde kazanılan puan
   word_times JSONB DEFAULT '[]'::jsonb, -- [{"wordIndex": 0, "timeSeconds": 45, "score": 150}, ...]
   joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   finished_at TIMESTAMP WITH TIME ZONE,

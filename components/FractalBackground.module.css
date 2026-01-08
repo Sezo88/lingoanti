@@ -10,7 +10,7 @@
     overflow: hidden;
 }
 
-/* Subtle grid pattern overlay */
+/* Subtle grid pattern overlay - STATIC */
 .bg::before {
     content: "";
     position: absolute;
@@ -20,17 +20,6 @@
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 50px 50px;
-    animation: gridMove 20s linear infinite;
-}
-
-@keyframes gridMove {
-    0% {
-        transform: translate(0, 0);
-    }
-
-    100% {
-        transform: translate(50px, 50px);
-    }
 }
 
 .container {
@@ -39,7 +28,7 @@
     height: 100%;
 }
 
-/* Floating letter tiles - OPTIMIZED */
+/* Floating letter tiles - STATIC, NO ANIMATIONS */
 .fractal {
     position: absolute;
     width: 100%;
@@ -49,8 +38,6 @@
     grid-template-rows: repeat(4, 1fr);
     gap: 2vmin;
     padding: 3vmin;
-    will-change: transform;
-    transform: translateZ(0);
 }
 
 .cell {
@@ -58,7 +45,6 @@
     background: rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     overflow: hidden;
-    transition: all 0.5s ease;
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
@@ -67,8 +53,6 @@
     font-size: clamp(1rem, 2vmin, 2rem);
     font-weight: bold;
     color: rgba(255, 255, 255, 0.4);
-    will-change: transform;
-    transform: translateZ(0);
 }
 
 .cell::before {
@@ -79,22 +63,18 @@
 
 .cell:nth-child(4n + 1) {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
-    animation: float1 12s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 2) {
     background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(249, 115, 22, 0.1));
-    animation: float2 14s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 3) {
     background: linear-gradient(135deg, rgba(252, 211, 77, 0.15), rgba(251, 191, 36, 0.1));
-    animation: float3 11s ease-in-out infinite;
 }
 
 .cell:nth-child(4n + 4) {
     background: linear-gradient(135deg, rgba(254, 215, 170, 0.15), rgba(253, 186, 116, 0.1));
-    animation: float4 13s ease-in-out infinite;
 }
 
 /* Nested grid removed for cleaner look */
@@ -130,46 +110,6 @@
 }
 
 /* Floating animations */
-@keyframes float1 {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.6;
-    }
-
-    50% {
-        transform: translateY(-10px) rotate(2deg);
-        opacity: 0.8;
-    }
-}
-
-@keyframes float2 {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.5;
-    }
-
-    50% {
-        transform: translateY(-15px) rotate(-2deg);
-        opacity: 0.7;
-    }
-}
-
-@keyframes float3 {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.7;
-    }
-
-    50% {
-        transform: translateY(-8px) rotate(1deg);
-        opacity: 0.9;
-    }
 }
 
 @keyframes float4 {

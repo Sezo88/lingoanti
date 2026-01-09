@@ -292,6 +292,30 @@ export default function RoomPage() {
         // Ortak tahta state'i
         const sharedGuesses = gameState.guesses || []
         const sharedResults = gameState.results || []
+        const lastWin = gameState.lastWin || null
+
+        // Kazanma efekti için state
+        const [showWinFeedback, setShowWinFeedback] = useState<any>(null)
+
+        // lastWin değişince feedback göster
+        useEffect(() => {
+            if (lastWin && lastWin.timestamp > (Date.now() - 5000)) {
+                // Son 5 saniye içindeyse göster
+                const winner = participants.find(p => p.user_id === lastWin.userId)
+                if (winner) {
+                    setShowWinFeedback({
+                        winnerName: winner.display_name,
+                        word: lastWin.word,
+                        score: lastWin.score,
+                        isMe: lastWin.userId === user?.id
+                    })
+
+                    // 3 saniye sonra kapat
+                    const timer = setTimeout(() => setShowWinFeedback(null), 3000)
+                    return () => clearTimeout(timer)
+                }
+            }
+        }, [lastWin, participants, user?.id])
 
         // Tahmin yapıldığında
         const handleGuessSubmit = async (guess: string, result: any[]) => {

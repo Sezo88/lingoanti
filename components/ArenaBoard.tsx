@@ -106,7 +106,7 @@ export default function ArenaBoard({
         setResults(newResults)
         setCurrentGuess('')
 
-        const won = isCorrectGuess(result)
+        const won = result.every(l => l.status === 'correct')
 
         if (won) {
             handleWin(newGuesses.length)

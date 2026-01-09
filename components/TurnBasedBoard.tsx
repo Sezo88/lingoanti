@@ -17,7 +17,9 @@ interface TurnBasedBoardProps {
     winFeedback?: { winnerName: string; word: string; score: number; isMe: boolean } | null
     participants: any[]
     duration: number
+    turnStartTime?: number
     onLeave: () => void
+    onTimeout: () => void
 }
 
 export default function TurnBasedBoard({
@@ -30,24 +32,40 @@ export default function TurnBasedBoard({
     winFeedback,
     participants,
     duration,
-    onLeave
+    turnStartTime,
+    onLeave,
+    onTimeout
 }: TurnBasedBoardProps) {
     const [currentGuess, setCurrentGuess] = useState('')
     const [shakeRow, setShakeRow] = useState(false)
     const [error, setError] = useState('')
     const [timeLeft, setTimeLeft] = useState(duration)
 
-    // Timer Logic
+    // Server-Sync Timer Logic
     useEffect(() => {
-        setTimeLeft(duration) // Sıra değişince süre resetlensin
+        if (!turnStartTime) return
+
+        const calculateTimeLeft = () => {
+            const now = Date.now()
+            const elapsed = Math.floor((now - turnStartTime) / 1000)
+            const remaining = Math.max(0, duration - elapsed)
+            return remaining
+        }
+
+        setTimeLeft(calculateTimeLeft())
+
         const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 0) return 0
-                return prev - 1
-            })
+            const remaining = calculateTimeLeft()
+            setTimeLeft(remaining)
+
+            if (remaining === 0 && isMyTurn) {
+                clearInterval(timer)
+                onTimeout()
+            }
         }, 1000)
+
         return () => clearInterval(timer)
-    }, [currentPlayerName, duration]) // currentPlayerName değiştiğinde (sıra değiştiğinde) resetle
+    }, [turnStartTime, duration, isMyTurn])
 
     // Sıra değiştiğinde input'u temizle
     useEffect(() => {

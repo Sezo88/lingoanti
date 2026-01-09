@@ -403,7 +403,9 @@ export default function RoomPage() {
                         winFeedback={showWinFeedback}
                         participants={participants}
                         duration={room.config?.duration || 60}
+                        turnStartTime={room.config?.turnStartTime}
                         onLeave={handleLeaveRoom}
+                        onTimeout={handleTimeout}
                     />
                 </div>
 

@@ -279,7 +279,12 @@ export default function RoomLobbyPage() {
 
         // Tahmin yapıldığında
         const handleGuessSubmit = async (guess: string, result: any[]) => {
-            if (!room || !isMyTurn) return
+            if (!room || !isMyTurn) {
+                console.log('Tahmin reddedildi:', { room: !!room, isMyTurn })
+                return
+            }
+
+            console.log('Tahmin gönderiliyor:', { guess, result })
 
             const newGuesses = [...sharedGuesses, guess]
             const newResults = [...sharedResults, result]
@@ -287,58 +292,74 @@ export default function RoomLobbyPage() {
             // Doğru mu kontrol et
             const isCorrect = result.every((r: any) => r.status === 'correct')
 
-            if (isCorrect) {
-                // Doğru buldu - Puan ver ve yeni kelimeye geç
-                const attemptCount = newGuesses.length
-                const baseScore = 100
-                const attemptBonus = Math.max(0, (6 - attemptCount) * 10)
-                const wordScore = baseScore + attemptBonus
+            try {
+                if (isCorrect) {
+                    // Doğru buldu - Puan ver ve yeni kelimeye geç
+                    const attemptCount = newGuesses.length
+                    const baseScore = 100
+                    const attemptBonus = Math.max(0, (6 - attemptCount) * 10)
+                    const wordScore = baseScore + attemptBonus
 
-                const currentParticipant = participants.find(p => p.user_id === user?.id)
+                    const currentParticipant = participants.find(p => p.user_id === user?.id)
 
-                await supabase
-                    .from('room_participants')
-                    .update({
-                        score: (currentParticipant?.score || 0) + wordScore
-                    })
-                    .eq('room_id', room.id)
-                    .eq('user_id', user!.id)
+                    await supabase
+                        .from('room_participants')
+                        .update({
+                            score: (currentParticipant?.score || 0) + wordScore
+                        })
+                        .eq('room_id', room.id)
+                        .eq('user_id', user!.id)
 
-                // Yeni kelimeye geç
-                const nextWordIndex = currentWordIndex + 1
-                const nextRound = Math.floor(nextWordIndex / 1) // Her kelime bir round
+                    // Yeni kelimeye geç
+                    const nextWordIndex = currentWordIndex + 1
+                    const nextRound = Math.floor(nextWordIndex / 1)
 
-                await supabase
-                    .from('rooms')
-                    .update({
-                        game_state: {
-                            guesses: [],
-                            results: [],
-                            currentWordIndex: nextWordIndex
-                        },
-                        config: {
-                            ...config,
-                            currentTurn: nextWordIndex, // Yeni kelimede sıra değişir
-                            currentRound: nextRound
-                        }
-                    })
-                    .eq('id', room.id)
-            } else {
-                // Yanlış - Sadece sırayı değiştir
-                await supabase
-                    .from('rooms')
-                    .update({
-                        game_state: {
-                            guesses: newGuesses,
-                            results: newResults,
-                            currentWordIndex
-                        },
-                        config: {
-                            ...config,
-                            currentTurn: currentTurn + 1
-                        }
-                    })
-                    .eq('id', room.id)
+                    const { error } = await supabase
+                        .from('rooms')
+                        .update({
+                            game_state: {
+                                guesses: [],
+                                results: [],
+                                currentWordIndex: nextWordIndex
+                            },
+                            config: {
+                                ...config,
+                                currentTurn: nextWordIndex,
+                                currentRound: nextRound
+                            }
+                        })
+                        .eq('id', room.id)
+
+                    if (error) {
+                        console.error('Kelime geçiş hatası:', error)
+                    } else {
+                        console.log('Yeni kelimeye geçildi')
+                    }
+                } else {
+                    // Yanlış - Sadece sırayı değiştir
+                    const { error } = await supabase
+                        .from('rooms')
+                        .update({
+                            game_state: {
+                                guesses: newGuesses,
+                                results: newResults,
+                                currentWordIndex
+                            },
+                            config: {
+                                ...config,
+                                currentTurn: currentTurn + 1
+                            }
+                        })
+                        .eq('id', room.id)
+
+                    if (error) {
+                        console.error('Sıra değiştirme hatası:', error)
+                    } else {
+                        console.log('Sıra değiştirildi, yeni turn:', currentTurn + 1)
+                    }
+                }
+            } catch (e) {
+                console.error('Tahmin gönderme hatası:', e)
             }
         }
 

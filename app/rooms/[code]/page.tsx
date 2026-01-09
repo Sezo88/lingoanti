@@ -20,6 +20,9 @@ export default function RoomPage() {
     const [loading, setLoading] = useState(true)
     const [gameWords, setGameWords] = useState<string[]>([])
 
+    // Kazanma efekti için state (Top Level)
+    const [showWinFeedback, setShowWinFeedback] = useState<any>(null)
+
     // İlk yükleme
     useEffect(() => {
         if (!code || !user) return
@@ -62,6 +65,27 @@ export default function RoomPage() {
             supabase.removeChannel(channel)
         }
     }, [room?.id]) // Sadece ID değişince çalışır
+
+    // Win Feedback Effect (Top Level)
+    useEffect(() => {
+        if (!room?.game_state?.lastWin) return
+
+        const lastWin = room.game_state.lastWin
+        if (lastWin.timestamp > (Date.now() - 5000)) {
+            const winner = participants.find(p => p.user_id === lastWin.userId)
+            if (winner) {
+                setShowWinFeedback({
+                    winnerName: winner.display_name,
+                    word: lastWin.word,
+                    score: lastWin.score,
+                    isMe: lastWin.userId === user?.id
+                })
+
+                const timer = setTimeout(() => setShowWinFeedback(null), 3000)
+                return () => clearTimeout(timer)
+            }
+        }
+    }, [room?.game_state?.lastWin, participants, user?.id])
 
     const fetchRoomData = async () => {
         if (!code) return
@@ -294,28 +318,8 @@ export default function RoomPage() {
         const sharedResults = gameState.results || []
         const lastWin = gameState.lastWin || null
 
-        // Kazanma efekti için state
-        const [showWinFeedback, setShowWinFeedback] = useState<any>(null)
+        // Hooks moved to top level, just using the state here
 
-        // lastWin değişince feedback göster
-        useEffect(() => {
-            if (lastWin && lastWin.timestamp > (Date.now() - 5000)) {
-                // Son 5 saniye içindeyse göster
-                const winner = participants.find(p => p.user_id === lastWin.userId)
-                if (winner) {
-                    setShowWinFeedback({
-                        winnerName: winner.display_name,
-                        word: lastWin.word,
-                        score: lastWin.score,
-                        isMe: lastWin.userId === user?.id
-                    })
-
-                    // 3 saniye sonra kapat
-                    const timer = setTimeout(() => setShowWinFeedback(null), 3000)
-                    return () => clearTimeout(timer)
-                }
-            }
-        }, [lastWin, participants, user?.id])
 
         // Tahmin yapıldığında
         const handleGuessSubmit = async (guess: string, result: any[]) => {

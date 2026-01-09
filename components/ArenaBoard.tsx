@@ -123,7 +123,7 @@ export default function ArenaBoard({
 
         // Puan hesapla
         const timeSpent = (Date.now() - wordStartTime) / 1000
-        const score = calculateWordScore(attempts, timeSpent)
+        const score = calculateWordScore(timeSpent)
         setTotalScore(prev => prev + score)
 
         // Veritabanına kaydet

@@ -76,6 +76,8 @@ export function isGameOver(
 export function getKeyboardState(results: LetterResult[][]): Map<string, 'correct' | 'present' | 'absent'> {
     const keyState = new Map<string, 'correct' | 'present' | 'absent'>()
 
+    if (!Array.isArray(results)) return keyState
+
     results.forEach(guessResult => {
         guessResult.forEach(({ letter, status }) => {
             // Geçersiz kelime durumunu atla (klavyeyi etkilemesin)

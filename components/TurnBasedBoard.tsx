@@ -122,17 +122,51 @@ export default function TurnBasedBoard({
 
     const keyboardState = getKeyboardState(results)
 
-    // Spectator view
+    // Spectator view - Show the board but disabled
     if (!isMyTurn) {
         return (
-            <div className="flex flex-col items-center justify-center p-10 text-center">
-                <div className="text-6xl mb-4">👀</div>
-                <h2 className="text-2xl font-bold text-white mb-2">Sıra {currentPlayerName}'de</h2>
-                <p className="text-white/70">Tahmin yapması bekleniyor...</p>
-                <div className="mt-6 w-full max-w-xs">
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary-500 animate-pulse" style={{ width: '50%' }}></div>
+            <div className="flex flex-col h-full max-w-lg mx-auto w-full relative opacity-75">
+                <div className="text-center mb-4 p-4 bg-primary-500/20 rounded-xl border border-primary-500/30">
+                    <div className="text-2xl mb-2">👀</div>
+                    <h2 className="text-lg font-bold text-white mb-1">Sıra {currentPlayerName}'de</h2>
+                    <p className="text-sm text-white/70">Tahmin yapması bekleniyor...</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto min-h-[400px] flex items-center justify-center">
+                    <div className="grid gap-2 p-4">
+                        {guesses.map((guess, i) => (
+                            <Row
+                                key={i}
+                                word={guess}
+                                target={targetWord}
+                                submitted={true}
+                                result={results[i]}
+                            />
+                        ))}
+
+                        {gameStatus === 'playing' && (
+                            <Row
+                                word={currentGuess}
+                                target={targetWord}
+                                submitted={false}
+                                shake={shakeRow}
+                                length={targetWord.length}
+                            />
+                        )}
+
+                        {Array.from({ length: Math.max(0, 5 - guesses.length - 1) }).map((_, i) => (
+                            <Row key={`empty-${i}`} word="" target="" submitted={false} length={targetWord.length} />
+                        ))}
                     </div>
+                </div>
+
+                <div className="pb-4 opacity-50 pointer-events-none">
+                    <GameKeyboard
+                        onKeyPress={() => { }}
+                        onEnter={() => { }}
+                        onBackspace={() => { }}
+                        keyStates={keyboardState}
+                    />
                 </div>
             </div>
         )

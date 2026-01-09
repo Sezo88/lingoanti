@@ -115,30 +115,68 @@ WHEN (NEW.code IS NULL)
 EXECUTE FUNCTION set_room_code();
 
 -- Fonksiyon: Oyunu Başlat (Kelimeleri seç ve durumu güncelle)
-CREATE OR REPLACE FUNCTION start_room_game(p_room_id UUID, p_word_count INTEGER, p_word_length INTEGER)
+CREATE OR REPLACE FUNCTION start_room_game(
+  p_room_id UUID,
+  p_word_count INT DEFAULT 5,
+  p_word_length INT DEFAULT 5
+)
 RETURNS VOID AS $$
 DECLARE
-  v_words JSONB;
+  v_words TEXT[];
+  v_game_mode TEXT;
+  v_participant_ids UUID[];
+  v_rounds_total INT;
 BEGIN
-  -- 1. Kelimeleri seç
-  SELECT jsonb_agg(word) INTO v_words
-  FROM (
-    SELECT word FROM game_words
-    WHERE length = p_word_length
-    ORDER BY random()
+  -- Get room's game mode
+  SELECT game_mode INTO v_game_mode FROM rooms WHERE id = p_room_id;
+
+  -- Rastgele kelimeler seç
+  SELECT ARRAY(
+    SELECT word FROM game_words 
+    WHERE length = p_word_length 
+    ORDER BY RANDOM() 
     LIMIT p_word_count
-  ) t;
+  ) INTO v_words;
 
-  -- 2. room_games tablosuna ekle
-  INSERT INTO room_games (room_id, words) VALUES (p_room_id, v_words);
+  -- Oyunu başlat
+  UPDATE rooms 
+  SET status = 'playing', 
+      game_words = v_words
+  WHERE id = p_room_id;
 
-  -- 3. Oda durumunu playing yap
-  UPDATE rooms SET status = 'playing' WHERE id = p_room_id;
-  
-  -- 4. Katılımcıların durumunu güncelle
-  UPDATE room_participants SET status = 'playing' WHERE room_id = p_room_id;
+  -- Turn-based mode için ek ayarlar
+  IF v_game_mode = 'turn_based' THEN
+    -- Katılımcı ID'lerini al
+    SELECT ARRAY_AGG(user_id ORDER BY joined_at) INTO v_participant_ids
+    FROM room_participants
+    WHERE room_id = p_room_id;
+
+    -- El sayısını hesapla (katılımcı sayısı × 2)
+    v_rounds_total := ARRAY_LENGTH(v_participant_ids, 1) * 2;
+
+    -- Config'i güncelle
+    UPDATE rooms
+    SET config = jsonb_set(
+      jsonb_set(
+        jsonb_set(
+          COALESCE(config, '{}'::jsonb),
+          '{turnOrder}', 
+          to_jsonb(v_participant_ids), 
+          true
+        ),
+        '{currentTurn}', '0'::jsonb, true
+      ),
+      '{roundsTotal}', to_jsonb(v_rounds_total), true
+    )
+    WHERE id = p_room_id;
+  END IF;
+
+  -- Katılımcıları 'playing' yap
+  UPDATE room_participants 
+  SET status = 'playing' 
+  WHERE room_id = p_room_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- Fonksiyon: Eski Odaları Temizle
 CREATE OR REPLACE FUNCTION cleanup_stale_rooms()

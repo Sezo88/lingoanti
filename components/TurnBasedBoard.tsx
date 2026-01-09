@@ -35,6 +35,19 @@ export default function TurnBasedBoard({
     const [currentGuess, setCurrentGuess] = useState('')
     const [shakeRow, setShakeRow] = useState(false)
     const [error, setError] = useState('')
+    const [timeLeft, setTimeLeft] = useState(duration)
+
+    // Timer Logic
+    useEffect(() => {
+        setTimeLeft(duration) // Sıra değişince süre resetlensin
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 0) return 0
+                return prev - 1
+            })
+        }, 1000)
+        return () => clearInterval(timer)
+    }, [currentPlayerName, duration]) // currentPlayerName değiştiğinde (sıra değiştiğinde) resetle
 
     // Sıra değiştiğinde input'u temizle
     useEffect(() => {
@@ -108,26 +121,8 @@ export default function TurnBasedBoard({
                 </div>
             )}
 
-            {/* LEADERBOARD SIDEBAR */}
-            <div className="absolute top-0 right-0 p-2 z-10">
-                <div className="bg-black/40 backdrop-blur-md rounded-xl p-2 border border-white/10 max-h-[200px] overflow-y-auto w-[120px]">
-                    <div className="text-xs text-white/50 mb-2 font-bold uppercase tracking-wider text-center">SKORBOARD</div>
-                    {participants.map(p => (
-                        <div key={p.user_id} className={`flex items-center gap-2 p-1.5 rounded-lg text-xs mb-1 ${p.user_id === participants.find(part => part.display_name === currentPlayerName)?.user_id ? 'bg-primary-500/30 ring-1 ring-primary-500' : 'bg-white/5'}`}>
-                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center font-bold text-[8px]">
-                                {p.display_name.substring(0, 1)}
-                            </div>
-                            <div className="flex-1 overflow-hidden">
-                                <div className="truncate font-medium">{p.display_name}</div>
-                                <div className="text-yellow-400 font-bold">{p.score}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
             {/* HEADER & LEAVE BUTTON */}
-            <div className="flex items-center justify-between mb-2 px-2">
+            <div className="flex items-center justify-between mb-2 px-2 relative z-20">
                 <button
                     onClick={onLeave}
                     className="p-2 bg-danger-500/20 text-danger-400 hover:bg-danger-500 hover:text-white rounded-lg transition-colors text-xs font-bold flex items-center gap-1"
@@ -140,11 +135,13 @@ export default function TurnBasedBoard({
                         <div className="text-xs text-white/70 mb-0.5">
                             {isMyTurn ? '🎯 SIRA SENDE!' : `⏳ ${currentPlayerName} oynuyor`}
                         </div>
-                        {/* Timer could go here if needed, or stick to BearTimer usage */}
+                        <div className="text-xl font-mono font-bold text-white">
+                            {timeLeft}sn
+                        </div>
                     </div>
                 </div>
 
-                <div className="w-[50px]"></div> {/* Spacer for balance */}
+                <div className="w-[50px]"></div> {/* Spacer */}
             </div>
 
             {/* KAZANAN GERİ BİLDİRİMİ OVERLAY */}

@@ -13,7 +13,6 @@ interface TurnBasedBoardProps {
     currentPlayerName: string
     sharedGuesses: string[]
     sharedResults: any[]
-    sharedResults: any[]
     onGuessSubmit: (guess: string, result: any[]) => void
     winFeedback?: { winnerName: string; word: string; score: number; isMe: boolean } | null
 }

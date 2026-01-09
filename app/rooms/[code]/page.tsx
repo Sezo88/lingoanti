@@ -171,6 +171,21 @@ export default function RoomPage() {
         alert('Oda kodu kopyalandı!')
     }
 
+    // SIRA BANA GELDİ BİLDİRİMİ (Top Level)
+    const turnOrder = room?.config?.turnOrder || []
+    const currentTurn = room?.config?.currentTurn || 0
+    const currentPlayerId = turnOrder[currentTurn % turnOrder.length]
+    const isMyTurn = user?.id && currentPlayerId === user.id && room?.status === 'playing' && room?.game_mode === 'turn_based'
+
+    useEffect(() => {
+        if (isMyTurn && document.hidden && Notification.permission === 'granted') {
+            new Notification('Sıra Sende! 🎯', {
+                body: 'Lingo Türkiye: Hamle yapma sırası sana geldi.',
+                icon: '/favicon.ico'
+            })
+        }
+    }, [isMyTurn])
+
     // İlerleme Güncelleme
     const handleProgress = async (wordIndex: number, isFinished: boolean) => {
         if (!user || !room) return
@@ -325,18 +340,7 @@ export default function RoomPage() {
         const sharedResults = gameState.results || []
         const lastWin = gameState.lastWin || null
 
-        // Hooks moved to top level, just using the state here
-
-
-        // SIRA BANA GELDİ BİLDİRİMİ
-        useEffect(() => {
-            if (isMyTurn && document.hidden && Notification.permission === 'granted') {
-                new Notification('Sıra Sende! 🎯', {
-                    body: 'Lingo Türkiye: Hamle yapma sırası sana geldi.',
-                    icon: '/favicon.ico' // Varsa
-                })
-            }
-        }, [isMyTurn])
+        // Hooks moved to top level
 
         const handleLeaveRoom = async () => {
             if (!user) return

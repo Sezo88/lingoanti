@@ -10,43 +10,42 @@ interface AnswerModalProps {
 }
 
 export default function AnswerModal({ isOpen, isWin, targetWord, onNext }: AnswerModalProps) {
+    useEffect(() => {
+        if (isOpen && !isWin) {
+            // Kaybedince 5 saniye sonra otomatik kapat
+            const timer = setTimeout(() => {
+                onNext()
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [isOpen, isWin, onNext])
+
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-in fade-in">
             <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-dark-100 border border-white/10 p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl"
+                className="glass-card p-8 rounded-2xl max-w-md w-full mx-4 text-center border-2 border-white/20"
             >
-                <div className="text-4xl mb-4">
-                    {isWin ? '🎉' : '🤔'}
-                </div>
-
-                <h2 className={`text-2xl font-bold mb-2 ${isWin ? 'text-green-400' : 'text-white'}`}>
+                <h2 className={`text-3xl font-bold mb-4 ${isWin ? 'text-green-400' : 'text-white'}`}>
                     {isWin ? 'Tebrikler!' : 'Bilemedin!'}
                 </h2>
-
-                {!isWin && (
-                    <>
-                        <p className="text-dark-400 text-sm mb-1">Doğru Cevap:</p>
-                        <p className="text-3xl font-bold text-white tracking-widest mb-6 font-mono bg-dark-200 py-2 rounded-lg">
-                            {targetWord}
-                        </p>
-                    </>
-                )}
-
-                {isWin && (
-                    <p className="text-dark-300 mb-6">
-                        Harika gidiyorsun!
-                    </p>
-                )}
-
+                <div className="mb-6">
+                    <p className="text-white/80 mb-3 text-lg">Doğru kelime:</p>
+                    <div className="text-5xl font-black text-yellow-400 tracking-wider drop-shadow-lg mb-2">
+                        {targetWord.toLocaleUpperCase('tr-TR')}
+                    </div>
+                    {!isWin && (
+                        <p className="text-sm text-white/60 mt-4">5 saniye sonra otomatik kapanacak...</p>
+                    )}
+                </div>
                 <button
                     onClick={onNext}
-                    className="w-full py-3 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/20"
+                    className="px-8 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold transition-all text-lg"
                 >
-                    Tamam, Devam Et →
+                    {isWin ? 'Devam Et' : 'Tamam'}
                 </button>
             </motion.div>
         </div>

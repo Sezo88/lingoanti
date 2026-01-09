@@ -126,7 +126,7 @@ export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }:
             setResults(newResults)
             setCurrentGuess('')
 
-            // Hak bitti mi?
+            // 6. deneme geçersizse kaybetti
             if (newGuesses.length >= 6) {
                 handleLose()
             }

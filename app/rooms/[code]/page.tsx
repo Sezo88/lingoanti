@@ -23,6 +23,13 @@ export default function RoomPage() {
     // Kazanma efekti için state (Top Level)
     const [showWinFeedback, setShowWinFeedback] = useState<any>(null)
 
+    // BİLDİRİM İZNİ İSTE
+    useEffect(() => {
+        if (Notification.permission === 'default') {
+            Notification.requestPermission()
+        }
+    }, [])
+
     // İlk yükleme
     useEffect(() => {
         if (!code || !user) return
@@ -321,6 +328,28 @@ export default function RoomPage() {
         // Hooks moved to top level, just using the state here
 
 
+        // SIRA BANA GELDİ BİLDİRİMİ
+        useEffect(() => {
+            if (isMyTurn && document.hidden && Notification.permission === 'granted') {
+                new Notification('Sıra Sende! 🎯', {
+                    body: 'Lingo Türkiye: Hamle yapma sırası sana geldi.',
+                    icon: '/favicon.ico' // Varsa
+                })
+            }
+        }, [isMyTurn])
+
+        const handleLeaveRoom = async () => {
+            if (confirm('Odadan ayrılmak istiyor musunuz?')) {
+                await supabase
+                    .from('room_participants')
+                    .delete()
+                    .eq('room_id', room.id)
+                    .eq('user_id', user.id)
+
+                router.push('/rooms')
+            }
+        }
+
         // Tahmin yapıldığında
         const handleGuessSubmit = async (guess: string, result: any[]) => {
             if (!room || !isMyTurn || !user) {
@@ -366,6 +395,9 @@ export default function RoomPage() {
                         sharedResults={sharedResults}
                         onGuessSubmit={handleGuessSubmit}
                         winFeedback={showWinFeedback}
+                        participants={participants}
+                        duration={room.config?.duration || 60}
+                        onLeave={handleLeaveRoom}
                     />
                 </div>
 

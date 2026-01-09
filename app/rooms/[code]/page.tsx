@@ -1,101 +1,24 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import Link from 'next/link'
 import ArenaBoard from '@/components/ArenaBoard'
 import TurnBasedBoard from '@/components/TurnBasedBoard'
+import { motion } from 'framer-motion'
+import { ArrowLeft, Users, Clock, Trophy, Hash } from 'lucide-react'
 
-interface Participant {
-    id: string
-    user_id: string
-    status: string
-    score: number
-    display_name: string
-    current_word_index?: number
-}
+// ... existing code ...
 
-export default function RoomLobbyPage() {
+export default function RoomPage() {
     const { code } = useParams()
-    const { user } = useAuth()
     const router = useRouter()
-
+    const { user } = useAuth()
     const [room, setRoom] = useState<any>(null)
-    const [participants, setParticipants] = useState<Participant[]>([])
+    const [participants, setParticipants] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-    const [isHost, setIsHost] = useState(false)
-
-    // Oyun Durumu (Hooklar en üstte)
     const [gameWords, setGameWords] = useState<string[]>([])
-    const [fetchingGame, setFetchingGame] = useState(false)
-
-    // Oyun başladığında kelimeleri çek
-    useEffect(() => {
-        if (room?.status === 'playing' && gameWords.length === 0 && !fetchingGame) {
-            // Kelimeler artık rooms.game_words kolonunda
-            if (room.game_words && Array.isArray(room.game_words)) {
-                setGameWords(room.game_words)
-            }
-        }
-    }, [room?.status, room?.game_words, gameWords.length, fetchingGame])
-
-    // Veri çekme fonksiyonu
-    const fetchRoomData = async () => {
-        if (!user) return
-
-        try {
-            // 1. Odayı bul
-            const { data: roomData, error: roomError } = await supabase
-                .from('rooms')
-                .select('*')
-                .eq('code', code)
-                .single()
-
-            if (roomError || !roomData) {
-                console.error('Oda bulunamadı:', roomError)
-                router.push('/rooms')
-                return
-            }
-
-            setRoom(roomData)
-            setIsHost(roomData.host_id === user.id)
-
-            // 2. Katılımcıları bul
-            const { data: parts, error: partsError } = await supabase
-                .from('room_participants')
-                .select('id, user_id, status, score, current_word_index')
-                .eq('room_id', roomData.id)
-
-            if (partsError) throw partsError
-
-            if (parts) {
-                const userIds = parts.map(p => p.user_id)
-                const { data: usersData } = await supabase
-                    .from('users')
-                    .select('id, display_name')
-                    .in('id', userIds)
-
-                const userMap = new Map(usersData?.map(u => [u.id, u.display_name]) || [])
-
-                const formatted = parts.map((p: any) => ({
-                    id: p.id,
-                    user_id: p.user_id,
-                    status: p.status,
-                    score: p.score,
-                    current_word_index: p.current_word_index,
-                    display_name: userMap.get(p.user_id) || 'Bilinmeyen Oyuncu'
-                }))
-
-                setParticipants(formatted)
-            }
-        } catch (e) {
-            console.error('Veri çekme hatası:', e)
-        } finally {
-            setLoading(false)
-        }
-    }
 
     // İlk yükleme
     useEffect(() => {
@@ -140,6 +63,61 @@ export default function RoomLobbyPage() {
         }
     }, [room?.id]) // Sadece ID değişince çalışır
 
+    const fetchRoomData = async () => {
+        if (!code) return
+
+        try {
+            // Odayı bul
+            const { data: roomData, error: roomError } = await supabase
+                .from('rooms')
+                .select('*')
+                .eq('code', code)
+                .single()
+
+            if (roomError) throw roomError
+
+            // Eğer game_mode undefined ise varsayılan 'arena' yap (Eski odalar için)
+            if (!roomData.game_mode) roomData.game_mode = 'arena'
+
+            setRoom(roomData)
+
+            // Katılımcıları bul
+            const { data: participantsData, error: participantsError } = await supabase
+                .from('room_participants')
+                .select(`
+                    *,
+                    users (
+                        username,
+                        avatar_url
+                    )
+                `)
+                .eq('room_id', roomData.id)
+
+            if (participantsError) throw participantsError
+
+            // User bilgilerini düzelt
+            const formattedParticipants = participantsData.map(p => ({
+                ...p,
+                display_name: p.users?.username || 'Anonim'
+            }))
+
+            setParticipants(formattedParticipants)
+
+            // Kelimeleri hazırla
+            if (roomData.game_words) {
+                setGameWords(roomData.game_words)
+            } else if (roomData.status === 'playing') {
+                // Eğer oyun başlamış ama kelimeler yoksa (eski veri), yeniden çekmeyi dene
+                // ...
+            }
+
+            setLoading(false)
+        } catch (error) {
+            console.error('Veri çekme hatası:', error)
+            setLoading(false)
+        }
+    }
+
     const startGame = async () => {
         if (!room) return
 
@@ -147,7 +125,7 @@ export default function RoomLobbyPage() {
             const { error } = await supabase.rpc('start_room_game', {
                 p_room_id: room.id,
                 p_word_count: 5,
-                p_word_length: 5
+                p_word_length: room.config?.wordLength || 5
             })
 
             if (error) throw error
@@ -170,89 +148,128 @@ export default function RoomLobbyPage() {
             .from('room_participants')
             .update({
                 current_word_index: wordIndex,
-                status: isFinished ? 'finished' : 'playing'
+                status: isFinished ? 'finished' : 'playing',
+                finished_at: isFinished ? new Date().toISOString() : null
             })
             .eq('room_id', room.id)
             .eq('user_id', user.id)
-
-        if (isFinished) {
-            alert('Tebrikler bitirdiniz!')
-        }
     }
 
-    // Puan Kaydetme
     const handleWordCompleted = async (wordIndex: number, timeSeconds: number, score: number) => {
         if (!user || !room) return
 
+        // Mevcut skoru bul
         const currentParticipant = participants.find(p => p.user_id === user.id)
         const currentScore = currentParticipant?.score || 0
-        // @ts-ignore - word_times tipi tanımlı değilse
-        const currentWordTimes = currentParticipant?.word_times || []
+        const newScore = currentScore + score
 
         await supabase
             .from('room_participants')
             .update({
-                score: currentScore + score,
-                word_times: [...currentWordTimes, { wordIndex, timeSeconds, score }]
+                score: newScore,
+                words_completed: wordIndex + 1
             })
             .eq('room_id', room.id)
             .eq('user_id', user.id)
     }
 
-    if (loading || fetchingGame) return <div className="text-center p-10 text-white font-mono animate-pulse">Yükleniyor...</div>
-
-    // --- GAME ARENA MODU (Kelime Yarışı) ---
-    if (room?.status === 'playing' && room?.game_mode === 'arena' && gameWords.length > 0) {
+    if (loading) {
         return (
-            <div className="min-h-screen text-white flex flex-col md:flex-row">
-                <div className="flex-1 p-4 border-r border-white/5 bg-black/30">
-                    <ArenaBoard
-                        targetWords={gameWords}
-                        onProgress={handleProgress}
-                        onWordCompleted={handleWordCompleted}
-                    />
-                </div>
+            <div className="min-h-screen bg-dark-100 text-white flex items-center justify-center">
+                <div className="text-2xl font-bold animate-pulse">Yükleniyor...</div>
+            </div>
+        )
+    }
 
-                <div className="w-full md:w-80 p-6 bg-dark-100 border-l border-white/5 overflow-y-auto">
-                    <h3 className="text-xl font-bold mb-6 text-warning-400 flex items-center gap-2">
-                        <span>🏁</span> YARIŞ DURUMU
-                    </h3>
+    // --- LOBİ MODU ---
+    if (room?.status === 'waiting') {
+        const isHost = room.host_id === user?.id
 
-                    <div className="space-y-4">
-                        {participants
-                            .sort((a, b) => (b.score || 0) - (a.score || 0))
-                            .map((p) => {
-                                const isFinished = p.status === 'finished'
-                                const isSelf = p.user_id === user?.id
+        return (
+            <div className="min-h-screen bg-dark-100 text-white flex items-center justify-center p-4">
+                <div className="max-w-md w-full glass-card p-8 rounded-2xl border border-white/10 relative overflow-hidden">
+                    {/* Arkaplan Efekti */}
+                    <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-500/20 via-transparent to-transparent animate-spin-slow"></div>
+                    </div>
 
-                                return (
-                                    <div key={p.id} className={`p-4 rounded-xl border transition-all ${isFinished ? 'bg-success-500/10 border-success-500/50' :
-                                        isSelf ? 'bg-primary-500/10 border-primary-500/30' : 'bg-dark-200 border-white/5'
-                                        }`}>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <div className="flex flex-col">
-                                                <span className={`font-bold ${isSelf ? 'text-primary-400' : 'text-white'}`}>
-                                                    {p.display_name}
-                                                </span>
-                                                <span className="text-xs text-yellow-500 font-bold">
-                                                    {p.score || 0} Puan
-                                                </span>
-                                            </div>
-                                            {isFinished && <span className="text-xl">🏆</span>}
-                                        </div>
+                    <div className="relative z-10">
+                        <button
+                            onClick={() => router.push('/rooms')}
+                            className="absolute top-0 left-0 p-2 text-white/50 hover:text-white transition-colors"
+                        >
+                            <ArrowLeft size={24} />
+                        </button>
 
-                                        <div className="w-full bg-dark-300 rounded-full h-2 mb-1 overflow-hidden">
-                                            <div
-                                                className={`h-full transition-all duration-500 ${isFinished ? 'bg-success-500' : 'bg-warning-500'}`}
-                                                style={{ width: isFinished ? '100%' : `${((p.current_word_index || 0) / (gameWords.length || 5)) * 100}%` }}
-                                            ></div>
-                                        </div>
-                                        <div className="text-xs text-right text-white/80">
-                                            {isFinished ? 'Bitirdi' : `${p.current_word_index || 0} / ${gameWords.length || 5}`}
-                                        </div>
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold mb-2 break-all">{room.code}</h1>
+                            <p className="text-white/50 text-sm">Oda Kodu</p>
+                            <button
+                                onClick={copyCode}
+                                className="mt-3 px-4 py-1.5 bg-white/5 hover:bg-white/10 rounded-full text-xs font-medium transition-colors border border-white/10"
+                            >
+                                Kodu Kopyala
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 mb-8">
+                            <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
+                                <div className="flex items-center gap-3 text-white/80">
+                                    <Users size={18} />
+                                    <span>Oyuncular</span>
+                                </div>
+                                <span className="font-bold">{participants.length}</span>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
+                                <div className="flex items-center gap-3 text-white/80">
+                                    <Clock size={18} />
+                                    <span>Süre</span>
+                                </div>
+                                <span className="font-bold">{room.config?.duration || 60}sn</span>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
+                                <div className="flex items-center gap-3 text-white/80">
+                                    <Trophy size={18} />
+                                    <span>Mod</span>
+                                </div>
+                                <span className="font-bold text-primary-400">
+                                    {room.game_mode === 'turn_based' ? 'Sıra Sende' : 'Kelime Yarışı'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-2">Bekleyenler</h3>
+                            {participants.map((p) => (
+                                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-xs font-bold">
+                                        {p.display_name.substring(0, 2).toUpperCase()}
                                     </div>
-                                )
-                            })}
+                                    <span className="font-medium">{p.display_name}</span>
+                                    {p.user_id === room.host_id && (
+                                        <span className="ml-auto text-xs bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded border border-yellow-500/20">
+                                            KURUCU
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {isHost ? (
+                            <button
+                                onClick={startGame}
+                                disabled={participants.length < 1} // Test için 1 kişiye düşürdüm
+                                className="w-full mt-8 py-4 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Oyunu Başlat
+                            </button>
+                        ) : (
+                            <div className="mt-8 text-center p-4 bg-white/5 rounded-xl animate-pulse">
+                                <p className="text-white/70 font-medium">Kurucunun başlatması bekleniyor...</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -278,84 +295,32 @@ export default function RoomLobbyPage() {
 
         // Tahmin yapıldığında
         const handleGuessSubmit = async (guess: string, result: any[]) => {
-            if (!room || !isMyTurn) {
-                console.log('Tahmin reddedildi:', { room: !!room, isMyTurn })
+            if (!room || !isMyTurn || !user) {
+                console.log('Tahmin reddedildi:', { room: !!room, isMyTurn, user: !!user })
                 return
             }
 
-            console.log('Tahmin gönderiliyor:', { guess, result })
-
-            const newGuesses = [...sharedGuesses, guess]
-            const newResults = [...sharedResults, result]
+            console.log('Tahmin gönderiliyor (RPC):', { guess, result })
 
             // Doğru mu kontrol et
             const isCorrect = result.every((r: any) => r.status === 'correct')
 
             try {
-                if (isCorrect) {
-                    // Doğru buldu - Puan ver ve yeni kelimeye geç
-                    const attemptCount = newGuesses.length
-                    const baseScore = 100
-                    const attemptBonus = Math.max(0, (6 - attemptCount) * 10)
-                    const wordScore = baseScore + attemptBonus
+                // RPC fonksiyonunu çağır (Güvenli ve Atomic)
+                const { error } = await supabase.rpc('submit_turn_guess', {
+                    p_room_id: room.id,
+                    p_user_id: user.id,
+                    p_guess: guess,
+                    p_result: result,
+                    p_is_correct: isCorrect
+                })
 
-                    const currentParticipant = participants.find(p => p.user_id === user?.id)
-
-                    await supabase
-                        .from('room_participants')
-                        .update({
-                            score: (currentParticipant?.score || 0) + wordScore
-                        })
-                        .eq('room_id', room.id)
-                        .eq('user_id', user!.id)
-
-                    // Yeni kelimeye geç
-                    const nextWordIndex = currentWordIndex + 1
-                    const nextRound = Math.floor(nextWordIndex / 1)
-
-                    const { error } = await supabase
-                        .from('rooms')
-                        .update({
-                            game_state: {
-                                guesses: [],
-                                results: [],
-                                currentWordIndex: nextWordIndex
-                            },
-                            config: {
-                                ...config,
-                                currentTurn: nextWordIndex,
-                                currentRound: nextRound
-                            }
-                        })
-                        .eq('id', room.id)
-
-                    if (error) {
-                        console.error('Kelime geçiş hatası:', error)
-                    } else {
-                        console.log('Yeni kelimeye geçildi')
-                    }
+                if (error) {
+                    console.error('RPC Hatası:', error)
+                    alert('Hata: ' + error.message)
                 } else {
-                    // Yanlış - Sadece sırayı değiştir
-                    const { error } = await supabase
-                        .from('rooms')
-                        .update({
-                            game_state: {
-                                guesses: newGuesses,
-                                results: newResults,
-                                currentWordIndex
-                            },
-                            config: {
-                                ...config,
-                                currentTurn: currentTurn + 1
-                            }
-                        })
-                        .eq('id', room.id)
-
-                    if (error) {
-                        console.error('Sıra değiştirme hatası:', error)
-                    } else {
-                        console.log('Sıra değiştirildi, yeni turn:', currentTurn + 1)
-                    }
+                    console.log('Tahmin başarıyla işlendi')
+                    // Not: Veriler realtime aboneliği ile güncellenecek
                 }
             } catch (e) {
                 console.error('Tahmin gönderme hatası:', e)
@@ -396,7 +361,7 @@ export default function RoomLobbyPage() {
 
                                 return (
                                     <div key={p.id} className={`p-3 rounded-xl border transition-all ${isCurrent ? 'bg-primary-500/20 border-primary-500/50 shadow-lg' :
-                                        isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
+                                            isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
                                         }`}>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
@@ -418,78 +383,80 @@ export default function RoomLobbyPage() {
         )
     }
 
-    // --- LOBBY MODU ---
-    return (
-        <div className="min-h-screen p-4">
-            <div className="max-w-4xl mx-auto pt-10">
-                <div className="flex justify-between items-center mb-8">
-                    <Link href="/rooms" className="text-dark-400 hover:text-white transition-colors">
-                        ← Odadan Çık
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <div className="bg-dark-200 px-4 py-2 rounded-lg border border-white/5">
-                            <span className="text-dark-400 text-sm mr-2">ODA KODU:</span>
-                            <span className="font-mono font-bold text-xl tracking-widest text-primary-500">{room?.code}</span>
-                        </div>
-                        <button onClick={copyCode} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                            📋
-                        </button>
-                    </div>
+    // --- GAME ARENA MODU (Kelime Yarışı) ---
+    if (room?.status === 'playing' && gameWords.length > 0) {
+        return (
+            <div className="min-h-screen bg-dark-100 flex flex-col md:flex-row">
+                {/* Sol Panel - Oyun Alanı */}
+                <div className="flex-1 relative">
+                    <ArenaBoard
+                        targetWords={gameWords}
+                        duration={room.config?.duration || 60}
+                        onProgress={handleProgress}
+                        onWordCompleted={handleWordCompleted}
+                    />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2 space-y-4">
-                        <h2 className="text-2xl font-bold text-white mb-4">Katılımcılar ({participants.length})</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {participants.map((p) => (
-                                <div key={p.id} className="glass-effect p-4 rounded-xl flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center font-bold text-white">
-                                        {p.display_name.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <div className="font-semibold text-white">{p.display_name}</div>
-                                        <div className="text-xs text-primary-400">
-                                            {p.status === 'ready' ? 'Hazır' : 'Bekliyor'}
-                                            {p.user_id === room?.host_id && ' (Kurucu)'}
+                {/* Sağ Panel - Rakipler */}
+                <div className="w-full md:w-80 bg-dark-200 border-l border-white/10 p-6 overflow-y-auto z-10">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
+                        <Users size={20} className="text-primary-400" />
+                        Canlı Skor
+                    </h3>
+
+                    <div className="space-y-4">
+                        {participants
+                            .sort((a, b) => (b.score || 0) - (a.score || 0))
+                            .map((p, index) => {
+                                const isSelf = p.user_id === user?.id
+                                const progress = ((p.words_completed || 0) / gameWords.length) * 100
+
+                                return (
+                                    <div
+                                        key={p.id}
+                                        className={`p-4 rounded-xl border transition-all relative overflow-hidden ${isSelf
+                                                ? 'bg-primary-500/10 border-primary-500/50 shadow-lg shadow-primary-500/10'
+                                                : 'bg-black/20 border-white/5'
+                                            }`}
+                                    >
+                                        <div className="flex justify-between items-start mb-2 relative z-10">
+                                            <div>
+                                                <div className="font-bold text-white flex items-center gap-2">
+                                                    <span>#{index + 1}</span>
+                                                    <span>{p.display_name}</span>
+                                                    {isSelf && <span className="text-xs bg-primary-500 text-white px-2 py-0.5 rounded-full">SEN</span>}
+                                                </div>
+                                                <div className="text-xs text-white/50 mt-1">
+                                                    {p.status === 'finished' ? '🏁 Tamamladı' : `${p.words_completed || 0}/${gameWords.length} kelime`}
+                                                </div>
+                                            </div>
+                                            <div className="text-xl font-black text-yellow-400">
+                                                {p.score || 0}
+                                            </div>
                                         </div>
+
+                                        {/* Progress Bar */}
+                                        <div className="h-2 bg-black/40 rounded-full overflow-hidden relative z-10">
+                                            <motion.div
+                                                className={`h-full ${p.status === 'finished' ? 'bg-green-500' : 'bg-primary-500'}`}
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progress}%` }}
+                                                transition={{ duration: 0.5 }}
+                                            />
+                                        </div>
+
+                                        {/* Arkaplan Efekti (Sadece aktif oyuncu için) */}
+                                        {isSelf && (
+                                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-500/5 to-transparent pointer-events-none" />
+                                        )}
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="glass-effect p-6 rounded-2xl h-fit">
-                        <h3 className="text-xl font-semibold text-white mb-6">Oda Ayarları</h3>
-                        <div className="space-y-4 mb-8">
-                            <div className="flex justify-between text-dark-300">
-                                <span>Kelime Sayısı</span>
-                                <span className="text-white">5</span>
-                            </div>
-                            <div className="flex justify-between text-dark-300">
-                                <span>Harf Sayısı</span>
-                                <span className="text-white">5</span>
-                            </div>
-                            <div className="flex justify-between text-dark-300">
-                                <span>Mod</span>
-                                <span className="text-white">Kelime Yarışı</span>
-                            </div>
-                        </div>
-
-                        {isHost ? (
-                            <button
-                                onClick={startGame}
-                                className="w-full py-4 rounded-xl font-bold text-lg bg-gradient-to-r from-success-500 to-emerald-600 text-white hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-success-500/20"
-                            >
-                                Oyunu Başlat 🚀
-                            </button>
-                        ) : (
-                            <div className="text-center p-4 bg-white/5 rounded-xl animate-pulse">
-                                <p className="text-dark-300">Kurucunun başlatması bekleniyor...</p>
-                            </div>
-                        )}
+                                )
+                            })}
                     </div>
                 </div>
             </div>
-        </div>
-    )
+        )
+    }
+
+    return null
 }

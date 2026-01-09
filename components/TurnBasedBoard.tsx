@@ -142,6 +142,7 @@ export default function TurnBasedBoard({
                             target={targetWord}
                             submitted={true}
                             result={sharedResults[i]}
+                            length={targetWord.length}
                         />
                     ))}
 

@@ -57,10 +57,20 @@ export default function TurnBasedBoard({
         const valid = await isValidWord(currentGuess)
 
         if (!valid) {
+            // Geçersiz kelime - Kırmızı göster ve hak yak
             setShakeRow(true)
             setTimeout(() => setShakeRow(false), 500)
             setError('Geçersiz kelime!')
             setTimeout(() => setError(''), 2000)
+
+            const invalidResult = currentGuess.split('').map(letter => ({
+                letter,
+                status: 'invalid' as const
+            }))
+
+            // Geçersiz kelimeyi de kaydet ve sırayı değiştir
+            onGuessSubmit(currentGuess, invalidResult)
+            setCurrentGuess('')
             return
         }
 

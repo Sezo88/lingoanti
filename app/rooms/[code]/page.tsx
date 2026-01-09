@@ -34,23 +34,12 @@ export default function RoomLobbyPage() {
     // Oyun başladığında kelimeleri çek
     useEffect(() => {
         if (room?.status === 'playing' && gameWords.length === 0 && !fetchingGame) {
-            const fetchGame = async () => {
-                setFetchingGame(true)
-                const { data } = await supabase
-                    .from('room_games')
-                    .select('words')
-                    .eq('room_id', room.id)
-                    .single()
-
-                if (data?.words) {
-                    const wordsArray = Array.isArray(data.words) ? data.words : JSON.parse(data.words as string)
-                    setGameWords(wordsArray)
-                }
-                setFetchingGame(false)
+            // Kelimeler artık rooms.game_words kolonunda
+            if (room.game_words && Array.isArray(room.game_words)) {
+                setGameWords(room.game_words)
             }
-            fetchGame()
         }
-    }, [room?.status, room?.id, gameWords.length, fetchingGame])
+    }, [room?.status, room?.game_words, gameWords.length, fetchingGame])
 
     // Veri çekme fonksiyonu
     const fetchRoomData = async () => {
@@ -336,7 +325,7 @@ export default function RoomLobbyPage() {
 
                             return (
                                 <div key={p.id} className={`p-3 rounded-xl border transition-all ${isCurrent ? 'bg-primary-500/20 border-primary-500/50 shadow-lg' :
-                                        isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
+                                    isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
                                     }`}>
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">

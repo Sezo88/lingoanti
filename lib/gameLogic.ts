@@ -79,6 +79,8 @@ export function getKeyboardState(results: LetterResult[][]): Map<string, 'correc
     if (!Array.isArray(results)) return keyState
 
     results.forEach(guessResult => {
+        if (!Array.isArray(guessResult)) return
+
         guessResult.forEach(({ letter, status }) => {
             // Geçersiz kelime durumunu atla (klavyeyi etkilemesin)
             if (status === 'invalid') return

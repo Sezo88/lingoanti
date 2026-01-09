@@ -16,8 +16,6 @@ DECLARE
   v_turn_order UUID[];
   v_current_turn INT;
   v_current_player UUID;
-  v_new_guesses JB;
-  v_new_results JB;
   v_base_score INT := 100;
   v_word_score INT;
 BEGIN

@@ -337,6 +337,7 @@ export default function RoomPage() {
                         sharedGuesses={sharedGuesses}
                         sharedResults={sharedResults}
                         onGuessSubmit={handleGuessSubmit}
+                        winFeedback={showWinFeedback}
                     />
                 </div>
 
@@ -361,7 +362,7 @@ export default function RoomPage() {
 
                                 return (
                                     <div key={p.id} className={`p-3 rounded-xl border transition-all ${isCurrent ? 'bg-primary-500/20 border-primary-500/50 shadow-lg' :
-                                            isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
+                                        isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
                                         }`}>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
@@ -415,8 +416,8 @@ export default function RoomPage() {
                                     <div
                                         key={p.id}
                                         className={`p-4 rounded-xl border transition-all relative overflow-hidden ${isSelf
-                                                ? 'bg-primary-500/10 border-primary-500/50 shadow-lg shadow-primary-500/10'
-                                                : 'bg-black/20 border-white/5'
+                                            ? 'bg-primary-500/10 border-primary-500/50 shadow-lg shadow-primary-500/10'
+                                            : 'bg-black/20 border-white/5'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-2 relative z-10">

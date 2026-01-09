@@ -13,7 +13,9 @@ interface TurnBasedBoardProps {
     currentPlayerName: string
     sharedGuesses: string[]
     sharedResults: any[]
+    sharedResults: any[]
     onGuessSubmit: (guess: string, result: any[]) => void
+    winFeedback?: { winnerName: string; word: string; score: number; isMe: boolean } | null
 }
 
 export default function TurnBasedBoard({
@@ -22,7 +24,10 @@ export default function TurnBasedBoard({
     currentPlayerName,
     sharedGuesses,
     sharedResults,
-    onGuessSubmit
+    sharedGuesses,
+    sharedResults,
+    onGuessSubmit,
+    winFeedback
 }: TurnBasedBoardProps) {
     const [currentGuess, setCurrentGuess] = useState('')
     const [shakeRow, setShakeRow] = useState(false)
@@ -104,8 +109,31 @@ export default function TurnBasedBoard({
                 <div className="text-sm text-white/70 mb-1">
                     {isMyTurn ? '🎯 Senin Sıran!' : '👀 Bekle'}
                 </div>
-                <div className="text-lg font-bold text-white">{currentPlayerName}</div>
+                <div className="text-lg font-bold text-white transition-all">{currentPlayerName}</div>
             </div>
+
+            {/* KAZANAN GERİ BİLDİRİMİ OVERLAY */}
+            {winFeedback && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-sm rounded-xl"
+                >
+                    <div className="text-center p-6 bg-dark-100 border border-success-500/50 rounded-2xl shadow-2xl animate-bounce-subtle">
+                        <div className="text-4xl mb-2">🏆</div>
+                        <h3 className="text-xl font-bold text-white mb-1">
+                            {winFeedback.isMe ? 'TEBRİKLER!' : `${winFeedback.winnerName} Bildi!`}
+                        </h3>
+                        <p className="text-success-400 font-mono text-2xl font-bold tracking-widest mb-2">
+                            {winFeedback.word}
+                        </p>
+                        <div className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-bold inline-block">
+                            +{winFeedback.score} Puan
+                        </div>
+                    </div>
+                </motion.div>
+            )}
 
             <div className="flex-1 overflow-y-auto flex items-center justify-center py-2">
                 <div className="grid gap-1.5 px-4">

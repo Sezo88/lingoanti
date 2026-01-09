@@ -263,29 +263,38 @@ export default function RoomLobbyPage() {
     // --- GAME TURN-BASED MODU (Sıra Sende) ---
     if (room?.status === 'playing' && room?.game_mode === 'turn_based' && gameWords.length > 0) {
         const config = room.config || {}
+        const gameState = room.game_state || { guesses: [], results: [], currentWordIndex: 0 }
         const turnOrder = config.turnOrder || []
         const currentTurn = config.currentTurn || 0
-        const currentRound = config.currentRound || 0
 
         const currentPlayerId = turnOrder[currentTurn % turnOrder.length]
         const isMyTurn = currentPlayerId === user?.id
         const currentPlayer = participants.find(p => p.user_id === currentPlayerId)
-        const currentWordIndex = currentRound
+        const currentWordIndex = gameState.currentWordIndex || 0
+        const currentWord = gameWords[currentWordIndex] || ''
 
-        // Kelime tamamlandığında sırayı değiştir
-        const handleTurnComplete = async (success: boolean, attempts: number) => {
-            if (!room) return
+        // Ortak tahta state'i
+        const sharedGuesses = gameState.guesses || []
+        const sharedResults = gameState.results || []
 
-            // Sadece kelime bittiğinde sırayı değiştir
-            const nextTurn = currentTurn + 1
-            const nextRound = Math.floor(nextTurn / turnOrder.length)
+        // Tahmin yapıldığında
+        const handleGuessSubmit = async (guess: string, result: any[]) => {
+            if (!room || !isMyTurn) return
 
-            // Puan hesapla (başarılıysa)
-            if (success) {
-                const currentParticipant = participants.find(p => p.user_id === user?.id)
+            const newGuesses = [...sharedGuesses, guess]
+            const newResults = [...sharedResults, result]
+
+            // Doğru mu kontrol et
+            const isCorrect = result.every((r: any) => r.status === 'correct')
+
+            if (isCorrect) {
+                // Doğru buldu - Puan ver ve yeni kelimeye geç
+                const attemptCount = newGuesses.length
                 const baseScore = 100
-                const attemptBonus = Math.max(0, (6 - attempts) * 10)
+                const attemptBonus = Math.max(0, (6 - attemptCount) * 10)
                 const wordScore = baseScore + attemptBonus
+
+                const currentParticipant = participants.find(p => p.user_id === user?.id)
 
                 await supabase
                     .from('room_participants')
@@ -294,35 +303,55 @@ export default function RoomLobbyPage() {
                     })
                     .eq('room_id', room.id)
                     .eq('user_id', user!.id)
+
+                // Yeni kelimeye geç
+                const nextWordIndex = currentWordIndex + 1
+                const nextRound = Math.floor(nextWordIndex / 1) // Her kelime bir round
+
+                await supabase
+                    .from('rooms')
+                    .update({
+                        game_state: {
+                            guesses: [],
+                            results: [],
+                            currentWordIndex: nextWordIndex
+                        },
+                        config: {
+                            ...config,
+                            currentTurn: nextWordIndex, // Yeni kelimede sıra değişir
+                            currentRound: nextRound
+                        }
+                    })
+                    .eq('id', room.id)
+            } else {
+                // Yanlış - Sadece sırayı değiştir
+                await supabase
+                    .from('rooms')
+                    .update({
+                        game_state: {
+                            guesses: newGuesses,
+                            results: newResults,
+                            currentWordIndex
+                        },
+                        config: {
+                            ...config,
+                            currentTurn: currentTurn + 1
+                        }
+                    })
+                    .eq('id', room.id)
             }
-
-            // Sırayı ilerlet
-            await supabase
-                .from('rooms')
-                .update({
-                    config: {
-                        ...config,
-                        currentTurn: nextTurn,
-                        currentRound: nextRound
-                    }
-                })
-                .eq('id', room.id)
-        }
-
-        const handleTimeUp = () => {
-            // Süre dolunca da sıra değişsin
-            handleTurnComplete(false, 6)
         }
 
         return (
             <div className="min-h-screen text-white flex flex-col md:flex-row">
                 <div className="flex-1 p-4 border-r border-white/5 bg-black/30">
                     <TurnBasedBoard
-                        targetWord={gameWords[currentWordIndex] || ''}
+                        targetWord={currentWord}
                         isMyTurn={isMyTurn}
                         currentPlayerName={currentPlayer?.display_name || 'Oyuncu'}
-                        onTurnComplete={handleTurnComplete}
-                        onTimeUp={handleTimeUp}
+                        sharedGuesses={sharedGuesses}
+                        sharedResults={sharedResults}
+                        onGuessSubmit={handleGuessSubmit}
                     />
                 </div>
 
@@ -334,32 +363,35 @@ export default function RoomLobbyPage() {
                     <div className="mb-6 p-4 bg-black/20 rounded-xl border border-white/10">
                         <div className="text-sm text-white/70 mb-1">Şu Anki Sıra:</div>
                         <div className="text-xl font-bold text-white">{currentPlayer?.display_name}</div>
-                        <div className="text-xs text-white/50 mt-2">El {currentRound + 1} / {config.roundsTotal || 0}</div>
+                        <div className="text-xs text-white/50 mt-2">Kelime {currentWordIndex + 1} / {gameWords.length}</div>
+                        <div className="text-xs text-white/50">Deneme: {sharedGuesses.length + 1}</div>
                     </div>
 
                     <div className="space-y-3">
-                        {participants.map((p, index) => {
-                            const isCurrent = p.user_id === currentPlayerId
-                            const isSelf = p.user_id === user?.id
+                        {participants
+                            .sort((a, b) => (b.score || 0) - (a.score || 0))
+                            .map((p) => {
+                                const isCurrent = p.user_id === currentPlayerId
+                                const isSelf = p.user_id === user?.id
 
-                            return (
-                                <div key={p.id} className={`p-3 rounded-xl border transition-all ${isCurrent ? 'bg-primary-500/20 border-primary-500/50 shadow-lg' :
-                                    isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
-                                    }`}>
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-2">
-                                            {isCurrent && <span className="text-lg">▶️</span>}
-                                            <span className={`font-semibold ${isSelf ? 'text-primary-400' : 'text-white'}`}>
-                                                {p.display_name}
+                                return (
+                                    <div key={p.id} className={`p-3 rounded-xl border transition-all ${isCurrent ? 'bg-primary-500/20 border-primary-500/50 shadow-lg' :
+                                            isSelf ? 'bg-white/5 border-white/10' : 'bg-dark-200 border-white/5'
+                                        }`}>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
+                                                {isCurrent && <span className="text-lg">▶️</span>}
+                                                <span className={`font-semibold ${isSelf ? 'text-primary-400' : 'text-white'}`}>
+                                                    {p.display_name}
+                                                </span>
+                                            </div>
+                                            <span className="text-sm text-yellow-500 font-bold">
+                                                {p.score || 0}P
                                             </span>
                                         </div>
-                                        <span className="text-sm text-yellow-500 font-bold">
-                                            {p.score || 0}P
-                                        </span>
                                     </div>
-                                </div>
-                            )
-                        })}
+                                )
+                            })}
                     </div>
                 </div>
             </div>

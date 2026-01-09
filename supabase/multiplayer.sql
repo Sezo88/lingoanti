@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS rooms (
     "currentRound": 0
   }'::jsonb,
   game_words TEXT[],
+  game_state JSONB DEFAULT '{
+    "guesses": [],
+    "results": [],
+    "currentWordIndex": 0
+  }'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   ended_at TIMESTAMP WITH TIME ZONE
 );

@@ -28,6 +28,13 @@ export default function TurnBasedBoard({
     const [shakeRow, setShakeRow] = useState(false)
     const [error, setError] = useState('')
 
+    // Sıra değiştiğinde input'u temizle
+    useEffect(() => {
+        if (!isMyTurn) {
+            setCurrentGuess('')
+        }
+    }, [isMyTurn])
+
     const handleKeyPress = (key: string) => {
         if (!isMyTurn) return
         if (currentGuess.length < targetWord.length) {

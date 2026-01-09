@@ -74,12 +74,16 @@ export default function ArenaBoard({ targetWords, onProgress, onWordCompleted }:
         setTotalScore(prev => prev + wordScore)
 
         onWordCompleted(wordIndex, timeSeconds, wordScore)
+
+        // Otomatik geçiş YOK - Kullanıcı "Tamam" deyecek
     }
 
     const handleLose = () => {
         setIsWin(false)
         setShowModal(true)
         setGameStatus('lost')
+
+        // Otomatik geçiş YOK - Kullanıcı "Tamam" deyecek veya 10s beklenecek
     }
 
     const handleNextWord = () => {

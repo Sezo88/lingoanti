@@ -11,14 +11,14 @@ interface AnswerModalProps {
 
 export default function AnswerModal({ isOpen, isWin, targetWord, onNext }: AnswerModalProps) {
     useEffect(() => {
-        if (isOpen && !isWin) {
-            // Kaybedince 5 saniye sonra otomatik kapat
+        if (isOpen) {
+            // 10 saniye sonra otomatik kapat (hem kazanma hem kaybetme için)
             const timer = setTimeout(() => {
                 onNext()
-            }, 5000)
+            }, 10000)
             return () => clearTimeout(timer)
         }
-    }, [isOpen, isWin, onNext])
+    }, [isOpen, onNext])
 
     if (!isOpen) return null
 
@@ -37,9 +37,7 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext }: Answe
                     <div className="text-5xl font-black text-yellow-400 tracking-wider drop-shadow-lg mb-2">
                         {targetWord.toLocaleUpperCase('tr-TR')}
                     </div>
-                    {!isWin && (
-                        <p className="text-sm text-white/60 mt-4">5 saniye sonra otomatik kapanacak...</p>
-                    )}
+                    <p className="text-sm text-white/60 mt-4">10 saniye sonra otomatik devam edecek...</p>
                 </div>
                 <button
                     onClick={onNext}

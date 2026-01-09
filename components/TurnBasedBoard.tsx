@@ -182,14 +182,14 @@ export default function TurnBasedBoard({
             />
 
             {error && (
-                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50">
+                <div className="absolute top-10 left-1/2 transform -translate-x-1/2 z-50">
                     <div className="bg-danger-500/90 text-white px-4 py-2 rounded-lg shadow-lg font-bold animate-pulse">
                         {error}
                     </div>
                 </div>
             )}
 
-            <div className="px-4 mb-4">
+            <div className="px-4 mb-2">
                 <BearTimer
                     key={guesses.length}
                     duration={60}
@@ -198,14 +198,14 @@ export default function TurnBasedBoard({
                 />
             </div>
 
-            <div className="text-center mb-4">
-                <span className="bg-primary-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+            <div className="text-center mb-2">
+                <span className="bg-primary-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
                     Senin Sıran! 🎯
                 </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-[400px] flex items-center justify-center">
-                <div className="grid gap-2 p-4">
+            <div className="flex-1 overflow-y-auto flex items-center justify-center py-2">
+                <div className="grid gap-1.5 px-4">
                     {guesses.map((guess, i) => (
                         <Row
                             key={i}
@@ -232,7 +232,7 @@ export default function TurnBasedBoard({
                 </div>
             </div>
 
-            <div className="pb-4">
+            <div className="pb-2">
                 <GameKeyboard
                     onKeyPress={handleKeyPress}
                     onEnter={handleEnter}

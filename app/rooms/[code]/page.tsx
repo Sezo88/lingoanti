@@ -272,13 +272,31 @@ export default function RoomLobbyPage() {
         const currentPlayer = participants.find(p => p.user_id === currentPlayerId)
         const currentWordIndex = currentRound
 
+        // Kelime tamamlandığında sırayı değiştir
         const handleTurnComplete = async (success: boolean, attempts: number) => {
             if (!room) return
 
-            // Sırayı bir sonraki oyuncuya geç
+            // Sadece kelime bittiğinde sırayı değiştir
             const nextTurn = currentTurn + 1
             const nextRound = Math.floor(nextTurn / turnOrder.length)
 
+            // Puan hesapla (başarılıysa)
+            if (success) {
+                const currentParticipant = participants.find(p => p.user_id === user?.id)
+                const baseScore = 100
+                const attemptBonus = Math.max(0, (6 - attempts) * 10)
+                const wordScore = baseScore + attemptBonus
+
+                await supabase
+                    .from('room_participants')
+                    .update({
+                        score: (currentParticipant?.score || 0) + wordScore
+                    })
+                    .eq('room_id', room.id)
+                    .eq('user_id', user!.id)
+            }
+
+            // Sırayı ilerlet
             await supabase
                 .from('rooms')
                 .update({
@@ -292,6 +310,7 @@ export default function RoomLobbyPage() {
         }
 
         const handleTimeUp = () => {
+            // Süre dolunca da sıra değişsin
             handleTurnComplete(false, 6)
         }
 

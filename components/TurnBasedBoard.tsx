@@ -24,8 +24,6 @@ export default function TurnBasedBoard({
     currentPlayerName,
     sharedGuesses,
     sharedResults,
-    sharedGuesses,
-    sharedResults,
     onGuessSubmit,
     winFeedback
 }: TurnBasedBoardProps) {

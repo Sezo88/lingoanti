@@ -11,14 +11,14 @@ import { calculateWordScore } from '@/lib/scoring'
 
 interface ArenaBoardProps {
     targetWords: string[]
-    duration?: number // Optional prop added
+    duration?: number
     onProgress: (wordIndex: number, isFinished: boolean) => void
     onWordCompleted: (wordIndex: number, timeSeconds: number, score: number) => void
 }
 
 export default function ArenaBoard({
     targetWords,
-    duration = 60, // Default value
+    duration = 60,
     onProgress,
     onWordCompleted
 }: ArenaBoardProps) {
@@ -38,244 +38,298 @@ export default function ArenaBoard({
     const [showModal, setShowModal] = useState(false)
     const [isWin, setIsWin] = useState(false)
 
-    // Refs
-    // const timerRef = useRef<any>(null) // Timer'ı parent yönetiyor aslında ama burada görsel
+    // Şu anki hedef kelime
+    const targetWord = targetWords[wordIndex]
 
-    const currentTargetWord = targetWords[wordIndex] || ''
-
-    // İlk ve kelime geçişlerinde zamanlayıcıyı başlatma
+    // Oyun bitti mi kontrolü
     useEffect(() => {
-        setWordStartTime(Date.now())
-    }, [wordIndex])
-
-
-    // Klavye olaylarını dinle
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (gameStatus !== 'playing') return
-
-            const key = e.key.toUpperCase()
-
-            if (key === 'ENTER') {
-                handleEnter()
-            } else if (key === 'BACKSPACE') {
-                handleBackspace()
-            } else if (/^[A-ZĞÜŞİÖÇ]$/.test(key)) { // Türkçe karakter desteği
-                handleKeyPress(key)
-            }
+        if (wordIndex >= targetWords.length) {
+            setGameStatus('finished')
         }
-
-        window.addEventListener('keydown', handleKeyDown)
-        return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [currentGuess, gameStatus])
+    }, [wordIndex, targetWords.length])
 
     const handleKeyPress = (key: string) => {
-        if (currentGuess.length < 5) {
-            setCurrentGuess(prev => prev + key)
+        if (gameStatus !== 'playing') return
+        if (currentGuess.length < targetWord.length) {
+            // Sadece Türkçe karakterleri ve harfleri kabul et
+            if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
+                setCurrentGuess(prev => prev + key.toLocaleUpperCase('tr-TR'))
+            }
         }
-    }
-
-    const handleBackspace = () => {
-        setCurrentGuess(prev => prev.slice(0, -1))
     }
 
     const handleEnter = async () => {
-        if (currentGuess.length !== 5) {
-            setError('5 harfli olmalı')
-            setShakeRow(true)
-            setTimeout(() => setShakeRow(false), 500)
-            return
-        }
-
-        if (!await isValidWord(currentGuess)) {
-            setError('Geçersiz kelime')
-            setShakeRow(true)
-            setTimeout(() => setShakeRow(false), 500)
-            return
-        }
-
-        submitGuess(currentGuess)
+        if (gameStatus !== 'playing') return
+        await submitGuess()
     }
 
-    const submitGuess = (guess: string) => {
-        const result = evaluateGuess(guess, currentTargetWord)
-        const newGuesses = [...guesses, guess]
-        const newResults = [...results, result]
+    const handleBackspace = () => {
+        if (gameStatus !== 'playing') return
+        setCurrentGuess(prev => prev.slice(0, -1))
+    }
+
+    // Helper functions defined before usage
+    const handleWin = () => {
+        setIsWin(true)
+        setShowModal(true)
+        setGameStatus('won')
+
+        // Calculate Score
+        const timeSeconds = (Date.now() - wordStartTime) / 1000
+        const wordScore = calculateWordScore(timeSeconds)
+        setTotalScore(prev => prev + wordScore)
+
+        onWordCompleted(wordIndex, timeSeconds, wordScore)
+
+        // Otomatik geçiş YOK - Kullanıcı "Tamam" deyecek
+    }
+
+    const handleLose = () => {
+        setIsWin(false)
+        setShowModal(true)
+        setGameStatus('lost')
+
+        // Otomatik geçiş YOK - Kullanıcı "Tamam" deyecek veya 10s beklenecek
+    }
+
+    const handleNextWord = () => {
+        setShowModal(false)
+        const nextIndex = wordIndex + 1
+        setWordIndex(nextIndex)
+        setGuesses([])
+        setResults([])
+        setGameStatus('playing')
+        setWordStartTime(Date.now()) // Reset timer
+
+        onProgress(nextIndex, nextIndex >= targetWords.length)
+
+        if (nextIndex >= targetWords.length) {
+            setGameStatus('finished')
+        }
+    }
+
+    const submitGuess = async () => {
+        if (currentGuess.length !== targetWord.length) {
+            setShakeRow(true)
+            setTimeout(() => setShakeRow(false), 500)
+            return
+        }
+
+        const valid = await isValidWord(currentGuess)
+
+        // GEÇERSİZ KELİME MANTIĞI (Hak yer)
+        if (!valid) {
+            setShakeRow(true)
+            setTimeout(() => setShakeRow(false), 500)
+            setError('Geçersiz kelime!')
+            setTimeout(() => setError(''), 2000)
+
+            const invalidResult = currentGuess.split('').map(letter => ({
+                letter,
+                status: 'invalid' as const
+            }))
+
+            const newGuesses = [...guesses, currentGuess]
+            const newResults = [...results, invalidResult]
+
+            setGuesses(newGuesses)
+            setResults(newResults)
+            setCurrentGuess('')
+
+            // 6. deneme geçersizse kaybetti
+            if (newGuesses.length >= 6) {
+                handleLose()
+            }
+            return
+        }
+
+        // GEÇERLİ KELİME
+        const evalResult = evaluateGuess(currentGuess, targetWord)
+        const newGuesses = [...guesses, currentGuess]
+        const newResults = [...results, evalResult]
 
         setGuesses(newGuesses)
         setResults(newResults)
         setCurrentGuess('')
 
-        const won = result.every(l => l.status === 'correct')
+        // Doğru tahmin mi?
+        const won = evalResult.every(l => l.status === 'correct')
 
         if (won) {
-            handleWin(newGuesses.length)
+            // Kelime bilindi!
+            handleWin()
         } else if (newGuesses.length >= 6) {
-            // Son hakta yanlış kelime olsa bile "submitGuess" çalıştığı için
-            // buraya düşeriz. Ancak kelime geçerliyse (yukarıda isValidWord kontrolü var)
-            // burası çalışır.
             handleLose()
         }
     }
 
-    const handleWin = (attempts: number) => {
-        setGameStatus('won') // Geçici durum, modal için
+    const handleTimeUp = () => {
+        if (gameStatus !== 'playing') return
 
-        // Puan hesapla
-        const timeSpent = (Date.now() - wordStartTime) / 1000
-        const score = calculateWordScore(timeSpent)
-        setTotalScore(prev => prev + score)
+        // Süre doldu: Bir hak yak
+        const invalidResult = Array(targetWord.length).fill({ letter: '?', status: 'invalid' })
+        const placeholderGuess = '?'.repeat(targetWord.length)
 
-        // Veritabanına kaydet
-        onWordCompleted(wordIndex, timeSpent, score)
+        const newGuesses = [...guesses, placeholderGuess]
+        const newResults = [...results, invalidResult]
 
-        setIsWin(true)
-        setShowModal(true)
-    }
+        setGuesses(newGuesses)
+        setResults(newResults)
+        setCurrentGuess('')
 
-    const handleLose = () => {
-        setGameStatus('lost') // Geçici durum
-        setIsWin(false)
-        setShowModal(true)
-    }
+        setError('Süre Doldu! -1 Hak')
+        setTimeout(() => setError(''), 2000)
 
-    // Modal kapandığında (Süre bitti veya kullanıcı bastı)
-    const handleNextWord = () => {
-        setShowModal(false)
-
-        if (wordIndex < targetWords.length - 1) {
-            // Sonraki kelimeye geç
-            setWordIndex(prev => prev + 1)
-            setGuesses([])
-            setResults([])
-            setCurrentGuess('')
-            setGameStatus('playing')
-            setWordStartTime(Date.now())
-        } else {
-            // Oyun bitti
-            setGameStatus('finished')
-            onProgress(wordIndex + 1, true) // Finish
+        if (newGuesses.length >= 6) {
+            handleLose()
         }
     }
 
-    // Modal'daki süre bittiğinde otomatik geç
-    const handleModalTimeUp = () => {
-        handleNextWord()
+    if (gameStatus === 'finished') {
+        return (
+            <div className="flex flex-col items-center justify-center p-10 text-center animate-in zoom-in">
+                <div className="text-6xl mb-4">🏆</div>
+                <h2 className="text-3xl font-bold text-white mb-2">Tebrikler!</h2>
+                <div className="text-4xl font-black text-yellow-400 mb-4">{totalScore} Puan</div>
+                <p className="text-dark-300">Tüm kelimeleri tamamladın.</p>
+                <p className="text-sm text-dark-400 mt-4">Diğerlerinin bitirmesi bekleniyor...</p>
+            </div>
+        )
     }
 
+    // Klavye durumunu hesapla
     const keyboardState = getKeyboardState(results)
 
     return (
-        <div className="flex flex-col h-full max-w-lg mx-auto relative">
+        <div className="flex flex-col h-full max-w-lg mx-auto w-full relative">
+            {/* Score Display */}
+            <div className="text-center mb-2 animate-in fade-in">
+                <div className="inline-block px-4 py-1 rounded-full bg-black/20 border border-white/5 backdrop-blur-sm">
+                    <span className="text-sm text-white/70 mr-2">PUAN:</span>
+                    <span className="text-xl font-bold text-yellow-400">{totalScore}</span>
+                </div>
+            </div>
+
+            {/* Modal */}
             <AnswerModal
                 isOpen={showModal}
                 isWin={isWin}
-                targetWord={currentTargetWord}
-                onNext={handleNextWord} // Manuel geçiş
-                onTimeUp={handleModalTimeUp} // Otomatik geçiş
+                targetWord={targetWord}
+                onNext={handleNextWord}
             />
 
-            {/* Üst Bilgi */}
-            <div className="flex justify-between items-center p-4 bg-black/20 rounded-xl mb-4 border border-white/5">
-                <div className="text-center">
-                    <div className="text-xs text-white/50">KELİME</div>
-                    <div className="font-bold text-xl">{wordIndex + 1}/{targetWords.length}</div>
+            {/* Hata Mesajı (Toast) */}
+            {error && (
+                <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50">
+                    <div className="bg-danger-500/90 text-white px-4 py-2 rounded-lg shadow-lg font-bold animate-pulse">
+                        {error}
+                    </div>
                 </div>
+            )}
 
-                {/* Timer */}
+            {/* Timer - Multiplayer için şimdilik opsiyonel, ileride prop olarak alınabilir */}
+            <div className="px-4">
                 <BearTimer
-                    duration={duration} // 60 saniye
-                    onTimeUp={handleLose}
-                    isRunning={gameStatus === 'playing'}
+                    key={guesses.length}
+                    duration={60}
+                    onTimeUp={handleTimeUp}
+                    isRunning={gameStatus === 'playing' && !showModal}
                 />
-
-                <div className="text-center">
-                    <div className="text-xs text-white/50">PUAN</div>
-                    <div className="font-bold text-xl text-yellow-400">{totalScore}</div>
-                </div>
             </div>
 
-            {/* Oyun Tahtası */}
-            <div className="flex-1 flex flex-col justify-center mb-4 min-h-[350px]">
-                <div className="grid grid-rows-6 gap-1.5 aspect-[5/6] max-h-[400px] mx-auto w-full">
-                    {/* Geçmiş Tahminler */}
+            {/* Header: Kaçıncı kelime */}
+            <div className="text-center mb-4">
+                <span className="bg-dark-200 text-primary-400 px-3 py-1 rounded-full text-sm font-bold border border-white/5">
+                    Kelime {wordIndex + 1} / {targetWords.length}
+                </span>
+            </div>
+
+            {/* Grid */}
+            <div className="flex-1 overflow-y-auto min-h-[400px] flex items-center justify-center">
+                <div className="grid gap-2 p-4">
+                    {/* Geçmiş tahminler */}
                     {guesses.map((guess, i) => (
-                        <div key={i} className="grid grid-cols-5 gap-1.5">
-                            {guess.split('').map((letter, j) => (
-                                <motion.div
-                                    key={j}
-                                    initial={{ rotateX: 0 }}
-                                    animate={{ rotateX: 360 }}
-                                    transition={{ delay: j * 0.1, duration: 0.5 }}
-                                    className={`
-                                        flex items-center justify-center text-2xl font-bold rounded-lg border-2 select-none
-                                        ${results[i][j].status === 'correct' ? 'bg-success-500 border-success-600' :
-                                            results[i][j].status === 'present' ? 'bg-warning-500 border-warning-600' :
-                                                'bg-dark-300 border-dark-400 text-white/50'}
-                                    `}
-                                >
-                                    {letter}
-                                </motion.div>
-                            ))}
-                        </div>
+                        <Row
+                            key={i}
+                            word={guess}
+                            target={targetWord}
+                            submitted={true}
+                            result={results[i]} // Sonucu pass et
+                        />
                     ))}
 
-                    {/* Mevcut Tahmin */}
-                    {gameStatus === 'playing' && guesses.length < 6 && (
-                        <motion.div
-                            className="grid grid-cols-5 gap-1.5"
-                            animate={shakeRow ? { x: [-5, 5, -5, 5, 0] } : {}}
-                            transition={{ duration: 0.4 }}
-                        >
-                            {[...Array(5)].map((_, i) => (
-                                <div
-                                    key={i}
-                                    className={`
-                                        flex items-center justify-center text-2xl font-bold rounded-lg border-2 bg-dark-200/50
-                                        ${currentGuess[i] ? 'border-white/50 text-white' : 'border-white/10 text-transparent'}
-                                        ${shakeRow ? 'border-error-500' : ''}
-                                    `}
-                                >
-                                    {currentGuess[i] || ''}
-                                </div>
-                            ))}
-                        </motion.div>
+                    {/* Şu anki tahmin */}
+                    {gameStatus === 'playing' && (
+                        <Row
+                            word={currentGuess}
+                            target={targetWord}
+                            submitted={false}
+                            shake={shakeRow}
+                            length={targetWord.length}
+                        />
                     )}
 
-                    {/* Boş Satırlar */}
-                    {[...Array(Math.max(0, 5 - guesses.length))].map((_, i) => (
-                        <div key={`empty-${i}`} className="grid grid-cols-5 gap-1.5 opacity-30">
-                            {[...Array(5)].map((_, j) => (
-                                <div key={j} className="border-2 border-white/10 rounded-lg bg-dark-200/20"></div>
-                            ))}
-                        </div>
+                    {/* Boş satırlar */}
+                    {Array.from({ length: Math.max(0, 5 - guesses.length - 1) }).map((_, i) => (
+                        <Row key={`empty-${i}`} word="" target="" submitted={false} length={targetWord.length} />
                     ))}
                 </div>
             </div>
 
-            {/* Hata Mesajı */}
-            <AnimatePresence>
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute top-20 left-1/2 -translate-x-1/2 bg-error-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg z-50 text-sm whitespace-nowrap"
-                    >
-                        {error}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Sanal Klavye */}
+            {/* Keyboard */}
             <div className="pb-4">
                 <GameKeyboard
                     onKeyPress={handleKeyPress}
-                    onDelete={handleBackspace}
                     onEnter={handleEnter}
-                    keyState={keyboardState}
+                    onBackspace={handleBackspace}
+                    keyStates={keyboardState}
                 />
             </div>
         </div>
+    )
+}
+
+// Yardımcı Row Bileşeni
+function Row({ word, target, submitted, shake, length = 5, result }: any) {
+    const letters = word.split('')
+    const emptyCount = length - letters.length
+
+    // Eğer result prop geldiyse (geçmiş tahmin) onu kullan, yoksa boş array
+    const feedback = result || []
+
+    return (
+        <motion.div
+            className="flex gap-2"
+            animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
+            transition={{ duration: 0.4 }}
+        >
+            {/* ... letters mapping ... */}
+            {letters.map((letter: string, i: number) => {
+                let bgColor = 'bg-dark-200/50 border-white/10'
+
+                if (submitted && feedback[i]) {
+                    if (feedback[i].status === 'correct') bgColor = 'bg-success-500 border-success-500'
+                    else if (feedback[i].status === 'present') bgColor = 'bg-warning-500 border-warning-500'
+                    else if (feedback[i].status === 'invalid') bgColor = 'bg-danger-500 border-danger-500' // Kırmızı
+                    else bgColor = 'bg-dark-300 border-dark-300'
+                }
+
+                return (
+                    <div
+                        key={i}
+                        className={`w-12 h-12 sm:w-14 sm:h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-bold text-white transition-all ${bgColor}`}
+                    >
+                        {letter}
+                    </div>
+                )
+            })}
+
+            {Array.from({ length: emptyCount }).map((_, i) => (
+                <div
+                    key={`empty-${i}`}
+                    className="w-12 h-12 sm:w-14 sm:h-14 border-2 border-white/5 bg-black/20 rounded-lg"
+                />
+            ))}
+        </motion.div>
     )
 }

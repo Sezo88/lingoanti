@@ -126,10 +126,8 @@ export default function RoomLobbyPage() {
                 table: 'rooms',
                 filter: `id=eq.${room.id}`
             }, (payload) => {
-                if (payload.new.status === 'playing') {
-                    console.log('Oyun başladı!')
-                    setRoom(payload.new)
-                }
+                console.log('Oda güncellendi:', payload.new)
+                setRoom(payload.new as any)
             })
             .subscribe((status) => {
                 console.log('Abonelik durumu:', status)

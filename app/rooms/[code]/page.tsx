@@ -127,7 +127,8 @@ export default function RoomLobbyPage() {
                 filter: `id=eq.${room.id}`
             }, (payload) => {
                 console.log('Oda güncellendi:', payload.new)
-                setRoom(payload.new as any)
+                // Yeni obje referansı oluştur ki React re-render etsin
+                setRoom({ ...payload.new } as any)
             })
             .subscribe((status) => {
                 console.log('Abonelik durumu:', status)

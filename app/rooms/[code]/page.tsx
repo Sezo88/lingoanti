@@ -339,6 +339,8 @@ export default function RoomPage() {
         }, [isMyTurn])
 
         const handleLeaveRoom = async () => {
+            if (!user) return
+
             if (confirm('Odadan ayrılmak istiyor musunuz?')) {
                 await supabase
                     .from('room_participants')

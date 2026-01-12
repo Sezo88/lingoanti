@@ -164,26 +164,34 @@ export function useTournamentMatchmaking() {
     const cancelSearch = async () => {
         if (!user) return
 
+        console.log('🔴 cancelSearch called, current status:', matchmakingStatus)
+
         try {
             await supabase.rpc('cancel_tournament_search', {
                 p_user_id: currentLobby ? null : user.id,
                 p_lobby_id: currentLobby?.id || null
             })
 
+            console.log('✅ RPC cancel_tournament_search completed')
+
             // Clean up subscriptions
             if (subscriptionRef.current) {
                 supabase.removeChannel(subscriptionRef.current)
                 subscriptionRef.current = null
+                console.log('✅ Subscription cleaned up')
             }
 
             if (countdownTimerRef.current) {
                 clearTimeout(countdownTimerRef.current)
                 countdownTimerRef.current = null
+                console.log('✅ Countdown timer cleared')
             }
 
+            console.log('🔄 Setting matchmaking status to idle')
             setMatchmakingStatus({ status: 'idle' })
+            console.log('✅ Matchmaking status set to idle')
         } catch (err: any) {
-            console.error('Cancel search error:', err)
+            console.error('❌ Cancel search error:', err)
         }
     }
 

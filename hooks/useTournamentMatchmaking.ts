@@ -216,9 +216,12 @@ export function useTournamentMatchmaking() {
 
     // Helper: Handle matchmaking response
     const handleMatchmakingResponse = (data: any) => {
+        console.log('Matchmaking response:', data)
+
         if (data.status === 'matched') {
             setMatchmakingStatus({ status: 'matched', roomId: data.room_id })
-            router.push(`/rooms/${data.room_id}`)
+            // Navigate to room using code, not ID
+            router.push(`/rooms/${data.room_code || data.room_id}`)
         } else if (data.status === 'countdown') {
             setMatchmakingStatus({
                 status: 'countdown',
@@ -303,11 +306,18 @@ export function useTournamentMatchmaking() {
                 },
                 (payload: any) => {
                     const updated = payload.new
+                    console.log('Waiting room update:', updated)
 
                     if (updated.status === 'started') {
                         setMatchmakingStatus({ status: 'matched', roomId: updated.room_id })
-                        router.push(`/rooms/${updated.room_id}`)
-                    } else if (updated.status === 'countdown' && !updated.countdown_started_at) {
+                        // Get room code from rooms table
+                        supabase.from('rooms').select('code').eq('id', updated.room_id).single()
+                            .then(({ data: room }) => {
+                                if (room) {
+                                    router.push(`/rooms/${room.code}`)
+                                }
+                            })
+                    } else if (updated.status === 'countdown' && updated.countdown_started_at) {
                         setMatchmakingStatus(prev => ({
                             ...prev,
                             status: 'countdown',

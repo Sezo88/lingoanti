@@ -75,6 +75,7 @@ DECLARE
   v_max_players INTEGER;
   v_waiting_room_id UUID;
   v_room_id UUID;
+  v_room_code TEXT;
   v_current_players INTEGER;
   v_countdown_started TIMESTAMP WITH TIME ZONE;
   v_queue_entries RECORD;
@@ -133,7 +134,7 @@ BEGIN
         'gameMode', p_game_mode
       )
     )
-    RETURNING id INTO v_room_id;
+    RETURNING id, code INTO v_room_id, v_room_code;
 
     -- Create waiting room
     INSERT INTO tournament_waiting_rooms (room_id, game_mode, min_players, max_players, current_players, status)
@@ -141,6 +142,9 @@ BEGIN
     RETURNING id INTO v_waiting_room_id;
 
     v_current_players := 0;
+  ELSE
+    -- Get room code for existing room
+    SELECT code INTO v_room_code FROM rooms WHERE id = v_room_id;
   END IF;
 
   -- Add participants to room
@@ -190,6 +194,7 @@ BEGIN
     RETURN jsonb_build_object(
       'status', 'matched',
       'room_id', v_room_id,
+      'room_code', v_room_code,
       'waiting_room_id', v_waiting_room_id
     );
   END IF;
@@ -201,6 +206,7 @@ BEGIN
       ELSE 'waiting'
     END,
     'room_id', v_room_id,
+    'room_code', v_room_code,
     'waiting_room_id', v_waiting_room_id,
     'current_players', v_current_players,
     'min_players', v_min_players,
@@ -248,8 +254,36 @@ CREATE OR REPLACE FUNCTION cancel_tournament_search(
   p_lobby_id UUID DEFAULT NULL
 )
 RETURNS VOID AS $$
+DECLARE
+  v_room_id UUID;
+  v_waiting_room_id UUID;
+  v_participant_count INTEGER;
 BEGIN
   IF p_lobby_id IS NOT NULL THEN
+    -- Get room info from queue
+    SELECT tw.room_id, tw.id INTO v_room_id, v_waiting_room_id
+    FROM tournament_queue tq
+    JOIN tournament_waiting_rooms tw ON tw.game_mode = tq.game_mode AND tw.status IN ('filling', 'countdown')
+    WHERE tq.lobby_id = p_lobby_id
+    LIMIT 1;
+
+    -- Count lobby members
+    SELECT COUNT(*) INTO v_participant_count
+    FROM tournament_lobby_members
+    WHERE lobby_id = p_lobby_id;
+
+    -- Remove lobby members from room
+    IF v_room_id IS NOT NULL THEN
+      DELETE FROM room_participants
+      WHERE room_id = v_room_id
+        AND user_id IN (SELECT user_id FROM tournament_lobby_members WHERE lobby_id = p_lobby_id);
+
+      -- Decrement waiting room counter
+      UPDATE tournament_waiting_rooms
+      SET current_players = GREATEST(0, current_players - v_participant_count)
+      WHERE id = v_waiting_room_id;
+    END IF;
+
     -- Remove lobby from queue
     DELETE FROM tournament_queue WHERE lobby_id = p_lobby_id;
     
@@ -258,6 +292,24 @@ BEGIN
     SET status = 'waiting'
     WHERE id = p_lobby_id;
   ELSE
+    -- Get room info from queue
+    SELECT tw.room_id, tw.id INTO v_room_id, v_waiting_room_id
+    FROM tournament_queue tq
+    JOIN tournament_waiting_rooms tw ON tw.game_mode = tq.game_mode AND tw.status IN ('filling', 'countdown')
+    WHERE tq.user_id = p_user_id
+    LIMIT 1;
+
+    -- Remove user from room
+    IF v_room_id IS NOT NULL THEN
+      DELETE FROM room_participants
+      WHERE room_id = v_room_id AND user_id = p_user_id;
+
+      -- Decrement waiting room counter
+      UPDATE tournament_waiting_rooms
+      SET current_players = GREATEST(0, current_players - 1)
+      WHERE id = v_waiting_room_id;
+    END IF;
+
     -- Remove user from queue
     DELETE FROM tournament_queue WHERE user_id = p_user_id;
   END IF;

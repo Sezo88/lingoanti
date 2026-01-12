@@ -230,11 +230,20 @@ DECLARE
   v_game_mode TEXT;
   v_word_count INTEGER := 5;
   v_word_length INTEGER := 5;
+  v_current_players INTEGER;
+  v_min_players INTEGER;
 BEGIN
-  -- Get room info
-  SELECT room_id, game_mode INTO v_room_id, v_game_mode
+  -- Get room info and player counts
+  SELECT room_id, game_mode, current_players, min_players 
+  INTO v_room_id, v_game_mode, v_current_players, v_min_players
   FROM tournament_waiting_rooms
   WHERE id = p_waiting_room_id;
+
+  -- CRITICAL: Check if we have minimum players
+  IF v_current_players < v_min_players THEN
+    RAISE NOTICE 'Not enough players: % < %', v_current_players, v_min_players;
+    RETURN; -- Don't start the game yet
+  END IF;
 
   -- Mark waiting room as started
   UPDATE tournament_waiting_rooms

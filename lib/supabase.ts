@@ -65,3 +65,41 @@ export type LetterResult = {
     letter: string
     status: 'correct' | 'present' | 'absent' | 'invalid'
 }
+
+// Tournament Types
+export type TournamentLobby = {
+    id: string
+    lobby_code: string
+    leader_id: string
+    game_mode: 'arena' | 'turn_based'
+    status: 'waiting' | 'searching' | 'matched'
+    created_at: string
+}
+
+export type TournamentLobbyMember = {
+    id: string
+    lobby_id: string
+    user_id: string
+    joined_at: string
+}
+
+export type TournamentQueue = {
+    id: string
+    lobby_id?: string
+    user_id?: string
+    game_mode: 'arena' | 'turn_based'
+    is_team: boolean
+    created_at: string
+}
+
+export type TournamentWaitingRoom = {
+    id: string
+    room_id: string
+    game_mode: 'arena' | 'turn_based'
+    min_players: number
+    max_players: number
+    current_players: number
+    countdown_started_at?: string
+    status: 'filling' | 'countdown' | 'started'
+    created_at: string
+}

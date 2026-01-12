@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import TournamentModeCard from '@/components/TournamentModeCard'
 
 import { useMatchmaking } from '@/hooks/useMatchmaking'
 
@@ -131,6 +132,9 @@ export default function HomePage() {
                             </div>
                         </div>
                     </Link>
+
+                    {/* Turnuva Modu Card */}
+                    <TournamentModeCard />
 
                     {/* Kelime Yarışı Card */}
                     <div className="glass-card rounded-[24px] p-5 shadow-xl transition-transform active:scale-[0.98]">

@@ -181,12 +181,6 @@ export function useTournamentMatchmaking() {
                 console.log('✅ subscriptionRef cleaned up')
             }
 
-            if (waitingRoomChannelRef.current) {
-                await supabase.removeChannel(waitingRoomChannelRef.current)
-                waitingRoomChannelRef.current = null
-                console.log('✅ waitingRoomChannelRef cleaned up')
-            }
-
             if (countdownTimerRef.current) {
                 clearTimeout(countdownTimerRef.current)
                 countdownTimerRef.current = null

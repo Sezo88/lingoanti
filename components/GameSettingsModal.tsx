@@ -13,14 +13,16 @@ interface GameSettingsModalProps {
 export interface GameSettings {
     wordLength: number | 'mixed'
     bestOf: 3 | 5 | 7
+    duration: number // 0 = unlimited
 }
 
 export default function GameSettingsModal({ isOpen, onClose, onConfirm, friendName }: GameSettingsModalProps) {
     const [wordLength, setWordLength] = useState<number | 'mixed'>(5)
     const [bestOf, setBestOf] = useState<3 | 5 | 7>(3)
+    const [duration, setDuration] = useState<number>(60)
 
     const handleConfirm = () => {
-        onConfirm({ wordLength, bestOf })
+        onConfirm({ wordLength, bestOf, duration })
         onClose()
     }
 
@@ -53,8 +55,8 @@ export default function GameSettingsModal({ isOpen, onClose, onConfirm, friendNa
                                     key={length}
                                     onClick={() => setWordLength(length)}
                                     className={`py-3 rounded-xl font-semibold transition-all ${wordLength === length
-                                            ? 'bg-primary-600 text-white'
-                                            : 'bg-dark-200 text-dark-500 hover:bg-dark-300'
+                                        ? 'bg-primary-600 text-white'
+                                        : 'bg-dark-200 text-dark-500 hover:bg-dark-300'
                                         }`}
                                 >
                                     {length} Harf
@@ -63,8 +65,8 @@ export default function GameSettingsModal({ isOpen, onClose, onConfirm, friendNa
                             <button
                                 onClick={() => setWordLength('mixed')}
                                 className={`py-3 rounded-xl font-semibold transition-all col-span-3 ${wordLength === 'mixed'
-                                        ? 'bg-primary-600 text-white'
-                                        : 'bg-dark-200 text-dark-500 hover:bg-dark-300'
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-dark-200 text-dark-500 hover:bg-dark-300'
                                     }`}
                             >
                                 🎲 Karışık (Her el farklı)
@@ -83,8 +85,8 @@ export default function GameSettingsModal({ isOpen, onClose, onConfirm, friendNa
                                     key={num}
                                     onClick={() => setBestOf(num as 3 | 5 | 7)}
                                     className={`py-3 rounded-xl font-semibold transition-all ${bestOf === num
-                                            ? 'bg-success-600 text-white'
-                                            : 'bg-dark-200 text-dark-500 hover:bg-dark-300'
+                                        ? 'bg-success-600 text-white'
+                                        : 'bg-dark-200 text-dark-500 hover:bg-dark-300'
                                         }`}
                                 >
                                     Best of {num}
@@ -94,6 +96,32 @@ export default function GameSettingsModal({ isOpen, onClose, onConfirm, friendNa
                         <p className="text-xs text-dark-500 mt-2 text-center">
                             İlk {Math.ceil(bestOf / 2)} eli kazanan maçı alır
                         </p>
+                    </div>
+
+                    {/* Süre Seçimi */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-semibold mb-3 text-white">
+                            Süre (Her El İçin)
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {[30, 60, 90, 0].map((dur) => (
+                                <button
+                                    key={dur}
+                                    onClick={() => setDuration(dur)}
+                                    className={`py-3 rounded-xl font-semibold transition-all ${duration === dur
+                                        ? 'bg-warning-600 text-white'
+                                        : 'bg-dark-200 text-dark-500 hover:bg-dark-300'
+                                        }`}
+                                >
+                                    {dur === 0 ? '∞' : `${dur}s`}
+                                </button>
+                            ))}
+                        </div>
+                        {duration === 0 && (
+                            <p className="text-xs text-dark-500 mt-2 text-center">
+                                Süresiz - Rahatça düşünebilirsiniz
+                            </p>
+                        )}
                     </div>
 
                     {/* Buttons */}

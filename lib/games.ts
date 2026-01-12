@@ -149,8 +149,7 @@ export async function forfeitGame(
     const updateData: any = {
         status: 'finished',
         winner_id: winnerId,
-        forfeited_by: userId,
-        finished_at: new Date().toISOString()
+        forfeited_by: userId
     }
 
     // Skorları güncelle (best_of > 1 ise)

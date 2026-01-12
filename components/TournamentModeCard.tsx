@@ -51,7 +51,7 @@ export default function TournamentModeCard() {
 
     return (
         <>
-            {/* Matchmaking Overlay */}
+            {/* Matchmaking Overlay - Show for all non-idle statuses */}
             {matchmakingStatus.status !== 'idle' && (
                 <TournamentMatchmaking />
             )}

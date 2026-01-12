@@ -7,6 +7,7 @@ interface GameKeyboardProps {
     onEnter: () => void
     onBackspace: () => void
     keyStates?: Map<string, 'correct' | 'present' | 'absent'>
+    disabled?: boolean
 }
 
 const KEYBOARD_ROWS = [
@@ -15,7 +16,7 @@ const KEYBOARD_ROWS = [
     ['Z', 'C', 'V', 'B', 'N', 'M', 'Ö', 'Ç']
 ]
 
-export default function GameKeyboard({ onKeyPress, onEnter, onBackspace, keyStates }: GameKeyboardProps) {
+export default function GameKeyboard({ onKeyPress, onEnter, onBackspace, keyStates, disabled = false }: GameKeyboardProps) {
     const rows = [
         ['E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'Ğ', 'Ü'],
         ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ş', 'İ'],
@@ -31,9 +32,11 @@ export default function GameKeyboard({ onKeyPress, onEnter, onBackspace, keyStat
                         return (
                             <motion.button
                                 key={key}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => onKeyPress(key)}
-                                className={`flex-1 h-12 rounded-lg font-bold hover:opacity-80 active:scale-95 transition-all text-sm sm:text-base
+                                whileTap={disabled ? {} : { scale: 0.95 }}
+                                onClick={() => !disabled && onKeyPress(key)}
+                                disabled={disabled}
+                                className={`flex-1 h-12 rounded-lg font-bold transition-all text-sm sm:text-base
+                  ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80 active:scale-95'}
                   ${state === 'correct' ? 'bg-success-600 text-white' :
                                         state === 'present' ? 'bg-warning-600 text-white' :
                                             state === 'absent' ? 'bg-dark-400 text-dark-600' :
@@ -45,9 +48,11 @@ export default function GameKeyboard({ onKeyPress, onEnter, onBackspace, keyStat
                     })}
                     {i === 2 && (
                         <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={onBackspace}
-                            className="flex-1 max-w-[60px] h-12 rounded-lg bg-dark-300 text-white font-bold hover:bg-dark-400 active:scale-95 transition-all text-lg"
+                            whileTap={disabled ? {} : { scale: 0.95 }}
+                            onClick={() => !disabled && onBackspace()}
+                            disabled={disabled}
+                            className={`flex-1 max-w-[60px] h-12 rounded-lg bg-dark-300 text-white font-bold transition-all text-lg
+                                ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-dark-400 active:scale-95'}`}
                         >
                             ⌫
                         </motion.button>
@@ -58,9 +63,11 @@ export default function GameKeyboard({ onKeyPress, onEnter, onBackspace, keyStat
             {/* Send button - standalone 4th row */}
             <div className="flex justify-center mt-2">
                 <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onEnter}
-                    className="w-full max-w-md h-14 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold active:scale-95 transition-all text-lg"
+                    whileTap={disabled ? {} : { scale: 0.95 }}
+                    onClick={() => !disabled && onEnter()}
+                    disabled={disabled}
+                    className={`w-full max-w-md h-14 rounded-lg bg-orange-600 text-white font-bold transition-all text-lg
+                        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-orange-700 active:scale-95'}`}
                 >
                     GÖNDER
                 </motion.button>

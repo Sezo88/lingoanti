@@ -49,6 +49,9 @@ export default function TournamentModeCard() {
         }
     }
 
+    // Debug logging
+    console.log('TournamentModeCard render, matchmakingStatus:', matchmakingStatus)
+
     return (
         <>
             {/* Matchmaking Overlay - Show for all non-idle statuses */}

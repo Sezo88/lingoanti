@@ -52,20 +52,27 @@ export async function submitGuess(
     guess: string,
     result: any[]
 ): Promise<{ success: boolean; error: any }> {
-    // Oyun bilgisini al (current_round için)
+    // Get fresh game data to ensure correct round_number
     const { data: game } = await supabase
         .from('games')
         .select('current_round')
         .eq('id', gameId)
         .single()
 
-    const { count } = await supabase
-        .from('game_moves')
-        .select('*', { count: 'exact', head: true })
-        .eq('game_id', gameId)
-        .eq('round_number', game?.current_round || 1)
+    if (!game) {
+        return { success: false, error: new Error('Oyun bulunamadı') }
+    }
 
-    const moveNumber = (count || 0) + 1
+    // Get current move count for this round
+    const { data: existingMoves } = await supabase
+        .from('game_moves')
+        .select('move_number')
+        .eq('game_id', gameId)
+        .eq('round_number', game.current_round)
+        .order('move_number', { ascending: false })
+        .limit(1)
+
+    const moveNumber = existingMoves && existingMoves.length > 0 ? existingMoves[0].move_number + 1 : 1
 
     const { error } = await supabase
         .from('game_moves')
@@ -75,7 +82,7 @@ export async function submitGuess(
             guess,
             result,
             move_number: moveNumber,
-            round_number: game?.current_round || 1
+            round_number: game.current_round // Use fresh current_round
         })
 
     return { success: !error, error }

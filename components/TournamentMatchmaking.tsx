@@ -9,6 +9,9 @@ export default function TournamentMatchmaking() {
     const [countdown, setCountdown] = useState<number | null>(null)
     const [participants, setParticipants] = useState<any[]>([])
 
+    console.log('🎯 TournamentMatchmaking RENDERING!')
+    console.log('Matchmaking status in component:', matchmakingStatus)
+
     // Fetch participants when in waiting/countdown
     useEffect(() => {
         if (matchmakingStatus.roomId && (matchmakingStatus.status === 'waiting' || matchmakingStatus.status === 'countdown')) {

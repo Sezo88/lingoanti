@@ -51,12 +51,16 @@ export default function TournamentModeCard() {
 
     // Debug logging
     console.log('TournamentModeCard render, matchmakingStatus:', matchmakingStatus)
+    console.log('Should show overlay?', matchmakingStatus.status !== 'idle')
 
     return (
         <>
             {/* Matchmaking Overlay - Show for all non-idle statuses */}
             {matchmakingStatus.status !== 'idle' && (
-                <TournamentMatchmaking />
+                <>
+                    {console.log('✅ RENDERING TournamentMatchmaking overlay!')}
+                    <TournamentMatchmaking />
+                </>
             )}
 
             {/* Lobby Creation Modal */}

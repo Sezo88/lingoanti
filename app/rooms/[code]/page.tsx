@@ -172,10 +172,12 @@ export default function RoomPage() {
     }
 
     // SIRA BANA GELDİ BİLDİRİMİ (Top Level)
-    const turnOrder = room?.config?.turnOrder || []
-    const currentTurn = room?.config?.currentTurn || 0
-    const currentPlayerId = turnOrder[currentTurn % turnOrder.length]
-    const isMyTurn = user?.id && currentPlayerId === user.id && room?.status === 'playing' && room?.game_mode === 'turn_based'
+    const currentPlayerId = room?.config?.currentPlayer || room?.config?.turnOrder?.[room?.config?.currentTurn % room?.config?.turnOrder?.length]
+    const currentPlayer = participants.find(p => p.user_id === currentPlayerId)
+
+    // Check if this is turn-based mode (either direct or tournament with turn_based config)
+    const isTurnBasedMode = room?.game_mode === 'turn_based' || (room?.game_mode === 'tournament' && room?.config?.gameMode === 'turn_based')
+    const isMyTurn = user?.id && currentPlayerId === user.id && room?.status === 'playing' && isTurnBasedMode
 
     useEffect(() => {
         if (isMyTurn && document.hidden && Notification.permission === 'granted') {
@@ -322,8 +324,8 @@ export default function RoomPage() {
         )
     }
 
-    // --- GAME TURN-BASED MODU (Sıra Sende) ---
-    if (room?.status === 'playing' && room?.game_mode === 'turn_based' && gameWords.length > 0) {
+    // TURN-BASED MODE (Sıra Sende) - Also includes tournament with turn_based config
+    if (room?.status === 'playing' && isTurnBasedMode && gameWords.length > 0) {
         const config = room.config || {}
         const gameState = room.game_state || { guesses: [], results: [], currentWordIndex: 0 }
         const turnOrder = config.turnOrder || []

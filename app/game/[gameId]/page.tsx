@@ -24,6 +24,7 @@ export default function MultiplayerGamePage() {
     const [error, setError] = useState('')
     const [submitting, setSubmitting] = useState(false)
     const [isFullscreen, setIsFullscreen] = useState(false)
+    const [showAnswerOverlay, setShowAnswerOverlay] = useState(false)
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -227,6 +228,18 @@ export default function MultiplayerGamePage() {
                         <button onClick={() => router.push('/')} className="text-dark-500 hover:text-white transition-colors">
                             ← Çık
                         </button>
+                        {!isGameOver && isMyTurn && (
+                            <button
+                                onClick={() => {
+                                    if (confirm('Pes etmek istediğinize emin misiniz? Rakibiniz kazanacak.')) {
+                                        forfeitGame(gameId, user!.id)
+                                    }
+                                }}
+                                className="text-danger-400 hover:text-danger-300 transition-colors text-sm font-semibold"
+                            >
+                                🏳️ Pes Et
+                            </button>
+                        )}
                         <div className="text-center">
                             <p className="text-xs text-dark-500">
                                 {game.best_of > 1 ? `Best of ${game.best_of} - El ${game.current_round}` : 'Tek El'}
@@ -281,20 +294,38 @@ export default function MultiplayerGamePage() {
                         </div>
                     )}
 
-                    {isGameOver && (
-                        <div className="text-center mt-6">
-                            <div className="glass-effect rounded-2xl p-6">
-                                <p className="text-3xl mb-2">{iWon ? '🎉' : '😢'}</p>
-                                <h2 className={`text-2xl font-bold mb-2 ${iWon ? 'text-success-500' : 'text-danger-500'}`}>
-                                    {iWon ? 'Kazandın!' : 'Kaybettin!'}
+                    {/* Modern Answer Overlay */}
+                    {(isGameOver || showAnswerOverlay) && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                            <div className="w-full max-w-sm bg-dark-100 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center">
+                                <div className={`absolute top-0 left-0 w-full h-2 ${iWon ? 'bg-success-500' : 'bg-danger-500'} shadow-[0_0_20px_rgba(var(--tw-colors-primary-500),0.5)]`}></div>
+
+                                <div className="text-5xl mb-4 animate-bounce-subtle">
+                                    {iWon ? '🎉' : '💔'}
+                                </div>
+
+                                <h2 className={`text-2xl font-bold mb-1 ${iWon ? 'text-white' : 'text-danger-400'}`}>
+                                    {iWon ? 'Tebrikler!' : 'Maalesef...'}
                                 </h2>
-                                <p className="text-white font-bold text-xl mb-1">{game.target_word}</p>
-                                <p className="text-dark-500 text-sm mb-4">Kelime buydu</p>
+
+                                <p className="text-white/50 text-sm mb-6 uppercase tracking-widest font-semibold">
+                                    {iWon ? 'Harika İş Çıkardın' : 'Doğru Kelime:'}
+                                </p>
+
+                                <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
+                                    <p className={`text-3xl font-mono font-bold tracking-[0.2em] ${iWon ? 'text-success-400' : 'text-white'}`}>
+                                        {game.target_word.toUpperCase()}
+                                    </p>
+                                </div>
+
                                 <button
                                     onClick={() => router.push('/friends')}
-                                    className="px-6 py-3 rounded-xl font-semibold text-white gradient-bg hover:opacity-90 transition-all"
+                                    className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
+                                            ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
+                                            : 'bg-white hover:bg-gray-100 text-black'
+                                        }`}
                                 >
-                                    Arkadaşlar
+                                    Arkadaşlar 👥
                                 </button>
                             </div>
                         </div>

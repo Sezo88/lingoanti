@@ -103,8 +103,14 @@ export default function TournamentMatchmaking({ matchmakingStatus }: TournamentM
     }
 
     const handleCancel = async () => {
-        console.log('Cancel button clicked')
-        await cancelSearch()
+        console.log('🔴 Cancel button clicked!')
+        console.log('Current matchmaking status:', matchmakingStatus)
+        try {
+            await cancelSearch()
+            console.log('✅ Cancel search completed')
+        } catch (error) {
+            console.error('❌ Cancel search failed:', error)
+        }
     }
 
     return (

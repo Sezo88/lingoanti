@@ -25,6 +25,7 @@ export default function MultiplayerGamePage() {
     const [submitting, setSubmitting] = useState(false)
     const [isFullscreen, setIsFullscreen] = useState(false)
     const [showAnswerOverlay, setShowAnswerOverlay] = useState(false)
+    const [roundEndMessage, setRoundEndMessage] = useState<string | null>(null)
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -39,6 +40,18 @@ export default function MultiplayerGamePage() {
     const isPlayer1 = user?.id === game?.player1_id
     const isMyTurn = game?.current_turn === user?.id
     const opponent = isPlayer1 ? game?.player2_id : game?.player1_id
+
+    // Show overlay when round ends without winner
+    useEffect(() => {
+        if (game?.round_message) {
+            setRoundEndMessage(game.round_message)
+            // Auto-dismiss after 3 seconds
+            const timer = setTimeout(() => {
+                setRoundEndMessage(null)
+            }, 3000)
+            return () => clearTimeout(timer)
+        }
+    }, [game?.round_message])
 
     const totalMoves = moves.length
 
@@ -238,9 +251,9 @@ export default function MultiplayerGamePage() {
                         </button>
                         {!isGameOver && isMyTurn && (
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     if (confirm('Pes etmek istediğinize emin misiniz? Rakibiniz kazanacak.')) {
-                                        forfeitGame(gameId, user!.id)
+                                        await forfeitGame(gameId, user!.id)
                                     }
                                 }}
                                 className="text-danger-400 hover:text-danger-300 transition-colors text-sm font-semibold"
@@ -291,33 +304,24 @@ export default function MultiplayerGamePage() {
                     />
 
 
-                    {(error || game.round_message) && (
-                        <div className="text-center mb-4 animate-pulse">
-                            <div className={`border-2 px-4 py-3 rounded-xl font-semibold ${error
-                                ? 'bg-danger-500/20 border-danger-500 text-danger-400'
-                                : 'bg-primary-500/20 border-primary-500 text-primary-300'
-                                }`}>
-                                {error || game.round_message}
-                            </div>
-                        </div>
-                    )}
+                    {/* Remove toast, use overlay instead */}
 
-                    {/* Modern Answer Overlay */}
-                    {(isGameOver || showAnswerOverlay) && (
+                    {/* Modern Answer Overlay - for game over OR round end */}
+                    {(isGameOver || roundEndMessage) && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                             <div className="w-full max-w-sm bg-dark-100 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center">
                                 <div className={`absolute top-0 left-0 w-full h-2 ${iWon ? 'bg-success-500' : 'bg-danger-500'} shadow-[0_0_20px_rgba(var(--tw-colors-primary-500),0.5)]`}></div>
 
                                 <div className="text-5xl mb-4 animate-bounce-subtle">
-                                    {iWon ? '🎉' : '💔'}
+                                    {isGameOver ? (iWon ? '🎉' : '💔') : '💀'}
                                 </div>
 
                                 <h2 className={`text-2xl font-bold mb-1 ${iWon ? 'text-white' : 'text-danger-400'}`}>
-                                    {iWon ? 'Tebrikler!' : 'Maalesef...'}
+                                    {isGameOver ? (iWon ? 'Tebrikler!' : 'Maalesef...') : 'Kimse Bulamadı!'}
                                 </h2>
 
                                 <p className="text-white/50 text-sm mb-6 uppercase tracking-widest font-semibold">
-                                    {iWon ? 'Harika İş Çıkardın' : 'Doğru Kelime:'}
+                                    {isGameOver ? (iWon ? 'Harika İş Çıkardın' : 'Doğru Kelime:') : 'Doğru Kelime:'}
                                 </p>
 
                                 <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
@@ -326,15 +330,20 @@ export default function MultiplayerGamePage() {
                                     </p>
                                 </div>
 
-                                <button
-                                    onClick={() => router.push('/friends')}
-                                    className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
-                                        ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
-                                        : 'bg-white hover:bg-gray-100 text-black'
-                                        }`}
-                                >
-                                    Arkadaşlar 👥
-                                </button>
+                                {isGameOver && (
+                                    <button
+                                        onClick={() => router.push('/friends')}
+                                        className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
+                                            ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
+                                            : 'bg-white hover:bg-gray-100 text-black'
+                                            }`}
+                                    >
+                                        Arkadaşlar 👥
+                                    </button>
+                                )}
+                                {!isGameOver && roundEndMessage && (
+                                    <p className="text-white/70 text-sm">Yeni el başlıyor...</p>
+                                )}
                             </div>
                         </div>
                     )}

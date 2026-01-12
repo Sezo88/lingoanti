@@ -148,8 +148,7 @@ export async function forfeitGame(
     const requiredWins = Math.ceil(game.best_of / 2)
     const updateData: any = {
         status: 'finished',
-        winner_id: winnerId,
-        forfeited_by: userId
+        winner_id: winnerId
     }
 
     // Skorları güncelle (best_of > 1 ise)

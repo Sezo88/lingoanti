@@ -13,9 +13,38 @@ export default function ActiveGamesPage() {
     const [games, setGames] = useState<Game[]>([])
     const [completedGames, setCompletedGames] = useState<Game[]>([])
     const [loading, setLoading] = useState(true)
+    const [toast, setToast] = useState<string | null>(null)
 
     useEffect(() => {
         loadGames()
+
+        // Realtime subscription for game updates
+        if (!user) return
+
+        const channel = supabase
+            .channel(`user_games_${user.id}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'games',
+                filter: `player1_id=eq.${user.id},player2_id=eq.${user.id}`
+            }, (payload) => {
+                console.log('Game update:', payload)
+
+                // Show toast if invite was accepted
+                if (payload.eventType === 'UPDATE' && payload.new.status === 'active' && payload.old.status === 'waiting') {
+                    setToast('🎮 Oyun daveti kabul edildi!')
+                    setTimeout(() => setToast(null), 3000)
+                }
+
+                // Reload games
+                loadGames()
+            })
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [user])
 
     const loadGames = async () => {
@@ -110,6 +139,15 @@ export default function ActiveGamesPage() {
 
     return (
         <div className="min-h-screen">
+            {/* Toast Notification */}
+            {toast && (
+                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top">
+                    <div className="bg-success-600 text-white px-6 py-3 rounded-xl shadow-lg font-semibold border border-success-500">
+                        {toast}
+                    </div>
+                </div>
+            )}
+
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button

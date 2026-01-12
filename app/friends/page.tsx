@@ -105,7 +105,8 @@ export default function FriendsPage() {
             user.id,
             selectedFriend.id,
             wordLength,
-            settings.bestOf
+            settings.bestOf,
+            settings.duration
         )
 
         if (game) {

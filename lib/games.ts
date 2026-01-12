@@ -9,7 +9,8 @@ export async function createGame(
     player1Id: string,
     player2Id: string,
     wordLength: number = 5,
-    bestOf: 1 | 3 | 5 | 7 = 1
+    bestOf: 1 | 3 | 5 | 7 = 1,
+    duration: number = 60
 ): Promise<{ game: Game | null; error: any }> {
     const isMixed = wordLength === 0
     const actualLength = isMixed ? Math.floor(Math.random() * 4) + 4 : wordLength
@@ -33,7 +34,8 @@ export async function createGame(
             current_round: 1,
             player1_score: 0,
             player2_score: 0,
-            mixed_mode: isMixed
+            mixed_mode: isMixed,
+            duration: duration
         })
         .select()
         .single()

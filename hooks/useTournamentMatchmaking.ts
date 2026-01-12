@@ -337,6 +337,9 @@ export function useTournamentMatchmaking() {
 
     // Helper: Setup countdown timer
     const setupCountdownTimer = (waitingRoomId: string, countdownStartedAt: string) => {
+        console.log('Setting up countdown timer for waiting room:', waitingRoomId)
+        console.log('Countdown started at:', countdownStartedAt)
+
         if (countdownTimerRef.current) {
             clearTimeout(countdownTimerRef.current)
         }
@@ -346,13 +349,21 @@ export function useTournamentMatchmaking() {
         const now = Date.now()
         const remaining = endTime - now
 
+        console.log('Countdown remaining time:', remaining, 'ms')
+
         if (remaining > 0) {
             countdownTimerRef.current = setTimeout(async () => {
+                console.log('Countdown finished! Starting tournament game...')
                 // Trigger game start
-                await supabase.rpc('start_tournament_game', {
+                const { error } = await supabase.rpc('start_tournament_game', {
                     p_waiting_room_id: waitingRoomId
                 })
+                if (error) {
+                    console.error('Failed to start tournament game:', error)
+                }
             }, remaining)
+        } else {
+            console.warn('Countdown already expired! Not setting timer.')
         }
     }
 

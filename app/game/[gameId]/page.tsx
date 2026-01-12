@@ -253,7 +253,16 @@ export default function MultiplayerGamePage() {
                             <button
                                 onClick={async () => {
                                     if (confirm('Pes etmek istediğinize emin misiniz? Rakibiniz kazanacak.')) {
-                                        await forfeitGame(gameId, user!.id)
+                                        try {
+                                            const { success, error } = await forfeitGame(gameId, user!.id)
+                                            if (!success) {
+                                                console.error('Pes etme hatası:', error)
+                                                alert('Pes etme işlemi başarısız oldu. Lütfen tekrar deneyin.')
+                                            }
+                                        } catch (e) {
+                                            console.error('Pes etme hatası:', e)
+                                            alert('Bir hata oluştu.')
+                                        }
                                     }
                                 }}
                                 className="text-danger-400 hover:text-danger-300 transition-colors text-sm font-semibold"
@@ -311,8 +320,8 @@ export default function MultiplayerGamePage() {
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                             <div className="w-full max-w-sm bg-dark-100 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center">
                                 <div className={`absolute top-0 left-0 w-full h-2 ${isGameOver
-                                        ? (iWon ? 'bg-success-500' : 'bg-danger-500')
-                                        : 'bg-warning-500'
+                                    ? (iWon ? 'bg-success-500' : 'bg-danger-500')
+                                    : 'bg-warning-500'
                                     } shadow-[0_0_20px_rgba(var(--tw-colors-primary-500),0.5)]`}></div>
 
                                 <div className="text-5xl mb-4 animate-bounce-subtle">
@@ -320,8 +329,8 @@ export default function MultiplayerGamePage() {
                                 </div>
 
                                 <h2 className={`text-2xl font-bold mb-1 ${isGameOver
-                                        ? (iWon ? 'text-white' : 'text-danger-400')
-                                        : 'text-warning-400'
+                                    ? (iWon ? 'text-white' : 'text-danger-400')
+                                    : 'text-warning-400'
                                     }`}>
                                     {isGameOver ? (iWon ? 'Tebrikler!' : 'Maalesef...') : 'Kimse Bulamadı!'}
                                 </h2>
@@ -332,8 +341,8 @@ export default function MultiplayerGamePage() {
 
                                 <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
                                     <p className={`text-3xl font-mono font-bold tracking-[0.2em] ${isGameOver
-                                            ? (iWon ? 'text-success-400' : 'text-white')
-                                            : 'text-warning-400'
+                                        ? (iWon ? 'text-success-400' : 'text-white')
+                                        : 'text-warning-400'
                                         }`}>
                                         {game.target_word.toUpperCase()}
                                     </p>
@@ -343,8 +352,8 @@ export default function MultiplayerGamePage() {
                                     <button
                                         onClick={() => router.push('/friends')}
                                         className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
-                                                ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
-                                                : 'bg-white hover:bg-gray-100 text-black'
+                                            ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
+                                            : 'bg-white hover:bg-gray-100 text-black'
                                             }`}
                                     >
                                         Arkadaşlar 👥

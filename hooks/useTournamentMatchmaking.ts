@@ -327,37 +327,46 @@ export function useTournamentMatchmaking() {
                     filter: `id=eq.${waitingRoomId}`
                 },
                 (payload: any) => {
-                    // Don't update if cancelled
+                    // Don't update if cancelled OR if status is already idle
                     if (cancelledRef.current) {
-                        console.log('⚠️ Ignoring waiting room update - search cancelled')
+                        console.log('⚠️ Ignoring waiting room update - search cancelled (flag)')
                         return
                     }
 
                     const updated = payload.new
                     console.log('Waiting room update:', updated)
 
-                    if (updated.status === 'started') {
-                        setMatchmakingStatus({ status: 'matched', roomId: updated.room_id })
-                        // Get room code from rooms table
-                        supabase.from('rooms').select('code').eq('id', updated.room_id).single()
-                            .then(({ data: room }) => {
-                                if (room) {
-                                    router.push(`/rooms/${room.code}`)
-                                }
-                            })
-                    } else if (updated.status === 'countdown' && updated.countdown_started_at) {
-                        setMatchmakingStatus(prev => ({
-                            ...prev,
-                            status: 'countdown',
-                            countdownStartedAt: updated.countdown_started_at
-                        }))
-                        setupCountdownTimer(waitingRoomId, updated.countdown_started_at)
-                    }
+                    // Double check - if we're somehow idle, don't process
+                    setMatchmakingStatus(prev => {
+                        if (prev.status === 'idle') {
+                            console.log('⚠️ Ignoring waiting room update - status is idle')
+                            return prev
+                        }
 
-                    setMatchmakingStatus(prev => ({
-                        ...prev,
-                        currentPlayers: updated.current_players
-                    }))
+                        if (updated.status === 'started') {
+                            // Get room code from rooms table
+                            supabase.from('rooms').select('code').eq('id', updated.room_id).single()
+                                .then(({ data: room }) => {
+                                    if (room) {
+                                        router.push(`/rooms/${room.code}`)
+                                    }
+                                })
+                            return { status: 'matched', roomId: updated.room_id }
+                        } else if (updated.status === 'countdown' && updated.countdown_started_at) {
+                            setupCountdownTimer(waitingRoomId, updated.countdown_started_at)
+                            return {
+                                ...prev,
+                                status: 'countdown',
+                                countdownStartedAt: updated.countdown_started_at,
+                                currentPlayers: updated.current_players
+                            }
+                        }
+
+                        return {
+                            ...prev,
+                            currentPlayers: updated.current_players
+                        }
+                    })
                 }
             )
             .subscribe()

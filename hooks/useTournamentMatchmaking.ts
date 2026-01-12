@@ -174,11 +174,17 @@ export function useTournamentMatchmaking() {
 
             console.log('✅ RPC cancel_tournament_search completed')
 
-            // Clean up subscriptions
+            // Clean up ALL subscriptions
             if (subscriptionRef.current) {
-                supabase.removeChannel(subscriptionRef.current)
+                await supabase.removeChannel(subscriptionRef.current)
                 subscriptionRef.current = null
-                console.log('✅ Subscription cleaned up')
+                console.log('✅ subscriptionRef cleaned up')
+            }
+
+            if (waitingRoomChannelRef.current) {
+                await supabase.removeChannel(waitingRoomChannelRef.current)
+                waitingRoomChannelRef.current = null
+                console.log('✅ waitingRoomChannelRef cleaned up')
             }
 
             if (countdownTimerRef.current) {

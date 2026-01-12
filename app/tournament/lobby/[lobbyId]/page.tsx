@@ -180,7 +180,7 @@ export default function TournamentLobbyPage() {
 
             {/* Matchmaking Overlay */}
             {matchmakingStatus.status !== 'idle' && (
-                <TournamentMatchmaking />
+                <TournamentMatchmaking matchmakingStatus={matchmakingStatus} />
             )}
         </div>
     )

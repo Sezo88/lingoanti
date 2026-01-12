@@ -59,7 +59,7 @@ export default function TournamentModeCard() {
             {matchmakingStatus.status !== 'idle' && (
                 <>
                     {console.log('✅ RENDERING TournamentMatchmaking overlay!')}
-                    <TournamentMatchmaking />
+                    <TournamentMatchmaking matchmakingStatus={matchmakingStatus} />
                 </>
             )}
 

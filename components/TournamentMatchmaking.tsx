@@ -4,8 +4,12 @@ import { useEffect, useState } from 'react'
 import { useTournamentMatchmaking } from '@/hooks/useTournamentMatchmaking'
 import { supabase } from '@/lib/supabase'
 
-export default function TournamentMatchmaking() {
-    const { matchmakingStatus, cancelSearch } = useTournamentMatchmaking()
+interface TournamentMatchmakingProps {
+    matchmakingStatus: any
+}
+
+export default function TournamentMatchmaking({ matchmakingStatus }: TournamentMatchmakingProps) {
+    const { cancelSearch } = useTournamentMatchmaking()
     const [countdown, setCountdown] = useState<number | null>(null)
     const [participants, setParticipants] = useState<any[]>([])
 

@@ -310,22 +310,31 @@ export default function MultiplayerGamePage() {
                     {(isGameOver || roundEndMessage) && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                             <div className="w-full max-w-sm bg-dark-100 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center">
-                                <div className={`absolute top-0 left-0 w-full h-2 ${iWon ? 'bg-success-500' : 'bg-danger-500'} shadow-[0_0_20px_rgba(var(--tw-colors-primary-500),0.5)]`}></div>
+                                <div className={`absolute top-0 left-0 w-full h-2 ${isGameOver
+                                        ? (iWon ? 'bg-success-500' : 'bg-danger-500')
+                                        : 'bg-warning-500'
+                                    } shadow-[0_0_20px_rgba(var(--tw-colors-primary-500),0.5)]`}></div>
 
                                 <div className="text-5xl mb-4 animate-bounce-subtle">
-                                    {isGameOver ? (iWon ? '🎉' : '💔') : '💀'}
+                                    {isGameOver ? (iWon ? '🎉' : '💔') : '😵'}
                                 </div>
 
-                                <h2 className={`text-2xl font-bold mb-1 ${iWon ? 'text-white' : 'text-danger-400'}`}>
+                                <h2 className={`text-2xl font-bold mb-1 ${isGameOver
+                                        ? (iWon ? 'text-white' : 'text-danger-400')
+                                        : 'text-warning-400'
+                                    }`}>
                                     {isGameOver ? (iWon ? 'Tebrikler!' : 'Maalesef...') : 'Kimse Bulamadı!'}
                                 </h2>
 
                                 <p className="text-white/50 text-sm mb-6 uppercase tracking-widest font-semibold">
-                                    {isGameOver ? (iWon ? 'Harika İş Çıkardın' : 'Doğru Kelime:') : 'Doğru Kelime:'}
+                                    Doğru Kelime:
                                 </p>
 
                                 <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
-                                    <p className={`text-3xl font-mono font-bold tracking-[0.2em] ${iWon ? 'text-success-400' : 'text-white'}`}>
+                                    <p className={`text-3xl font-mono font-bold tracking-[0.2em] ${isGameOver
+                                            ? (iWon ? 'text-success-400' : 'text-white')
+                                            : 'text-warning-400'
+                                        }`}>
                                         {game.target_word.toUpperCase()}
                                     </p>
                                 </div>
@@ -334,15 +343,22 @@ export default function MultiplayerGamePage() {
                                     <button
                                         onClick={() => router.push('/friends')}
                                         className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
-                                            ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
-                                            : 'bg-white hover:bg-gray-100 text-black'
+                                                ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
+                                                : 'bg-white hover:bg-gray-100 text-black'
                                             }`}
                                     >
                                         Arkadaşlar 👥
                                     </button>
                                 )}
                                 {!isGameOver && roundEndMessage && (
-                                    <p className="text-white/70 text-sm">Yeni el başlıyor...</p>
+                                    <div className="space-y-2">
+                                        <p className="text-white/70 text-sm">Yeni el başlıyor...</p>
+                                        <div className="flex gap-1 justify-center">
+                                            <div className="w-2 h-2 bg-warning-500 rounded-full animate-pulse"></div>
+                                            <div className="w-2 h-2 bg-warning-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                                            <div className="w-2 h-2 bg-warning-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>

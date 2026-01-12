@@ -33,6 +33,7 @@ export function useTournamentMatchmaking() {
 
     const subscriptionRef = useRef<any>(null)
     const countdownTimerRef = useRef<NodeJS.Timeout | null>(null)
+    const cancelledRef = useRef(false)
 
     // Join tournament as solo player
     const joinTournament = async (gameMode: GameMode) => {
@@ -43,6 +44,7 @@ export function useTournamentMatchmaking() {
 
         try {
             setError(null)
+            cancelledRef.current = false // Reset cancelled flag
             setMatchmakingStatus({ status: 'searching' })
 
             // Call RPC function
@@ -137,6 +139,7 @@ export function useTournamentMatchmaking() {
 
         try {
             setError(null)
+            cancelledRef.current = false // Reset cancelled flag
             setMatchmakingStatus({ status: 'searching' })
 
             const { data, error: rpcError } = await supabase.rpc('find_tournament_match', {
@@ -148,6 +151,12 @@ export function useTournamentMatchmaking() {
             if (rpcError) {
                 console.error('Lobby search error:', rpcError)
                 setError(rpcError.message)
+                setMatchmakingStatus({ status: 'idle' })
+                return
+            }
+
+            if (!data) {
+                setError('Eşleşme bulunamadı')
                 setMatchmakingStatus({ status: 'idle' })
                 return
             }
@@ -167,6 +176,10 @@ export function useTournamentMatchmaking() {
         console.log('🔴 cancelSearch called, current status:', matchmakingStatus)
 
         try {
+            // Set cancelled flag FIRST
+            cancelledRef.current = true
+            console.log('🚫 Cancelled flag set to true')
+
             await supabase.rpc('cancel_tournament_search', {
                 p_user_id: currentLobby ? null : user.id,
                 p_lobby_id: currentLobby?.id || null
@@ -314,9 +327,9 @@ export function useTournamentMatchmaking() {
                     filter: `id=eq.${waitingRoomId}`
                 },
                 (payload: any) => {
-                    // Don't update if subscription was cancelled
-                    if (!subscriptionRef.current) {
-                        console.log('⚠️ Ignoring waiting room update - subscription cancelled')
+                    // Don't update if cancelled
+                    if (cancelledRef.current) {
+                        console.log('⚠️ Ignoring waiting room update - search cancelled')
                         return
                     }
 

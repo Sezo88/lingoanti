@@ -337,7 +337,7 @@ export default function MultiplayerGamePage() {
                                     ? (iWon ? 'text-white' : 'text-danger-400')
                                     : 'text-warning-400'
                                     }`}>
-                                    {isGameOver ? (iWon ? 'Tebrikler!' : 'Maalesef...') : 'Kimse Bulamadı!'}
+                                    {isGameOver ? (iWon ? 'Tebrikler! 🎉' : game.winner_id ? 'Rakibiniz Kazandı!' : 'Berabere!') : 'Kimse Bulamadı!'}
                                 </h2>
 
                                 <p className="text-white/50 text-sm mb-6 uppercase tracking-widest font-semibold">

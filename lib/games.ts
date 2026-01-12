@@ -204,6 +204,21 @@ export async function rejectGameInvite(
 }
 
 /**
+ * Gönderilen oyun davetini iptal et (sadece gönderen iptal edebilir)
+ */
+export async function cancelGameInvite(
+    gameId: string,
+    userId: string
+): Promise<{ success: boolean; error: any }> {
+    const { error } = await supabase.rpc('cancel_game_invite', {
+        p_game_id: gameId,
+        p_user_id: userId
+    })
+
+    return { success: !error, error }
+}
+
+/**
  * Kullanıcının aktif oyunlarını getir
  */
 export async function getActiveGames(userId: string): Promise<{ games: Game[]; error: any }> {

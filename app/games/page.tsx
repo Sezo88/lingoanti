@@ -51,6 +51,17 @@ export default function ActiveGamesPage() {
         loadGames()
     }
 
+    const handleCancelInvite = async (gameId: string) => {
+        if (!user) return
+        if (!confirm('Gönderilen daveti iptal etmek istediğinize emin misiniz?')) return
+
+        const { cancelGameInvite } = await import('@/lib/games')
+        const { success } = await cancelGameInvite(gameId, user.id)
+        if (success) {
+            loadGames()
+        }
+    }
+
     const getOpponentId = (game: Game) => {
         return game.player1_id === user?.id ? game.player2_id : game.player1_id
     }
@@ -156,9 +167,12 @@ export default function ActiveGamesPage() {
                                         )}
 
                                         {isInviter && (
-                                            <p className="text-center text-warning-500 text-sm">
-                                                ⏳ Rakip kabul etmesini bekliyor...
-                                            </p>
+                                            <button
+                                                onClick={() => handleCancelInvite(game.id)}
+                                                className="w-full py-2 rounded-lg bg-danger-500/20 text-danger-400 font-semibold hover:bg-danger-500/30 transition-colors border border-danger-500/30"
+                                            >
+                                                İptal Et
+                                            </button>
                                         )}
                                     </div>
                                 )

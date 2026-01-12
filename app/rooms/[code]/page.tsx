@@ -356,6 +356,21 @@ export default function RoomPage() {
             }
         }
 
+        const handleTimeout = async () => {
+            if (!room || !user || !isMyTurn) return
+
+            console.log('Süre doldu! Timeout işlemi başlatılıyor...')
+
+            try {
+                await supabase.rpc('handle_turn_timeout', {
+                    p_room_id: room.id,
+                    p_user_id: user.id
+                })
+            } catch (e) {
+                console.error('Timeout hatası:', e)
+            }
+        }
+
         // Tahmin yapıldığında
         const handleGuessSubmit = async (guess: string, result: any[]) => {
             if (!room || !isMyTurn || !user) {

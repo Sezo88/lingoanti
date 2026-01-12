@@ -132,7 +132,7 @@ export async function forfeitGame(
     // Oyun bilgisini al
     const { data: game } = await supabase
         .from('games')
-        .select('player1_id, player2_id')
+        .select('player1_id, player2_id, best_of, player1_score, player2_score')
         .eq('id', gameId)
         .single()
 
@@ -142,15 +142,29 @@ export async function forfeitGame(
 
     // Karşı oyuncu kazansın
     const winnerId = game.player1_id === userId ? game.player2_id : game.player1_id
+    const isPlayer1Winner = winnerId === game.player1_id
+
+    // Best of oyunlarında kazanan skoru gerekli galibiyete ayarla
+    const requiredWins = Math.ceil(game.best_of / 2)
+    const updateData: any = {
+        status: 'finished',
+        winner_id: winnerId,
+        forfeited_by: userId,
+        finished_at: new Date().toISOString()
+    }
+
+    // Skorları güncelle (best_of > 1 ise)
+    if (game.best_of > 1) {
+        if (isPlayer1Winner) {
+            updateData.player1_score = requiredWins
+        } else {
+            updateData.player2_score = requiredWins
+        }
+    }
 
     const { error } = await supabase
         .from('games')
-        .update({
-            status: 'finished',
-            winner_id: winnerId,
-            forfeited_by: userId,
-            finished_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', gameId)
 
     return { success: !error, error }

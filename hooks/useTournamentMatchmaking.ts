@@ -304,6 +304,7 @@ export function useTournamentMatchmaking() {
 
     // Helper: Subscribe to waiting room updates
     const subscribeToWaitingRoom = (waitingRoomId: string) => {
+        // Clean up existing subscription first
         if (subscriptionRef.current) {
             supabase.removeChannel(subscriptionRef.current)
         }
@@ -319,6 +320,12 @@ export function useTournamentMatchmaking() {
                     filter: `id=eq.${waitingRoomId}`
                 },
                 (payload: any) => {
+                    // Don't update if subscription was cancelled
+                    if (!subscriptionRef.current) {
+                        console.log('⚠️ Ignoring waiting room update - subscription cancelled')
+                        return
+                    }
+
                     const updated = payload.new
                     console.log('Waiting room update:', updated)
 

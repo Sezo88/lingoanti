@@ -155,11 +155,15 @@ BEGIN
     WHERE lobby_id = p_lobby_id;
 
     -- Add each member
-    FOREACH v_participant_count IN ARRAY v_lobby_members LOOP
-      INSERT INTO room_participants (room_id, user_id, status)
-      VALUES (v_room_id, v_participant_count, 'ready')
-      ON CONFLICT (room_id, user_id) DO NOTHING;
-    END LOOP;
+    DECLARE
+      v_member_id UUID;
+    BEGIN
+      FOREACH v_member_id IN ARRAY v_lobby_members LOOP
+        INSERT INTO room_participants (room_id, user_id, status)
+        VALUES (v_room_id, v_member_id, 'ready')
+        ON CONFLICT (room_id, user_id) DO NOTHING;
+      END LOOP;
+    END;
 
     v_participant_count := ARRAY_LENGTH(v_lobby_members, 1);
   ELSE

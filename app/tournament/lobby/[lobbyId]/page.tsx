@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTournamentMatchmaking } from '@/hooks/useTournamentMatchmaking'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import TournamentMatchmaking from '@/components/TournamentMatchmaking'
 
 export default function TournamentLobbyPage() {
     const params = useParams()
@@ -18,6 +20,28 @@ export default function TournamentLobbyPage() {
     useEffect(() => {
         if (lobbyId) {
             fetchLobbyDetails(lobbyId)
+        }
+    }, [lobbyId])
+
+    // Realtime subscription for lobby updates
+    useEffect(() => {
+        if (!lobbyId) return
+
+        const channel = supabase
+            .channel(`lobby:${lobbyId}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'tournament_lobby_members',
+                filter: `lobby_id=eq.${lobbyId}`
+            }, () => {
+                // Refresh lobby details when members change
+                fetchLobbyDetails(lobbyId)
+            })
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
         }
     }, [lobbyId])
 
@@ -153,6 +177,11 @@ export default function TournamentLobbyPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Matchmaking Overlay */}
+            {matchmakingStatus.status !== 'idle' && (
+                <TournamentMatchmaking />
+            )}
         </div>
     )
 }

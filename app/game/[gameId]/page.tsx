@@ -80,13 +80,21 @@ export default function MultiplayerGamePage() {
                 const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
                 await finishRound(gameId, null) // Beraberlik
 
+                // Mesajı göster
+                await supabase
+                    .from('games')
+                    .update({ round_message: `✋ Kimse bulamadı! Kelime: ${game.target_word.toUpperCase()}` })
+                    .eq('id', gameId)
+
                 const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
                 if (updatedGame.data) {
                     const matchResult = isMatchFinished(updatedGame.data.player1_score, updatedGame.data.player2_score, game.best_of)
 
                     if (!matchResult.isFinished) {
                         // Yeni el başlat
+                        await new Promise(resolve => setTimeout(resolve, 3000))
                         await startNextRound(gameId)
+                        await supabase.from('games').update({ round_message: null }).eq('id', gameId)
                     } else {
                         // Maç bitti
                         await finishGame(gameId, matchResult.winnerId === 'player1' ? updatedGame.data.player1_id : updatedGame.data.player2_id)

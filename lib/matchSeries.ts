@@ -66,14 +66,16 @@ export async function startNextRound(gameId: string): Promise<{ success: boolean
         return { success: false, error: new Error('Kelime seçilemedi') }
     }
 
-    // Yeni eli başlat
+    // Yeni eli başlat - Sırayı değiştir (alternating turns)
+    const nextStarter = game.current_round % 2 === 0 ? game.player2_id : game.player1_id
+
     const { error } = await supabase
         .from('games')
         .update({
             current_round: game.current_round + 1,
             target_word: newWord,
             word_length: newLength, // Karışık modda her el farklı
-            current_turn: game.player1_id,
+            current_turn: nextStarter, // Sırayla başlangıç
             status: 'active' // Yeni el aktif
         })
         .eq('id', gameId)

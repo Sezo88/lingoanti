@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRealtimeGame } from '@/hooks/useRealtimeGame'
-import { submitGuess, switchTurn, finishGame } from '@/lib/games'
+import { submitGuess, switchTurn, finishGame, forfeitGame } from '@/lib/games'
 import { isValidWord } from '@/lib/words'
 import { evaluateGuess, isCorrectGuess } from '@/lib/gameLogic'
 import { supabase } from '@/lib/supabase'
@@ -321,8 +321,8 @@ export default function MultiplayerGamePage() {
                                 <button
                                     onClick={() => router.push('/friends')}
                                     className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
-                                            ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
-                                            : 'bg-white hover:bg-gray-100 text-black'
+                                        ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
+                                        : 'bg-white hover:bg-gray-100 text-black'
                                         }`}
                                 >
                                     Arkadaşlar 👥

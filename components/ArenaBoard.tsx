@@ -74,9 +74,10 @@ export default function ArenaBoard({
         setShowModal(true)
         setGameStatus('won')
 
-        // Calculate Score
+        // Calculate Score with attempt bonus
         const timeSeconds = (Date.now() - wordStartTime) / 1000
-        const wordScore = calculateWordScore(timeSeconds)
+        const attemptNumber = guesses.length + 1  // Current attempt number
+        const wordScore = calculateWordScore(timeSeconds, attemptNumber)
         setTotalScore(prev => prev + wordScore)
 
         onWordCompleted(wordIndex, timeSeconds, wordScore)

@@ -1,13 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTournamentMatchmaking } from '@/hooks/useTournamentMatchmaking'
 import TournamentMatchmaking from './TournamentMatchmaking'
 
 export default function TournamentModeCard() {
-    const { joinTournament, createLobby, matchmakingStatus, error } = useTournamentMatchmaking()
+    const router = useRouter()
+    const { joinTournament, createLobby, joinLobby, matchmakingStatus, error } = useTournamentMatchmaking()
     const [showLobbyModal, setShowLobbyModal] = useState(false)
+    const [showJoinModal, setShowJoinModal] = useState(false)
     const [selectedMode, setSelectedMode] = useState<'arena' | 'turn_based' | null>(null)
+    const [lobbyCode, setLobbyCode] = useState('')
 
     const handleSoloJoin = async (mode: 'arena' | 'turn_based') => {
         await joinTournament(mode)
@@ -18,12 +22,30 @@ export default function TournamentModeCard() {
         setShowLobbyModal(true)
     }
 
+    const handleTeamJoin = (mode: 'arena' | 'turn_based') => {
+        setSelectedMode(mode)
+        setShowJoinModal(true)
+    }
+
     const handleCreateLobby = async () => {
         if (!selectedMode) return
         const lobbyId = await createLobby(selectedMode)
         if (lobbyId) {
-            // Redirect to lobby page
-            window.location.href = `/tournament/lobby/${lobbyId}`
+            setShowLobbyModal(false)
+            router.push(`/tournament/lobby/${lobbyId}`)
+        }
+    }
+
+    const handleJoinLobby = async () => {
+        if (!lobbyCode.trim()) {
+            alert('Lütfen lobby kodunu girin')
+            return
+        }
+        const lobbyId = await joinLobby(lobbyCode.trim().toUpperCase())
+        if (lobbyId) {
+            setShowJoinModal(false)
+            setLobbyCode('')
+            router.push(`/tournament/lobby/${lobbyId}`)
         }
     }
 
@@ -54,6 +76,44 @@ export default function TournamentModeCard() {
                                 className="flex-1 py-3 rounded-xl font-semibold bg-primary-600 hover:bg-primary-500 text-white transition-colors"
                             >
                                 Oluştur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Lobby Join Modal */}
+            {showJoinModal && (
+                <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="glass-card p-6 rounded-[24px] max-w-sm w-full">
+                        <h3 className="text-xl font-bold text-white mb-4">Lobby'ye Katıl</h3>
+                        <p className="text-white/80 text-sm mb-4">
+                            Arkadaşının lobby kodunu gir ve takıma katıl.
+                        </p>
+                        <input
+                            type="text"
+                            value={lobbyCode}
+                            onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
+                            placeholder="LOBBY KODU"
+                            maxLength={6}
+                            className="w-full px-4 py-3 bg-black/30 border border-white/20 rounded-xl text-white text-center text-2xl font-mono font-bold tracking-widest mb-6 focus:outline-none focus:border-primary-500 transition-colors"
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    setShowJoinModal(false)
+                                    setLobbyCode('')
+                                }}
+                                className="flex-1 py-3 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/20 transition-colors"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={handleJoinLobby}
+                                disabled={lobbyCode.length !== 6}
+                                className="flex-1 py-3 rounded-xl font-semibold bg-primary-600 hover:bg-primary-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Katıl
                             </button>
                         </div>
                     </div>
@@ -104,12 +164,22 @@ export default function TournamentModeCard() {
                                 >
                                     Solo Katıl
                                 </button>
-                                <button
-                                    onClick={() => handleTeamCreate('arena')}
-                                    className="px-4 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm"
-                                >
-                                    Takım
-                                </button>
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => handleTeamCreate('arena')}
+                                        className="px-3 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm"
+                                        title="Lobby Oluştur"
+                                    >
+                                        🏗️
+                                    </button>
+                                    <button
+                                        onClick={() => handleTeamJoin('arena')}
+                                        className="px-3 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm"
+                                        title="Lobby'ye Katıl"
+                                    >
+                                        🚪
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -128,12 +198,22 @@ export default function TournamentModeCard() {
                                 >
                                     Solo Katıl
                                 </button>
-                                <button
-                                    onClick={() => handleTeamCreate('turn_based')}
-                                    className="px-4 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm"
-                                >
-                                    Takım
-                                </button>
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => handleTeamCreate('turn_based')}
+                                        className="px-3 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm"
+                                        title="Lobby Oluştur"
+                                    >
+                                        🏗️
+                                    </button>
+                                    <button
+                                        onClick={() => handleTeamJoin('turn_based')}
+                                        className="px-3 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm"
+                                        title="Lobby'ye Katıl"
+                                    >
+                                        🚪
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

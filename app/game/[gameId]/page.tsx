@@ -254,14 +254,19 @@ export default function MultiplayerGamePage() {
                                 onClick={async () => {
                                     if (confirm('Pes etmek istediğinize emin misiniz? Rakibiniz kazanacak.')) {
                                         try {
-                                            const { success, error } = await forfeitGame(gameId, user!.id)
-                                            if (!success) {
-                                                console.error('Pes etme hatası:', error)
-                                                alert('Pes etme işlemi başarısız oldu. Lütfen tekrar deneyin.')
+                                            console.log('Pes et başlatıldı:', { gameId, userId: user!.id })
+                                            const result = await forfeitGame(gameId, user!.id)
+                                            console.log('Pes et sonucu:', result)
+
+                                            if (!result.success) {
+                                                console.error('Pes etme hatası:', result.error)
+                                                alert(`Pes etme işlemi başarısız: ${result.error?.message || 'Bilinmeyen hata'}`)
+                                            } else {
+                                                console.log('Pes et başarılı!')
                                             }
-                                        } catch (e) {
-                                            console.error('Pes etme hatası:', e)
-                                            alert('Bir hata oluştu.')
+                                        } catch (e: any) {
+                                            console.error('Pes etme exception:', e)
+                                            alert(`Bir hata oluştu: ${e.message || 'Bilinmeyen hata'}`)
                                         }
                                     }
                                 }}

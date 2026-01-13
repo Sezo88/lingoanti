@@ -274,9 +274,14 @@ export default function PracticePage() {
 
             if (wrongPositions.length > 0) {
                 const randomWrongPos = wrongPositions[Math.floor(Math.random() * wrongPositions.length)]
-                const newGuess = currentGuess.split('')
-                while (newGuess.length < wordLength) {
-                    newGuess.push('')
+
+                // Create array with SPACE characters (same as green letter)
+                const newGuess = Array(wordLength).fill(' ')
+                const current = currentGuess.split('')
+                for (let i = 0; i < current.length && i < wordLength; i++) {
+                    if (current[i] && current[i] !== ' ') {
+                        newGuess[i] = current[i]
+                    }
                 }
                 newGuess[randomWrongPos] = data.letter
                 setCurrentGuess(newGuess.join(''))

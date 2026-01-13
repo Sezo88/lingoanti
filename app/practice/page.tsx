@@ -227,13 +227,13 @@ export default function PracticePage() {
                 currentGuess
             })
 
-            // Create array with exact word length, filled with empty strings
-            const newGuess = Array(wordLength).fill('')
+            // Create array with SPACE characters (not empty strings!)
+            const newGuess = Array(wordLength).fill(' ')
 
             // Copy existing letters from current guess
             const current = currentGuess.split('')
             for (let i = 0; i < current.length && i < wordLength; i++) {
-                if (current[i]) {
+                if (current[i] && current[i] !== ' ') {
                     newGuess[i] = current[i]
                 }
             }

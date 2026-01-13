@@ -220,14 +220,22 @@ export default function PracticePage() {
         }
 
         if (jokerType === 'green_letter') {
-            const newGuess = currentGuess.split('')
-            while (newGuess.length < wordLength) {
-                newGuess.push('')
+            // Create array with exact word length, filled with empty strings
+            const newGuess = Array(wordLength).fill('')
+
+            // Copy existing letters from current guess
+            const current = currentGuess.split('')
+            for (let i = 0; i < current.length && i < wordLength; i++) {
+                if (current[i]) {
+                    newGuess[i] = current[i]
+                }
             }
+
+            // Place the joker letter at the EXACT position
             newGuess[data.position] = data.letter
             setCurrentGuess(newGuess.join(''))
 
-            // Add to joker letters for coloring
+            // Add to joker letters for coloring at CORRECT position
             setJokerLetters(prev => [...prev, { position: data.position, letter: data.letter, status: 'correct' }])
 
             // Mark joker as used

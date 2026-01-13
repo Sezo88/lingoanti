@@ -9,6 +9,7 @@ interface GameBoardProps {
     wordLength: number
     maxGuesses?: number
     results: LetterResult[][]
+    jokerLetters?: { position: number, letter: string, status: 'correct' | 'present' }[]
 }
 
 export default function GameBoard({
@@ -16,7 +17,8 @@ export default function GameBoard({
     currentGuess,
     wordLength,
     maxGuesses = 6,
-    results
+    results,
+    jokerLetters
 }: GameBoardProps) {
     const emptyRows = maxGuesses - guesses.length - (currentGuess ? 1 : 0)
 
@@ -56,6 +58,7 @@ export default function GameBoard({
                 <div className="flex gap-2 justify-center">
                     {Array.from({ length: wordLength }).map((_, colIndex) => {
                         const letter = currentGuess[colIndex] || ''
+                        const jokerLetter = jokerLetters?.find(jl => jl.position === colIndex)
 
                         return (
                             <motion.div
@@ -65,7 +68,10 @@ export default function GameBoard({
                                 className={`
                   w-14 h-14 flex items-center justify-center
                   text-2xl font-bold rounded-lg
-                  ${letter ? 'letter-empty border-primary-500' : 'letter-empty'}
+                  ${jokerLetter?.status === 'correct' ? 'letter-correct' : ''}
+                  ${jokerLetter?.status === 'present' ? 'letter-present' : ''}
+                  ${!jokerLetter && letter ? 'letter-empty border-primary-500' : ''}
+                  ${!jokerLetter && !letter ? 'letter-empty' : ''}
                 `}
                             >
                                 {letter}

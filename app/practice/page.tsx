@@ -98,6 +98,8 @@ export default function PracticePage() {
         setError('')
         setShowModal(false)
         setLoading(false)
+        setUsedJokers(new Set()) // Reset joker usage
+        setJokerLetters([]) // Reset joker letters
 
         if (shouldStartTimer || (gameMode === 'timed' && isSetup)) {
             setIsTimerRunning(true)
@@ -200,10 +202,12 @@ export default function PracticePage() {
         setGuesses(newGuesses)
         setResults(newResults)
         setCurrentGuess('')
+        setUsedJokers(new Set()) // Reset joker usage for next attempt
+        setJokerLetters([]) // Reset joker letters
 
         if (isCorrectGuess(currentGuess, targetWord)) {
             handleWin()
-        } else if (newGuesses.length >= 6) {
+        } else if (newGuesses.length >= maxAttempts) {
             handleLose()
         }
     }
@@ -421,7 +425,7 @@ export default function PracticePage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-20">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-24">
                 <div className="w-full max-w-md mx-auto relative">
                     {/* Hint Letter Display */}
                     {hintLetter && (
@@ -448,6 +452,7 @@ export default function PracticePage() {
                         wordLength={wordLength}
                         maxGuesses={maxAttempts}
                         results={results}
+                        jokerLetters={jokerLetters}
                     />
 
                     {error && (

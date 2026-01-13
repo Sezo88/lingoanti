@@ -40,6 +40,7 @@ export default function TurnBasedBoard({
     const [shakeRow, setShakeRow] = useState(false)
     const [error, setError] = useState('')
     const [timeLeft, setTimeLeft] = useState(duration)
+    const [roundFeedback, setRoundFeedback] = useState<{ isCorrect: boolean; word: string } | null>(null)
 
     // Server-Sync Timer Logic
     useEffect(() => {
@@ -121,6 +122,11 @@ export default function TurnBasedBoard({
         }
 
         const evalResult = evaluateGuess(currentGuess, targetWord)
+        const isCorrect = evalResult.every(r => r.status === 'correct')
+
+        // Feedback göster
+        setRoundFeedback({ isCorrect, word: targetWord })
+        setTimeout(() => setRoundFeedback(null), 5000)
 
         // Tahmini parent'a gönder
         onGuessSubmit(currentGuess, evalResult)
@@ -162,7 +168,43 @@ export default function TurnBasedBoard({
                 <div className="w-[50px]"></div> {/* Spacer */}
             </div>
 
-            {/* KAZANAN GERİ BİLDİRİMİ OVERLAY */}
+            {/* ROUND FEEDBACK OVERLAY (Her tahmin sonrası) */}
+            {roundFeedback && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                >
+                    <div className={`w-full max-w-sm bg-dark-100 border rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center ${roundFeedback.isCorrect ? 'border-success-500/50' : 'border-warning-500/50'
+                        }`}>
+                        <div className={`absolute top-0 left-0 w-full h-2 ${roundFeedback.isCorrect ? 'bg-success-500' : 'bg-warning-500'
+                            }`}></div>
+
+                        <div className="text-5xl mb-4 animate-bounce-subtle">
+                            {roundFeedback.isCorrect ? '🎉' : '💪'}
+                        </div>
+
+                        <h2 className={`text-2xl font-bold mb-1 ${roundFeedback.isCorrect ? 'text-success-400' : 'text-warning-400'
+                            }`}>
+                            {roundFeedback.isCorrect ? 'Tebrikler!' : 'Bir Daha Dene!'}
+                        </h2>
+
+                        <p className="text-white/50 text-sm mb-4 uppercase tracking-widest font-semibold">
+                            Doğru Kelime:
+                        </p>
+
+                        <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                            <p className={`text-3xl font-mono font-bold tracking-[0.2em] ${roundFeedback.isCorrect ? 'text-success-400' : 'text-white'
+                                }`}>
+                                {roundFeedback.word.toUpperCase()}
+                            </p>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            {/* KAZANAN GERİ BİLDİRİMİ OVERLAY (Kelime tamamen doğru) */}
             {winFeedback && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}

@@ -78,16 +78,7 @@ export default function HomePage() {
                             />
                         </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                        <button
-                            onClick={signOut}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 hover:bg-black/30 transition-colors backdrop-blur-sm border border-white/10"
-                        >
-                            <span className="text-xs font-bold uppercase tracking-wider text-white/90">Çıkış</span>
-                            <span className="material-symbols-outlined text-[18px] text-white/90">logout</span>
-                        </button>
-                        <CurrencyDisplay />
-                    </div>
+                    <CurrencyDisplay />
                 </header>
 
                 <div className="flex-1 px-4 space-y-4">

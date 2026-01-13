@@ -45,17 +45,8 @@ export default function CurrencyDisplay() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
             >
-                <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                        <span
-                            key={i}
-                            className={`text-sm ${i < hearts ? 'opacity-100' : 'opacity-30'}`}
-                        >
-                            ❤️
-                        </span>
-                    ))}
-                </div>
-                <span className="font-bold text-white text-sm">{hearts}/5</span>
+                <span className="text-xl">❤️</span>
+                <span className="font-bold text-white">{hearts}/5</span>
                 {timeUntilRegen && hearts < 5 && (
                     <span className="text-xs text-white/60 ml-1">
                         {timeUntilRegen}

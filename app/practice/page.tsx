@@ -151,15 +151,36 @@ export default function PracticePage() {
     }
 
     const handleKeyPress = (key: string) => {
-        if (gameOver || currentGuess.length >= wordLength || loading) return
+        if (gameOver || loading) return
         if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
-            setCurrentGuess(prev => prev + key.toLocaleUpperCase('tr-TR'))
+            // Find first empty or space position
+            const chars = currentGuess.split('')
+            const firstEmptyIndex = chars.findIndex(c => !c || c === ' ')
+
+            if (firstEmptyIndex === -1) return // All positions filled
+
+            // Ensure array is full length
+            while (chars.length < wordLength) {
+                chars.push(' ')
+            }
+
+            chars[firstEmptyIndex] = key.toLocaleUpperCase('tr-TR')
+            setCurrentGuess(chars.join(''))
         }
     }
 
     const handleBackspace = () => {
         if (gameOver || loading) return
-        setCurrentGuess(prev => prev.slice(0, -1))
+
+        // Find last non-empty, non-space character
+        const chars = currentGuess.split('')
+        for (let i = chars.length - 1; i >= 0; i--) {
+            if (chars[i] && chars[i] !== ' ') {
+                chars[i] = ' '
+                setCurrentGuess(chars.join(''))
+                return
+            }
+        }
     }
 
     const handleEnter = async () => {

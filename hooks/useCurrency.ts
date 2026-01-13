@@ -57,8 +57,8 @@ export function useCurrency() {
             if (rpcError) throw rpcError
 
             if (data) {
-                // Update local state
-                setTickets(prev => prev - amount)
+                // Refetch to ensure UI is in sync
+                await fetchCurrency()
                 return true
             }
 

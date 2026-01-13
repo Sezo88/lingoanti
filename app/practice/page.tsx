@@ -211,15 +211,51 @@ export default function PracticePage() {
     // Joker Handler
     const handleJokerUsed = (jokerType: string, data: any) => {
         if (jokerType === 'green_letter') {
-            // Add revealed letter to state
-            setRevealedLetters(prev => [...prev, { position: data.position, letter: data.letter }])
+            // Place letter in correct position in current guess
+            const newGuess = currentGuess.split('')
+            while (newGuess.length < wordLength) {
+                newGuess.push('')
+            }
+            newGuess[data.position] = data.letter
+            setCurrentGuess(newGuess.join(''))
+
+            // Show success message
+            setError(`✅ ${data.letter} harfi ${data.position + 1}. pozisyonda!`)
+            setTimeout(() => setError(''), 2000)
         } else if (jokerType === 'yellow_letter') {
-            // Show hint letter
-            setHintLetter(data.letter)
-            setTimeout(() => setHintLetter(null), 5000) // Hide after 5 seconds
+            // Place letter in a wrong position in current guess
+            const correctPositions = []
+            for (let i = 0; i < targetWord.length; i++) {
+                if (targetWord[i] === data.letter) {
+                    correctPositions.push(i)
+                }
+            }
+
+            // Find available wrong positions
+            const wrongPositions = []
+            for (let i = 0; i < wordLength; i++) {
+                if (!correctPositions.includes(i) && !currentGuess[i]) {
+                    wrongPositions.push(i)
+                }
+            }
+
+            if (wrongPositions.length > 0) {
+                const randomWrongPos = wrongPositions[Math.floor(Math.random() * wrongPositions.length)]
+                const newGuess = currentGuess.split('')
+                while (newGuess.length < wordLength) {
+                    newGuess.push('')
+                }
+                newGuess[randomWrongPos] = data.letter
+                setCurrentGuess(newGuess.join(''))
+
+                setError(`💡 ${data.letter} harfi kelimede var!`)
+                setTimeout(() => setError(''), 3000)
+            }
         } else if (jokerType === 'extra_attempt') {
             // Add extra attempt
             setMaxAttempts(prev => prev + 1)
+            setError('✅ +1 Ekstra Hak!')
+            setTimeout(() => setError(''), 2000)
         } else if (jokerType === 'reveal_word') {
             // Auto-fill and submit the word
             setCurrentGuess(data.word)

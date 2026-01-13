@@ -60,7 +60,7 @@ BEGIN
         (v_game_state->'guesses') || to_jsonb(v_timeout_guess)
     ),
     '{results}',
-    (v_game_state->'results') || v_timeout_result
+    (v_game_state->'results') || jsonb_build_array(v_timeout_result)
   )
   WHERE id = p_room_id;
 

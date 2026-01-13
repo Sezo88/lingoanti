@@ -342,14 +342,6 @@ export default function RoomPage() {
         const sharedResults = gameState.results || []
         const lastWin = gameState.lastWin || null
 
-        console.log('🎮 Game State from DB:', {
-            gameState,
-            sharedGuesses,
-            sharedResults,
-            currentWord,
-            currentWordIndex
-        })
-
         // Hooks moved to top level
 
         const handleLeaveRoom = async () => {

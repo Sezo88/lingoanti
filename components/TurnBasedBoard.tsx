@@ -122,23 +122,10 @@ export default function TurnBasedBoard({
 
         const evalResult = evaluateGuess(currentGuess, targetWord)
 
-        console.log('🎯 Evaluation:', {
-            guess: currentGuess,
-            target: targetWord,
-            result: evalResult
-        })
-
         // Tahmini parent'a gönder
         onGuessSubmit(currentGuess, evalResult)
         setCurrentGuess('')
     }
-
-    console.log('📊 Shared Data:', {
-        guesses: sharedGuesses,
-        results: sharedResults,
-        resultsType: typeof sharedResults,
-        isArray: Array.isArray(sharedResults)
-    })
 
     const keyboardState = getKeyboardState(sharedResults)
 

@@ -36,7 +36,7 @@ BEGIN
   END IF;
 
   -- 3. Game State güncelle (Tahmini ekle)
-  -- jsonb_insert veya || operatörü ile ekle
+  -- Her tahmin için results dizisine ARRAY olarak ekle (nested array)
   UPDATE rooms 
   SET game_state = jsonb_set(
     jsonb_set(
@@ -45,7 +45,7 @@ BEGIN
         (v_game_state->'guesses') || to_jsonb(p_guess)
     ),
     '{results}',
-    (v_game_state->'results') || p_result
+    (v_game_state->'results') || jsonb_build_array(p_result)
   )
   WHERE id = p_room_id;
 

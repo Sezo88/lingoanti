@@ -42,10 +42,18 @@ export function useJoker(targetWord: string, currentGuesses: string[], gameId?: 
 
         setLoading(true)
         try {
-            // Find unrevealed positions
+            // Find unrevealed positions by checking if any guess has revealed this position
             const unrevealedPositions: number[] = []
             for (let i = 0; i < targetWord.length; i++) {
-                if (!isLetterRevealed(i)) {
+                let isRevealed = false
+                // Check if this position has been correctly guessed in any previous attempt
+                for (const guess of currentGuesses) {
+                    if (guess[i] === targetWord[i]) {
+                        isRevealed = true
+                        break
+                    }
+                }
+                if (!isRevealed) {
                     unrevealedPositions.push(i)
                 }
             }
@@ -54,12 +62,12 @@ export function useJoker(targetWord: string, currentGuesses: string[], gameId?: 
                 return { success: false, error: 'Tüm harfler zaten açık!' }
             }
 
-            // Pick random position
+            // Pick random unrevealed position
             const randomPos = unrevealedPositions[Math.floor(Math.random() * unrevealedPositions.length)]
             const letter = targetWord[randomPos]
 
             // Spend tickets
-            const success = await spendTickets(50, 'green_letter', gameId)
+            const success = await spendTickets(50, 'green_letter')
             if (!success) {
                 return { success: false, error: 'Bilet harcama başarısız!' }
             }
@@ -73,7 +81,7 @@ export function useJoker(targetWord: string, currentGuesses: string[], gameId?: 
         } finally {
             setLoading(false)
         }
-    }, [targetWord, currentGuesses, tickets, spendTickets, gameId])
+    }, [targetWord, currentGuesses, tickets, spendTickets])
 
     // 🟡 Yellow Letter Joker (30 tickets)
     // Reveals a letter that exists in the word but not its position

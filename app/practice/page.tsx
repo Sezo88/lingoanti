@@ -438,7 +438,7 @@ export default function PracticePage() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-28">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-32">
                 <div className="w-full max-w-md mx-auto relative">
                     {/* Timer Logic */}
                     {/* KEY ekleyerek her tahminde sayacın sıfırlandığını sağlıyoruz */}

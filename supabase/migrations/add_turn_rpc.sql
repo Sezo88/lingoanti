@@ -60,13 +60,19 @@ BEGIN
     SET score = COALESCE(score, 0) + v_word_score
     WHERE room_id = p_room_id AND user_id = p_user_id;
 
-    -- Yeni kelimeye geç (Sıra değişir, game_state sıfırlanır)
+    -- Yeni kelimeye geç VE lastWin bilgisini ekle (feedback için)
     UPDATE rooms
     SET 
       game_state = jsonb_build_object(
         'guesses', '[]'::jsonb,
         'results', '[]'::jsonb,
-        'currentWordIndex', (v_game_state->>'currentWordIndex')::INT + 1
+        'currentWordIndex', (v_game_state->>'currentWordIndex')::INT + 1,
+        'lastWin', jsonb_build_object(
+          'userId', p_user_id,
+          'word', (SELECT target_word FROM rooms WHERE id = p_room_id),
+          'score', v_word_score,
+          'timestamp', EXTRACT(EPOCH FROM NOW()) * 1000
+        )
       ),
       config = jsonb_set(
         jsonb_set(

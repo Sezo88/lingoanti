@@ -6,6 +6,8 @@ import GameBoard from '@/components/GameBoard'
 import GameKeyboard from '@/components/GameKeyboard'
 import AnswerModal from '@/components/AnswerModal'
 import BearTimer from '@/components/BearTimer'
+import CurrencyDisplay from '@/components/CurrencyDisplay'
+import JokerPanel from '@/components/JokerPanel'
 import { getRandomWord, isValidWord } from '@/lib/words'
 import { evaluateGuess, isCorrectGuess, getKeyboardState } from '@/lib/gameLogic'
 import type { LetterResult } from '@/lib/supabase'
@@ -17,6 +19,7 @@ export default function PracticePage() {
     const [isSetup, setIsSetup] = useState(false)
     const [gameMode, setGameMode] = useState<'untimed' | 'timed'>('untimed')
     const [showDurationSelect, setShowDurationSelect] = useState(false)
+    const [showWordLengthSelect, setShowWordLengthSelect] = useState(false)
 
     // Game State
     const [wordLength, setWordLength] = useState(5)
@@ -37,6 +40,11 @@ export default function PracticePage() {
     // Modal State
     const [showModal, setShowModal] = useState(false)
 
+    // Joker State
+    const [maxAttempts, setMaxAttempts] = useState(6)
+    const [revealedLetters, setRevealedLetters] = useState<{ position: number, letter: string }[]>([])
+    const [hintLetter, setHintLetter] = useState<string | null>(null)
+
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen()
@@ -49,7 +57,14 @@ export default function PracticePage() {
 
     const startRun = (mode: 'untimed' | 'timed') => {
         setGameMode(mode)
-        if (mode === 'timed') {
+        setShowWordLengthSelect(true)
+    }
+
+    const confirmWordLength = (length: number) => {
+        setWordLength(length)
+        setShowWordLengthSelect(false)
+
+        if (gameMode === 'timed') {
             setShowDurationSelect(true)
         } else {
             setIsSetup(true)
@@ -193,9 +208,65 @@ export default function PracticePage() {
         }
     }
 
+    // Joker Handler
+    const handleJokerUsed = (jokerType: string, data: any) => {
+        if (jokerType === 'green_letter') {
+            // Add revealed letter to state
+            setRevealedLetters(prev => [...prev, { position: data.position, letter: data.letter }])
+        } else if (jokerType === 'yellow_letter') {
+            // Show hint letter
+            setHintLetter(data.letter)
+            setTimeout(() => setHintLetter(null), 5000) // Hide after 5 seconds
+        } else if (jokerType === 'extra_attempt') {
+            // Add extra attempt
+            setMaxAttempts(prev => prev + 1)
+        } else if (jokerType === 'reveal_word') {
+            // Auto-fill and submit the word
+            setCurrentGuess(data.word)
+            setTimeout(() => {
+                const evalResult = evaluateGuess(data.word, targetWord)
+                setGuesses([...guesses, data.word])
+                setResults([...results, evalResult])
+                handleWin()
+            }, 500)
+        }
+    }
+
     const keyboardState = getKeyboardState(results)
 
     if (!isSetup) {
+        // Word Length Selection Screen
+        if (showWordLengthSelect) {
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col items-center justify-center p-4">
+                    <header className="absolute top-0 w-full p-4 flex justify-between items-center glass-effect border-b border-dark-200">
+                        <button onClick={() => setShowWordLengthSelect(false)} className="text-white/70 hover:text-white transition-colors">
+                            ← Geri
+                        </button>
+                        <h1 className="text-xl font-bold gradient-text">Kelime Uzunluğu</h1>
+                        <div className="w-10"></div>
+                    </header>
+
+                    <div className="max-w-md w-full glass-effect rounded-3xl p-8 text-center animate-in zoom-in duration-300">
+                        <h2 className="text-3xl font-bold text-white mb-2">Kaç Harfli?</h2>
+                        <p className="text-white/80 mb-8">Kelime uzunluğunu seç</p>
+
+                        <div className="grid grid-cols-3 gap-4">
+                            {[4, 5, 6].map((length) => (
+                                <button
+                                    key={length}
+                                    onClick={() => confirmWordLength(length)}
+                                    className="py-6 rounded-xl bg-dark-200 hover:bg-dark-300 border-2 border-transparent hover:border-primary-500 transition-all font-bold text-2xl text-white"
+                                >
+                                    {length}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
         if (showDurationSelect) {
             return (
                 <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex flex-col items-center justify-center p-4">
@@ -299,9 +370,12 @@ export default function PracticePage() {
                     >
                         ← Menü
                     </button>
-                    <h1 className="text-xl font-bold gradient-text">
-                        {gameMode === 'timed' ? '⚡ Süreli Mod' : '🧘 Pratik Modu'}
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-xl font-bold gradient-text">
+                            {gameMode === 'timed' ? '⚡ Süreli Mod' : '🧘 Pratik Modu'}
+                        </h1>
+                        <CurrencyDisplay />
+                    </div>
                     <button
                         onClick={toggleFullscreen}
                         className="text-white/80 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
@@ -313,6 +387,14 @@ export default function PracticePage() {
 
             <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-20">
                 <div className="w-full max-w-md mx-auto relative">
+                    {/* Hint Letter Display */}
+                    {hintLetter && (
+                        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
+                            <div className="bg-warning-500/90 text-white px-6 py-3 rounded-xl shadow-lg font-bold text-xl">
+                                💡 İpucu: <span className="text-2xl">{hintLetter}</span>
+                            </div>
+                        </div>
+                    )}
                     {/* Timer Logic */}
                     {/* KEY ekleyerek her tahminde sayacın sıfırlandığını sağlıyoruz */}
                     {gameMode === 'timed' && !loading && (
@@ -328,7 +410,7 @@ export default function PracticePage() {
                         guesses={guesses}
                         currentGuess={currentGuess}
                         wordLength={wordLength}
-                        maxGuesses={6}
+                        maxGuesses={maxAttempts}
                         results={results}
                     />
 
@@ -340,6 +422,15 @@ export default function PracticePage() {
                         </div>
                     )}
                 </div>
+
+                {/* Joker Panel */}
+                {!gameOver && (
+                    <JokerPanel
+                        targetWord={targetWord}
+                        currentGuesses={guesses}
+                        onJokerUsed={handleJokerUsed}
+                    />
+                )}
 
                 {!gameOver && (
                     <div className="w-full max-w-md mx-auto pb-4">

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import GameKeyboard from './GameKeyboard'
 import AnswerModal from './AnswerModal'
 import BearTimer from './BearTimer'
+import JokerPanel from './JokerPanel'
 import { isCorrectGuess, evaluateGuess, getKeyboardState } from '@/lib/gameLogic'
 import { isValidWord } from '@/lib/words'
 import type { LetterResult } from '@/lib/supabase'
@@ -37,6 +38,11 @@ export default function ArenaBoard({
     // Modal State
     const [showModal, setShowModal] = useState(false)
     const [isWin, setIsWin] = useState(false)
+
+    // Joker State
+    const [maxAttempts, setMaxAttempts] = useState(6)
+    const [revealedLetters, setRevealedLetters] = useState<{ position: number, letter: string }[]>([])
+    const [hintLetter, setHintLetter] = useState<string | null>(null)
 
     // Şu anki hedef kelime
     const targetWord = targetWords[wordIndex]

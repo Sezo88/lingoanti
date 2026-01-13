@@ -42,8 +42,8 @@ export default function PracticePage() {
 
     // Joker State
     const [maxAttempts, setMaxAttempts] = useState(6)
-    const [revealedLetters, setRevealedLetters] = useState<{ position: number, letter: string }[]>([])
-    const [hintLetter, setHintLetter] = useState<string | null>(null)
+    const [usedJokers, setUsedJokers] = useState<Set<string>>(new Set())
+    const [jokerLetters, setJokerLetters] = useState<{ position: number, letter: string, status: 'correct' | 'present' }[]>([])
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -214,8 +214,12 @@ export default function PracticePage() {
 
     // Joker Handler
     const handleJokerUsed = (jokerType: string, data: any) => {
+        // Silently ignore if already used (UI will show it as disabled)
+        if (usedJokers.has(jokerType)) {
+            return
+        }
+
         if (jokerType === 'green_letter') {
-            // Place letter in correct position in current guess
             const newGuess = currentGuess.split('')
             while (newGuess.length < wordLength) {
                 newGuess.push('')
@@ -223,11 +227,15 @@ export default function PracticePage() {
             newGuess[data.position] = data.letter
             setCurrentGuess(newGuess.join(''))
 
-            // Show success message
+            // Add to joker letters for coloring
+            setJokerLetters(prev => [...prev, { position: data.position, letter: data.letter, status: 'correct' }])
+
+            // Mark joker as used
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+
             setError(`✅ ${data.letter} harfi ${data.position + 1}. pozisyonda!`)
             setTimeout(() => setError(''), 2000)
         } else if (jokerType === 'yellow_letter') {
-            // Place letter in a wrong position in current guess
             const correctPositions = []
             for (let i = 0; i < targetWord.length; i++) {
                 if (targetWord[i] === data.letter) {
@@ -235,7 +243,6 @@ export default function PracticePage() {
                 }
             }
 
-            // Find available wrong positions
             const wrongPositions = []
             for (let i = 0; i < wordLength; i++) {
                 if (!correctPositions.includes(i) && !currentGuess[i]) {
@@ -252,17 +259,23 @@ export default function PracticePage() {
                 newGuess[randomWrongPos] = data.letter
                 setCurrentGuess(newGuess.join(''))
 
+                // Add to joker letters for coloring
+                setJokerLetters(prev => [...prev, { position: randomWrongPos, letter: data.letter, status: 'present' }])
+
+                // Mark joker as used
+                setUsedJokers(prev => new Set(prev).add(jokerType))
+
                 setError(`💡 ${data.letter} harfi kelimede var!`)
                 setTimeout(() => setError(''), 3000)
             }
         } else if (jokerType === 'extra_attempt') {
-            // Add extra attempt
             setMaxAttempts(prev => prev + 1)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
             setError('✅ +1 Ekstra Hak!')
             setTimeout(() => setError(''), 2000)
         } else if (jokerType === 'reveal_word') {
-            // Auto-fill and submit the word
             setCurrentGuess(data.word)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
             setTimeout(() => {
                 const evalResult = evaluateGuess(data.word, targetWord)
                 setGuesses([...guesses, data.word])
@@ -470,6 +483,7 @@ export default function PracticePage() {
                         targetWord={targetWord}
                         currentGuesses={guesses}
                         onJokerUsed={handleJokerUsed}
+                        usedJokers={usedJokers}
                     />
                 )}
 

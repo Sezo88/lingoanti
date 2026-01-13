@@ -10,9 +10,10 @@ interface JokerPanelProps {
     currentGuesses: string[]
     gameId?: string
     onJokerUsed: (jokerType: string, data: any) => void
+    usedJokers?: Set<string>
 }
 
-export default function JokerPanel({ targetWord, currentGuesses, gameId, onJokerUsed }: JokerPanelProps) {
+export default function JokerPanel({ targetWord, currentGuesses, gameId, onJokerUsed, usedJokers = new Set() }: JokerPanelProps) {
     const { tickets } = useCurrency()
     const { loading, useGreenLetter, useYellowLetter, useExtraAttempt, useRevealWord } = useJoker(
         targetWord,
@@ -119,8 +120,8 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                                             onClick={() => handleJokerClick(joker)}
                                             disabled={!canAfford || loading}
                                             className={`w-full p-4 rounded-xl border-2 transition-all ${canAfford
-                                                    ? 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/40'
-                                                    : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
+                                                ? 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/40'
+                                                : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
                                                 }`}
                                             whileHover={canAfford ? { scale: 1.02 } : {}}
                                             whileTap={canAfford ? { scale: 0.98 } : {}}

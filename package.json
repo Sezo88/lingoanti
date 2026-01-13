@@ -7,7 +7,9 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "import-words": "tsx scripts/importWords.ts"
+        "import-words": "tsx scripts/importWords.ts",
+        "export-words": "tsx scripts/exportWords.ts",
+        "import-filtered": "tsx scripts/importFilteredWords.ts"
     },
     "dependencies": {
         "@supabase/supabase-js": "^2.39.3",

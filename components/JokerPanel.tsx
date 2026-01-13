@@ -114,23 +114,31 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                             <div className="space-y-3">
                                 {jokers.map((joker) => {
                                     const canAfford = tickets >= joker.cost
+                                    const isUsed = usedJokers.has(joker.id)
+                                    const isDisabled = !canAfford || loading || isUsed
+
                                     return (
                                         <motion.button
                                             key={joker.id}
-                                            onClick={() => handleJokerClick(joker)}
-                                            disabled={!canAfford || loading}
-                                            className={`w-full p-4 rounded-xl border-2 transition-all ${canAfford
-                                                ? 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/40'
-                                                : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
+                                            onClick={() => !isDisabled && handleJokerClick(joker)}
+                                            disabled={isDisabled}
+                                            className={`w-full p-4 rounded-xl border-2 transition-all ${isUsed
+                                                    ? 'bg-white/5 border-white/10 opacity-40 cursor-not-allowed'
+                                                    : canAfford
+                                                        ? 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/40'
+                                                        : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
                                                 }`}
-                                            whileHover={canAfford ? { scale: 1.02 } : {}}
-                                            whileTap={canAfford ? { scale: 0.98 } : {}}
+                                            whileHover={canAfford && !isUsed ? { scale: 1.02 } : {}}
+                                            whileTap={canAfford && !isUsed ? { scale: 0.98 } : {}}
                                         >
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-3xl">{joker.icon}</span>
                                                     <div className="text-left">
-                                                        <div className="font-bold text-white">{joker.name}</div>
+                                                        <div className="font-bold text-white flex items-center gap-2">
+                                                            {joker.name}
+                                                            {isUsed && <span className="text-xs text-white/40">(Kullanıldı)</span>}
+                                                        </div>
                                                         <div className="text-xs text-white/60">{joker.description}</div>
                                                     </div>
                                                 </div>

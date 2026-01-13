@@ -26,6 +26,7 @@ export default function MultiplayerGamePage() {
     const [isFullscreen, setIsFullscreen] = useState(false)
     const [showAnswerOverlay, setShowAnswerOverlay] = useState(false)
     const [roundEndMessage, setRoundEndMessage] = useState<string | null>(null)
+    const [lastRoundWinner, setLastRoundWinner] = useState<string | null>(null)
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -41,17 +42,29 @@ export default function MultiplayerGamePage() {
     const isMyTurn = game?.current_turn === user?.id
     const opponent = isPlayer1 ? game?.player2_id : game?.player1_id
 
-    // Show overlay when round ends without winner
+    // Show overlay when round ends
     useEffect(() => {
         if (game?.round_message) {
             setRoundEndMessage(game.round_message)
+
+            // Determine who won the last round based on score change
+            // If message contains 🎉, someone won - check who has higher score
+            if (game.round_message.includes('🎉')) {
+                const myScore = isPlayer1 ? game.player1_score : game.player2_score
+                const opponentScore = isPlayer1 ? game.player2_score : game.player1_score
+                setLastRoundWinner(myScore > opponentScore ? user?.id || null : opponent || null)
+            } else {
+                setLastRoundWinner(null) // Draw
+            }
+
             // Auto-dismiss after 3 seconds
             const timer = setTimeout(() => {
                 setRoundEndMessage(null)
+                setLastRoundWinner(null)
             }, 3000)
             return () => clearTimeout(timer)
         }
-    }, [game?.round_message])
+    }, [game?.round_message, isPlayer1, user?.id, opponent])
 
     const totalMoves = moves.length
 
@@ -326,18 +339,38 @@ export default function MultiplayerGamePage() {
                             <div className="w-full max-w-sm bg-dark-100 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center">
                                 <div className={`absolute top-0 left-0 w-full h-2 ${isGameOver
                                     ? (iWon ? 'bg-success-500' : 'bg-danger-500')
-                                    : 'bg-warning-500'
+                                    : lastRoundWinner === user?.id
+                                        ? 'bg-success-500'
+                                        : lastRoundWinner
+                                            ? 'bg-danger-500'
+                                            : 'bg-warning-500'
                                     } shadow-[0_0_20px_rgba(var(--tw-colors-primary-500),0.5)]`}></div>
 
                                 <div className="text-5xl mb-4 animate-bounce-subtle">
-                                    {isGameOver ? (iWon ? '🎉' : '💔') : '😵'}
+                                    {isGameOver
+                                        ? (iWon ? '🎉' : '💔')
+                                        : lastRoundWinner === user?.id
+                                            ? '🎉'
+                                            : lastRoundWinner
+                                                ? '😔'
+                                                : '😵'}
                                 </div>
 
                                 <h2 className={`text-2xl font-bold mb-1 ${isGameOver
                                     ? (iWon ? 'text-white' : 'text-danger-400')
-                                    : 'text-warning-400'
+                                    : lastRoundWinner === user?.id
+                                        ? 'text-success-400'
+                                        : lastRoundWinner
+                                            ? 'text-danger-400'
+                                            : 'text-warning-400'
                                     }`}>
-                                    {isGameOver ? (iWon ? 'Tebrikler! 🎉' : game.winner_id ? 'Rakibiniz Kazandı!' : 'Berabere!') : 'Kimse Bulamadı!'}
+                                    {isGameOver
+                                        ? (iWon ? 'Tebrikler! 🎉' : game.winner_id ? 'Rakibiniz Kazandı!' : 'Berabere!')
+                                        : lastRoundWinner === user?.id
+                                            ? 'Tebrikler!'
+                                            : lastRoundWinner
+                                                ? 'Bir Daha Dene!'
+                                                : 'Kimse Bulamadı!'}
                                 </h2>
 
                                 <p className="text-white/50 text-sm mb-6 uppercase tracking-widest font-semibold">
@@ -381,13 +414,14 @@ export default function MultiplayerGamePage() {
 
 
                 {
-                    !isGameOver && isMyTurn && (
+                    !isGameOver && (
                         <div className="w-full max-w-md mx-auto pb-12">
                             <GameKeyboard
                                 onKeyPress={handleKeyPress}
                                 onEnter={handleEnter}
                                 onBackspace={handleBackspace}
                                 keyStates={keyboardState}
+                                disabled={!isMyTurn}
                             />
                         </div>
                     )

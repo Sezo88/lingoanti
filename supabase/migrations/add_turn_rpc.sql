@@ -70,24 +70,53 @@ BEGIN
       ),
       config = jsonb_set(
         jsonb_set(
-            v_config,
-            '{currentTurn}',
-            to_jsonb(v_current_turn + 1)
+            jsonb_set(
+                v_config,
+                '{currentTurn}',
+                to_jsonb(v_current_turn + 1)
+            ),
+            '{currentRound}',
+            to_jsonb(((v_game_state->>'currentWordIndex')::INT + 1))
         ),
-        '{currentRound}',
-        to_jsonb(((v_game_state->>'currentWordIndex')::INT + 1))
+        '{turnStartTime}',
+        to_jsonb((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)
       )
     WHERE id = p_room_id;
     
   ELSE
-    -- Yanlış bilindi: Sadece sırayı ilerlet
+    -- Yanlış bilindi: Sadece sırayı ilerlet ve turnStartTime güncelle
     UPDATE rooms
     SET config = jsonb_set(
-        v_config,
-        '{currentTurn}',
-        to_jsonb(v_current_turn + 1)
+        jsonb_set(
+            v_config,
+            '{currentTurn}',
+            to_jsonb(v_current_turn + 1)
+        ),
+        '{turnStartTime}',
+        to_jsonb((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)
     )
     WHERE id = p_room_id;
+    
+    -- Eğer 6 tahmin dolmuşsa, yeni kelimeye geç
+    IF jsonb_array_length(v_game_state->'guesses') + 1 >= 6 THEN
+      UPDATE rooms
+      SET 
+        game_state = jsonb_build_object(
+          'guesses', '[]'::jsonb,
+          'results', '[]'::jsonb,
+          'currentWordIndex', (v_game_state->>'currentWordIndex')::INT + 1
+        ),
+        config = jsonb_set(
+          jsonb_set(
+              v_config,
+              '{currentTurn}',
+              to_jsonb(v_current_turn + 1)
+          ),
+          '{turnStartTime}',
+          to_jsonb((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)
+        )
+      WHERE id = p_room_id;
+    END IF;
   END IF;
 
 END;

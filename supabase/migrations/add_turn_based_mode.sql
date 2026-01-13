@@ -88,14 +88,17 @@ BEGIN
     SET config = jsonb_set(
       jsonb_set(
         jsonb_set(
-          COALESCE(config, '{}'::jsonb),
-          '{turnOrder}', 
-          to_jsonb(v_participant_ids), 
-          true
+          jsonb_set(
+            COALESCE(config, '{}'::jsonb),
+            '{turnOrder}', 
+            to_jsonb(v_participant_ids), 
+            true
+          ),
+          '{currentTurn}', '0'::jsonb, true
         ),
-        '{currentTurn}', '0'::jsonb, true
+        '{roundsTotal}', to_jsonb(v_rounds_total), true
       ),
-      '{roundsTotal}', to_jsonb(v_rounds_total), true
+      '{turnStartTime}', to_jsonb((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT), true
     )
     WHERE id = p_room_id;
   END IF;

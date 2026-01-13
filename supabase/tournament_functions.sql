@@ -232,6 +232,7 @@ DECLARE
   v_word_length INTEGER := 5;
   v_current_players INTEGER;
   v_min_players INTEGER;
+  v_participant_ids UUID[];
 BEGIN
   -- Get room info and player counts
   SELECT room_id, game_mode, current_players, min_players 
@@ -252,6 +253,30 @@ BEGIN
 
   -- Start the room game using existing function
   PERFORM start_room_game(v_room_id, v_word_count, v_word_length);
+
+  -- CRITICAL FIX: If turn-based tournament, initialize turn order and timer
+  IF v_game_mode = 'turn_based' THEN
+    -- Get all participant IDs
+    SELECT ARRAY_AGG(user_id ORDER BY joined_at) INTO v_participant_ids
+    FROM room_participants
+    WHERE room_id = v_room_id;
+
+    -- Update room config with turn-based settings
+    UPDATE rooms
+    SET config = jsonb_set(
+      jsonb_set(
+        jsonb_set(
+          COALESCE(config, '{}'::jsonb),
+          '{turnOrder}', 
+          to_jsonb(v_participant_ids), 
+          true
+        ),
+        '{currentTurn}', '0'::jsonb, true
+      ),
+      '{turnStartTime}', to_jsonb((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT), true
+    )
+    WHERE id = v_room_id;
+  END IF;
 
   -- Clean up queue entries for participants
   DELETE FROM tournament_queue

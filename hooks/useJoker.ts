@@ -42,9 +42,12 @@ export function useJoker(targetWord: string, currentGuesses: string[], gameId?: 
 
         setLoading(true)
         try {
+            // IMPORTANT: Only check positions up to targetWord.length (not beyond!)
+            const wordLen = targetWord.length
+
             // Find unrevealed positions by checking if any guess has revealed this position
             const unrevealedPositions: number[] = []
-            for (let i = 0; i < targetWord.length; i++) {
+            for (let i = 0; i < wordLen; i++) {
                 let isRevealed = false
                 // Check if this position has been correctly guessed in any previous attempt
                 for (const guess of currentGuesses) {

@@ -1,0 +1,10 @@
+// DEBUG TEST - Kullanıcıya console'u açmasını söyle
+// Tarayıcıda F12 bas -> Console tab
+// Yeşil joker kullan ve console'da şunları göreceksin:
+// - data.position: 2 (örnek)
+// - data.letter: "K"
+// - newGuess array: ["", "", "K", "", ""]
+// - finalGuess string: "  K  "
+
+// Eğer position doğru ama harf yanlış yerdeyse, 
+// sorun GameBoard render'ında olabilir

@@ -220,6 +220,13 @@ export default function PracticePage() {
         }
 
         if (jokerType === 'green_letter') {
+            console.log('🟢 GREEN LETTER DEBUG:', {
+                position: data.position,
+                letter: data.letter,
+                wordLength,
+                currentGuess
+            })
+
             // Create array with exact word length, filled with empty strings
             const newGuess = Array(wordLength).fill('')
 
@@ -233,6 +240,13 @@ export default function PracticePage() {
 
             // Place the joker letter at the EXACT position
             newGuess[data.position] = data.letter
+
+            console.log('🟢 AFTER PLACEMENT:', {
+                newGuessArray: newGuess,
+                newGuessString: newGuess.join(''),
+                letterAtPosition: newGuess[data.position]
+            })
+
             setCurrentGuess(newGuess.join(''))
 
             // Add to joker letters for coloring at CORRECT position

@@ -440,14 +440,6 @@ export default function PracticePage() {
 
             <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-24">
                 <div className="w-full max-w-md mx-auto relative">
-                    {/* Hint Letter Display */}
-                    {hintLetter && (
-                        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
-                            <div className="bg-warning-500/90 text-white px-6 py-3 rounded-xl shadow-lg font-bold text-xl">
-                                💡 İpucu: <span className="text-2xl">{hintLetter}</span>
-                            </div>
-                        </div>
-                    )}
                     {/* Timer Logic */}
                     {/* KEY ekleyerek her tahminde sayacın sıfırlandığını sağlıyoruz */}
                     {gameMode === 'timed' && !loading && (

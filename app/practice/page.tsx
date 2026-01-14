@@ -212,13 +212,25 @@ export default function PracticePage() {
     }
 
     const handleKeyPress = (key: string) => {
-        if (gameOver || loading) return
+        console.log('🎹 KEY PRESSED:', key, { gameOver, loading, wordLength, currentGuess })
+
+        if (gameOver || loading) {
+            console.log('❌ BLOCKED: gameOver or loading')
+            return
+        }
+
         if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
+            console.log('✅ VALID KEY')
             // Find first empty or space position
             const chars = currentGuess.split('')
             const firstEmptyIndex = chars.findIndex(c => !c || c === ' ')
 
-            if (firstEmptyIndex === -1) return // All positions filled
+            console.log('📍 First empty index:', firstEmptyIndex, 'chars:', chars)
+
+            if (firstEmptyIndex === -1) {
+                console.log('❌ ALL POSITIONS FILLED')
+                return // All positions filled
+            }
 
             // Ensure array is full length
             while (chars.length < wordLength) {
@@ -226,7 +238,11 @@ export default function PracticePage() {
             }
 
             chars[firstEmptyIndex] = key.toLocaleUpperCase('tr-TR')
-            setCurrentGuess(chars.join(''))
+            const newGuess = chars.join('')
+            console.log('✅ NEW GUESS:', newGuess)
+            setCurrentGuess(newGuess)
+        } else {
+            console.log('❌ INVALID KEY (not a letter)')
         }
     }
 

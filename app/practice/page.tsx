@@ -79,7 +79,7 @@ export default function PracticePage() {
             setShowDurationSelect(true)
         } else {
             setIsSetup(true)
-            startNewGame(false)
+            startNewGame(false, length)
         }
     }
 
@@ -123,19 +123,22 @@ export default function PracticePage() {
         setTimeLimit(seconds)
         setShowDurationSelect(false)
         setIsSetup(true)
-        startNewGame(true)
+        startNewGame(true, wordLength)
     }
 
-    const startNewGame = async (shouldStartTimer = false) => {
+    const startNewGame = async (shouldStartTimer = false, selectedLength?: number) => {
         setLoading(true)
 
+        // Use provided length or current wordLength
+        let currentLength = selectedLength || wordLength
+
         // Mixed mode: randomize word length
-        let currentLength = wordLength
         if (isMixedMode) {
             currentLength = [4, 5, 6, 7][Math.floor(Math.random() * 4)]
             setWordLength(currentLength)
         }
 
+        console.log('🎮 START NEW GAME:', { selectedLength, wordLength, currentLength, isMixedMode })
         const word = await getRandomWord(currentLength)
 
         if (!word) {

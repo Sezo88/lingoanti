@@ -148,7 +148,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                             </div>
 
                             <button
-                                onClick={() => setShowPanel(false)}
+                                onClick={onClose}
                                 className="mt-4 w-full py-2 text-white/60 hover:text-white transition-colors"
                             >
                                 İptal

@@ -192,6 +192,11 @@ export default function PracticePage() {
         setIsTimerRunning(false)
         setShowModal(true)
 
+        // Timed mode: save score on game end
+        if (gameMode === 'timed') {
+            saveScore()
+        }
+
         if (navigator.vibrate) {
             navigator.vibrate(500)
         }
@@ -203,11 +208,13 @@ export default function PracticePage() {
         setIsTimerRunning(false)
         setShowModal(true)
 
-        // Calculate score for this word
-        const attemptNumber = guesses.length + 1
-        const wordScore = calculateWordScore(0, attemptNumber) // 0 for untimed
-        setTotalScore(prev => prev + wordScore)
-        setWordsCompleted(prev => prev + 1)
+        // Calculate score for this word (timed mode only)
+        if (gameMode === 'timed') {
+            const attemptNumber = guesses.length + 1
+            const wordScore = calculateWordScore(0, attemptNumber)
+            setTotalScore(prev => prev + wordScore)
+            setWordsCompleted(prev => prev + 1)
+        }
 
         if (navigator.vibrate) {
             navigator.vibrate([100, 50, 100, 50, 100])
@@ -575,18 +582,22 @@ export default function PracticePage() {
                     </button>
 
                     <div className="flex items-center gap-2">
-                        {/* Score Display */}
-                        <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10">
-                            <div className="text-[9px] text-white/60">PUAN</div>
-                            <div className="text-base font-bold text-yellow-400">{totalScore}</div>
-                        </div>
+                        {/* Score Display - Timed mode only */}
+                        {gameMode === 'timed' && (
+                            <>
+                                <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10">
+                                    <div className="text-[9px] text-white/60">PUAN</div>
+                                    <div className="text-base font-bold text-yellow-400">{totalScore}</div>
+                                </div>
 
-                        {/* Personal Best */}
-                        {personalBest > 0 && (
-                            <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-green-500/30">
-                                <div className="text-[9px] text-white/60">REKOR</div>
-                                <div className="text-base font-bold text-green-400">{personalBest}</div>
-                            </div>
+                                {/* Personal Best */}
+                                {personalBest > 0 && (
+                                    <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-green-500/30">
+                                        <div className="text-[9px] text-white/60">REKOR</div>
+                                        <div className="text-base font-bold text-green-400">{personalBest}</div>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         <CurrencyDisplay />

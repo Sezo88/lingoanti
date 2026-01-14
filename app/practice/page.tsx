@@ -611,10 +611,10 @@ export default function PracticePage() {
 
                         {/* CENTER: Title */}
                         <div className="text-center">
-                            <h1 className="text-sm font-bold gradient-text leading-tight">
+                            <h1 className="text-lg font-bold gradient-text leading-tight">
                                 {gameMode === 'timed' ? 'Süreli' : 'Süresiz'}
                             </h1>
-                            <div className="text-[10px] text-white/60 leading-tight">Pratik Mod</div>
+                            <div className="text-xs text-white/60 leading-tight">Pratik Mod</div>
                         </div>
 
                         {/* RIGHT: Currency + Buttons (Vertical) */}

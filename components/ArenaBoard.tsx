@@ -143,8 +143,8 @@ export default function ArenaBoard({
             setResults(newResults)
             setCurrentGuess('')
 
-            // 6. deneme geçersizse kaybetti
-            if (newGuesses.length >= 6) {
+            // Max attempts reached?
+            if (newGuesses.length >= maxAttempts) {
                 handleLose()
             }
             return
@@ -165,7 +165,7 @@ export default function ArenaBoard({
         if (won) {
             // Kelime bilindi!
             handleWin()
-        } else if (newGuesses.length >= 6) {
+        } else if (newGuesses.length >= maxAttempts) {
             handleLose()
         }
     }

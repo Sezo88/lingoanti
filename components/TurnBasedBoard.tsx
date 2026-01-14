@@ -148,13 +148,20 @@ export default function TurnBasedBoard({
                     🚧 Çık
                 </button>
 
-                <div className="flex-1 text-center">
-                    <div className="bg-primary-500/20 px-4 py-2 rounded-xl inline-block border border-primary-500/30">
-                        <div className="text-xs text-white/70 mb-0.5">
-                            {isMyTurn ? '🎯 SIRA SENDE!' : `⏳ ${currentPlayerName} oynuyor`}
-                        </div>
-                        <div className="text-xl font-mono font-bold text-white">
-                            {timeLeft}sn
+                {/* SCOREBOARD */}
+                <div className="flex-1 mx-4">
+                    <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+                        <div className="flex items-center justify-around gap-2">
+                            {participants.map((p) => (
+                                <div key={p.user_id} className="flex flex-col items-center min-w-0">
+                                    <div className="text-[10px] text-white/60 truncate max-w-[60px]">
+                                        {p.display_name}
+                                    </div>
+                                    <div className="text-sm font-bold text-yellow-400">
+                                        {p.score || 0}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

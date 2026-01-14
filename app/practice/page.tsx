@@ -10,10 +10,14 @@ import CurrencyDisplay from '@/components/CurrencyDisplay'
 import JokerPanel from '@/components/JokerPanel'
 import { getRandomWord, isValidWord } from '@/lib/words'
 import { evaluateGuess, isCorrectGuess, getKeyboardState } from '@/lib/gameLogic'
+import { calculateWordScore } from '@/lib/scoring'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
 import type { LetterResult } from '@/lib/supabase'
 
 export default function PracticePage() {
     const router = useRouter()
+    const { user } = useAuth()
 
     // Setup State
     const [isSetup, setIsSetup] = useState(false)
@@ -23,7 +27,11 @@ export default function PracticePage() {
 
     // Game State
     const [wordLength, setWordLength] = useState(5)
+    const [isMixedMode, setIsMixedMode] = useState(false)
     const [targetWord, setTargetWord] = useState<string>('')
+    const [totalScore, setTotalScore] = useState(0)
+    const [wordsCompleted, setWordsCompleted] = useState(0)
+    const [personalBest, setPersonalBest] = useState(0)
     const [guesses, setGuesses] = useState<string[]>([])
     const [currentGuess, setCurrentGuess] = useState('')
     const [results, setResults] = useState<LetterResult[][]>([])
@@ -64,11 +72,50 @@ export default function PracticePage() {
         setWordLength(length)
         setShowWordLengthSelect(false)
 
+        // Fetch personal best for this mode
+        fetchPersonalBest(length)
+
         if (gameMode === 'timed') {
             setShowDurationSelect(true)
         } else {
             setIsSetup(true)
             startNewGame(false)
+        }
+    }
+
+    const fetchPersonalBest = async (length: number) => {
+        if (!user) return
+
+        const wordLengthParam = isMixedMode ? 0 : length
+        const { data, error } = await supabase.rpc('get_personal_best', {
+            p_user_id: user.id,
+            p_game_mode: gameMode,
+            p_word_length: wordLengthParam
+        })
+
+        if (!error && data !== null) {
+            setPersonalBest(data)
+        }
+    }
+
+    const saveScore = async () => {
+        if (!user || totalScore === 0) return
+
+        const wordLengthParam = isMixedMode ? 0 : wordLength
+
+        await supabase.from('practice_scores').insert({
+            user_id: user.id,
+            game_mode: gameMode,
+            word_length: wordLengthParam,
+            score: totalScore,
+            words_completed: wordsCompleted
+        })
+
+        // Check if new personal best
+        if (totalScore > personalBest) {
+            setPersonalBest(totalScore)
+            setError('🎉 YENİ REKOR!')
+            setTimeout(() => setError(''), 3000)
         }
     }
 
@@ -81,7 +128,14 @@ export default function PracticePage() {
 
     const startNewGame = async (shouldStartTimer = false) => {
         setLoading(true)
-        const word = await getRandomWord(wordLength)
+
+        // Mixed mode: randomize word length
+        const currentLength = isMixedMode
+            ? [4, 5, 6, 7][Math.floor(Math.random() * 4)]
+            : wordLength
+
+        setWordLength(currentLength)
+        const word = await getRandomWord(currentLength)
 
         if (!word) {
             setError('Kelime yüklenemedi. Lütfen tekrar deneyin.')
@@ -144,6 +198,12 @@ export default function PracticePage() {
         setGameOver(true)
         setIsTimerRunning(false)
         setShowModal(true)
+
+        // Calculate score for this word
+        const attemptNumber = guesses.length + 1
+        const wordScore = calculateWordScore(0, attemptNumber) // 0 for untimed
+        setTotalScore(prev => prev + wordScore)
+        setWordsCompleted(prev => prev + 1)
 
         if (navigator.vibrate) {
             navigator.vibrate([100, 50, 100, 50, 100])
@@ -352,16 +412,28 @@ export default function PracticePage() {
                         <h2 className="text-3xl font-bold text-white mb-2">Kaç Harfli?</h2>
                         <p className="text-white/80 mb-8">Kelime uzunluğunu seç</p>
 
-                        <div className="grid grid-cols-3 gap-4">
-                            {[4, 5, 6].map((length) => (
+                        <div className="grid grid-cols-2 gap-4">
+                            {[4, 5, 6, 7].map((length) => (
                                 <button
                                     key={length}
-                                    onClick={() => confirmWordLength(length)}
+                                    onClick={() => {
+                                        setIsMixedMode(false)
+                                        confirmWordLength(length)
+                                    }}
                                     className="py-6 rounded-xl bg-dark-200 hover:bg-dark-300 border-2 border-transparent hover:border-primary-500 transition-all font-bold text-2xl text-white"
                                 >
                                     {length}
                                 </button>
                             ))}
+                            <button
+                                onClick={() => {
+                                    setIsMixedMode(true)
+                                    confirmWordLength(5) // Default, will be randomized
+                                }}
+                                className="col-span-2 py-6 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-2 border-transparent transition-all font-bold text-xl text-white"
+                            >
+                                🎲 Karışık (4-7)
+                            </button>
                         </div>
                     </div>
                 </div>

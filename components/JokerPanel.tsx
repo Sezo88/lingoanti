@@ -73,81 +73,80 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
 
     return (
         <>
-            {/* Joker Button */}
-            <motion.button
+            {/* Floating Joker Button - Smaller */}
+            <button
                 onClick={() => setShowPanel(!showPanel)}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full shadow-lg flex items-center justify-center text-2xl z-40"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                className="fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-xl"
             >
-                ⚡
-            </motion.button>
+                ✨
+            </button>
 
-            {/* Joker Panel */}
+            {/* Joker Panel Modal - Compact */}
             <AnimatePresence>
                 {showPanel && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-end justify-center p-4"
                         onClick={() => setShowPanel(false)}
                     >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="glass-card p-6 rounded-[24px] max-w-md w-full"
+                            initial={{ y: 100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 100, opacity: 0 }}
+                            className="glass-card rounded-t-3xl max-w-md w-full p-4 pb-6"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                                <span>⚡</span>
-                                Jokerler
-                            </h2>
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-lg font-bold text-white">✨ Jokerler</h3>
+                                <button
+                                    onClick={() => setShowPanel(false)}
+                                    className="text-white/60 hover:text-white text-xl"
+                                >
+                                    ✕
+                                </button>
+                            </div>
 
                             {error && (
-                                <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
+                                <div className="mb-3 p-2 bg-danger-500/20 border border-danger-500/50 rounded-lg text-danger-400 text-xs text-center">
                                     {error}
                                 </div>
                             )}
 
-                            <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-2">
                                 {jokers.map((joker) => {
-                                    const canAfford = tickets >= joker.cost
                                     const isUsed = usedJokers.has(joker.id)
-                                    const isDisabled = !canAfford || loading || isUsed
+                                    const canAfford = tickets >= joker.cost
+                                    const isDisabled = isUsed || !canAfford || loading
 
                                     return (
-                                        <motion.button
+                                        <button
                                             key={joker.id}
-                                            onClick={() => !isDisabled && handleJokerClick(joker)}
+                                            onClick={() => handleJokerClick(joker)}
                                             disabled={isDisabled}
-                                            className={`w-full p-4 rounded-xl border-2 transition-all ${isUsed
-                                                    ? 'bg-white/5 border-white/10 opacity-40 cursor-not-allowed'
-                                                    : canAfford
-                                                        ? 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/40'
-                                                        : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
-                                                }`}
-                                            whileHover={canAfford && !isUsed ? { scale: 1.02 } : {}}
-                                            whileTap={canAfford && !isUsed ? { scale: 0.98 } : {}}
+                                            className={`
+                                                p-3 rounded-xl border-2 transition-all text-left
+                                                ${isDisabled
+                                                    ? 'bg-dark-300/50 border-dark-300 opacity-50 cursor-not-allowed'
+                                                    : 'bg-dark-200 border-primary-500/30 hover:border-primary-500 hover:scale-105'
+                                                }
+                                            `}
                                         >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-3xl">{joker.icon}</span>
-                                                    <div className="text-left">
-                                                        <div className="font-bold text-white flex items-center gap-2">
-                                                            {joker.name}
-                                                            {isUsed && <span className="text-xs text-white/40">(Kullanıldı)</span>}
-                                                        </div>
-                                                        <div className="text-xs text-white/60">{joker.description}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-1 px-3 py-1 bg-yellow-500/20 rounded-full border border-yellow-500/30">
-                                                    <span className="text-sm">🎫</span>
-                                                    <span className="font-bold text-white text-sm">{joker.cost}</span>
+                                            <div className="flex items-start justify-between mb-1">
+                                                <span className="text-2xl">{joker.icon}</span>
+                                                <div className="text-xs font-bold text-yellow-400">
+                                                    🎫 {joker.cost}
                                                 </div>
                                             </div>
-                                        </motion.button>
+                                            <div className="text-sm font-bold text-white mb-0.5">{joker.name}</div>
+                                            <div className="text-[10px] text-white/60 leading-tight">{joker.description}</div>
+                                            {isUsed && (
+                                                <div className="text-[9px] text-danger-400 mt-1 font-bold">
+                                                    (Kullanıldı)
+                                                </div>
+                                            )}
+                                        </button>
                                     )
                                 })}
                             </div>

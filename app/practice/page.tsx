@@ -566,22 +566,35 @@ export default function PracticePage() {
             />
 
             <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
-                <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+                <div className="container mx-auto px-4 py-3 flex items-center justify-between">
                     <button
                         onClick={() => setIsSetup(false)}
-                        className="text-white/70 hover:text-white transition-colors"
+                        className="text-white/70 hover:text-white transition-colors text-sm"
                     >
                         ← Menü
                     </button>
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-xl font-bold gradient-text">
-                            {gameMode === 'timed' ? '⚡ Süreli Mod' : '🧘 Pratik Modu'}
-                        </h1>
+
+                    <div className="flex items-center gap-2">
+                        {/* Score Display */}
+                        <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10">
+                            <div className="text-[9px] text-white/60">PUAN</div>
+                            <div className="text-base font-bold text-yellow-400">{totalScore}</div>
+                        </div>
+
+                        {/* Personal Best */}
+                        {personalBest > 0 && (
+                            <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-green-500/30">
+                                <div className="text-[9px] text-white/60">REKOR</div>
+                                <div className="text-base font-bold text-green-400">{personalBest}</div>
+                            </div>
+                        )}
+
                         <CurrencyDisplay />
                     </div>
+
                     <button
                         onClick={toggleFullscreen}
-                        className="text-white/80 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
+                        className="text-white/80 hover:text-white transition-colors text-xl flex items-center justify-center w-8 h-8"
                     >
                         {isFullscreen ? '⊗' : '⛶'}
                     </button>

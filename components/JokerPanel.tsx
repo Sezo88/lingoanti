@@ -11,16 +11,17 @@ interface JokerPanelProps {
     gameId?: string
     onJokerUsed: (jokerType: string, data: any) => void
     usedJokers?: Set<string>
+    showPanel?: boolean
+    onClose?: () => void
 }
 
-export default function JokerPanel({ targetWord, currentGuesses, gameId, onJokerUsed, usedJokers = new Set() }: JokerPanelProps) {
+export default function JokerPanel({ targetWord, currentGuesses, gameId, onJokerUsed, usedJokers = new Set(), showPanel = false, onClose }: JokerPanelProps) {
     const { tickets } = useCurrency()
     const { loading, useGreenLetter, useYellowLetter, useExtraAttempt, useRevealWord } = useJoker(
         targetWord,
         currentGuesses,
         gameId
     )
-    const [showPanel, setShowPanel] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const jokers = [
@@ -50,10 +51,10 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
         },
         {
             id: 'reveal_word',
-            name: 'Kelimeyi Aç',
-            icon: '🔓',
-            cost: 200,
-            description: 'Tüm kelimeyi göster',
+            name: 'Kelimeyi Göster',
+            icon: '💡',
+            cost: 100,
+            description: 'Doğru kelimeyi göster',
             action: useRevealWord
         }
     ]
@@ -61,26 +62,21 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
     const handleJokerClick = async (joker: typeof jokers[0]) => {
         setError(null)
 
-        const result = await joker.action()
+        if (tickets < joker.cost) {
+            setError(`Yeterli biletiniz yok! ${joker.cost} bilet gerekli.`)
+            setTimeout(() => setError(null), 3000)
+            return
+        }
 
-        if (result.success) {
-            onJokerUsed(joker.id, result.data)
-            setShowPanel(false)
-        } else {
-            setError(result.error || 'Joker kullanılamadı')
+        const result = await joker.action()
+        if (result) {
+            onJokerUsed(joker.id, result)
+            if (onClose) onClose()
         }
     }
 
     return (
         <>
-            {/* Floating Joker Button - Right side, smaller */}
-            <button
-                onClick={() => setShowPanel(!showPanel)}
-                className="fixed top-20 right-3 z-50 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
-            >
-                ✨
-            </button>
-
             {/* Joker Panel Modal - Compact */}
             <AnimatePresence>
                 {showPanel && (
@@ -89,7 +85,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-end justify-center p-4"
-                        onClick={() => setShowPanel(false)}
+                        onClick={onClose}
                     >
                         <motion.div
                             initial={{ y: 100, opacity: 0 }}
@@ -101,7 +97,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="text-lg font-bold text-white">✨ Jokerler</h3>
                                 <button
-                                    onClick={() => setShowPanel(false)}
+                                    onClick={onClose}
                                     className="text-white/60 hover:text-white text-xl"
                                 >
                                     ✕

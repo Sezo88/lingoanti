@@ -2,7 +2,6 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
-import BottomNav from '@/components/BottomNav'
 import FractalBackground from '@/components/FractalBackground'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -32,7 +31,6 @@ export default function RootLayout({
                 <FractalBackground />
                 <AuthProvider>
                     {children}
-                    <BottomNav />
                 </AuthProvider>
             </body>
         </html>

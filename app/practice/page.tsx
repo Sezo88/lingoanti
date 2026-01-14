@@ -570,31 +570,32 @@ export default function PracticePage() {
                 isWin={won}
                 targetWord={targetWord}
                 onNext={() => startNewGame(gameMode === 'timed')}
+                onRestart={() => setIsSetup(false)}
             />
 
             <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
-                <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+                <div className="container mx-auto px-3 py-2 flex items-center justify-between">
                     <button
                         onClick={() => setIsSetup(false)}
-                        className="text-white/70 hover:text-white transition-colors text-sm"
+                        className="text-white/70 hover:text-white transition-colors text-xs"
                     >
                         ← Menü
                     </button>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         {/* Score Display - Timed mode only */}
                         {gameMode === 'timed' && (
                             <>
-                                <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10">
-                                    <div className="text-[9px] text-white/60">PUAN</div>
-                                    <div className="text-base font-bold text-yellow-400">{totalScore}</div>
+                                <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-1.5 py-0.5 border border-white/10">
+                                    <div className="text-[8px] text-white/60">PUAN</div>
+                                    <div className="text-sm font-bold text-yellow-400">{totalScore}</div>
                                 </div>
 
                                 {/* Personal Best */}
                                 {personalBest > 0 && (
-                                    <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-1 border border-green-500/30">
-                                        <div className="text-[9px] text-white/60">REKOR</div>
-                                        <div className="text-base font-bold text-green-400">{personalBest}</div>
+                                    <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-1.5 py-0.5 border border-green-500/30">
+                                        <div className="text-[8px] text-white/60">REKOR</div>
+                                        <div className="text-sm font-bold text-green-400">{personalBest}</div>
                                     </div>
                                 )}
                             </>
@@ -605,14 +606,14 @@ export default function PracticePage() {
 
                     <button
                         onClick={toggleFullscreen}
-                        className="text-white/80 hover:text-white transition-colors text-xl flex items-center justify-center w-8 h-8"
+                        className="text-white/80 hover:text-white transition-colors text-lg flex items-center justify-center w-7 h-7"
                     >
                         {isFullscreen ? '⊗' : '⛶'}
                     </button>
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-36">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-16">
                 <div className="w-full max-w-md mx-auto relative">
                     {/* Timer Logic */}
                     {/* KEY ekleyerek her tahminde sayacın sıfırlandığını sağlıyoruz */}

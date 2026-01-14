@@ -8,18 +8,19 @@ interface AnswerModalProps {
     isWin: boolean
     targetWord: string
     onNext: () => void
+    onRestart?: () => void
 }
 
-export default function AnswerModal({ isOpen, isWin, targetWord, onNext }: AnswerModalProps) {
+export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onRestart }: AnswerModalProps) {
     useEffect(() => {
-        if (isOpen) {
-            // 10 saniye sonra otomatik kapat (hem kazanma hem kaybetme için)
+        if (isOpen && !onRestart) {
+            // Auto-advance only if no restart option (multiplayer)
             const timer = setTimeout(() => {
                 onNext()
             }, 10000)
             return () => clearTimeout(timer)
         }
-    }, [isOpen, onNext])
+    }, [isOpen, onNext, onRestart])
 
     if (!isOpen) return null
 
@@ -38,14 +39,26 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext }: Answe
                     <div className="text-5xl font-black text-yellow-400 tracking-wider drop-shadow-lg mb-2">
                         {targetWord.toLocaleUpperCase('tr-TR')}
                     </div>
-                    <p className="text-sm text-white/60 mt-4">10 saniye sonra otomatik devam edecek...</p>
+                    {!onRestart && (
+                        <p className="text-sm text-white/60 mt-4">10 saniye sonra otomatik devam edecek...</p>
+                    )}
                 </div>
-                <button
-                    onClick={onNext}
-                    className="px-8 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold transition-all text-lg"
-                >
-                    {isWin ? 'Devam Et' : 'Tamam'}
-                </button>
+                <div className="flex gap-3">
+                    {onRestart && (
+                        <button
+                            onClick={onRestart}
+                            className="flex-1 px-6 py-3 bg-dark-300 hover:bg-dark-400 text-white rounded-xl font-semibold transition-all text-lg"
+                        >
+                            Yeni Oyun
+                        </button>
+                    )}
+                    <button
+                        onClick={onNext}
+                        className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold transition-all text-lg"
+                    >
+                        {isWin ? 'Devam Et' : 'Tamam'}
+                    </button>
+                </div>
             </motion.div>
         </div>
     )

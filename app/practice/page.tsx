@@ -579,7 +579,11 @@ export default function PracticePage() {
                         saveScore()
                         setIsSetup(false)
                     }}
-                    onRestart={() => startNewGame(gameMode === 'timed')}
+                    onRestart={() => {
+                        setTotalScore(0)
+                        setWordsCompleted(0)
+                        startNewGame(gameMode === 'timed')
+                    }}
                 />
             )}
 

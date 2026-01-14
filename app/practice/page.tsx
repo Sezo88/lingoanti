@@ -221,8 +221,14 @@ export default function PracticePage() {
 
         if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
             console.log('✅ VALID KEY')
+
+            // Initialize with spaces if empty
+            let chars = currentGuess.split('')
+            if (chars.length === 0) {
+                chars = Array(wordLength).fill(' ')
+            }
+
             // Find first empty or space position
-            const chars = currentGuess.split('')
             const firstEmptyIndex = chars.findIndex(c => !c || c === ' ')
 
             console.log('📍 First empty index:', firstEmptyIndex, 'chars:', chars)

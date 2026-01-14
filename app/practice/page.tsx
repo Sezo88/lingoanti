@@ -130,11 +130,12 @@ export default function PracticePage() {
         setLoading(true)
 
         // Mixed mode: randomize word length
-        const currentLength = isMixedMode
-            ? [4, 5, 6, 7][Math.floor(Math.random() * 4)]
-            : wordLength
+        let currentLength = wordLength
+        if (isMixedMode) {
+            currentLength = [4, 5, 6, 7][Math.floor(Math.random() * 4)]
+            setWordLength(currentLength)
+        }
 
-        setWordLength(currentLength)
         const word = await getRandomWord(currentLength)
 
         if (!word) {

@@ -575,8 +575,11 @@ export default function PracticePage() {
                     isOpen={showModal}
                     isWin={won}
                     targetWord={targetWord}
-                    onNext={() => startNewGame(gameMode === 'timed')}
-                    onRestart={() => setIsSetup(false)}
+                    onNext={() => {
+                        saveScore()
+                        setIsSetup(false)
+                    }}
+                    onRestart={() => startNewGame(gameMode === 'timed')}
                 />
             )}
 

@@ -46,14 +46,14 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onResta
                 <div className="flex gap-3">
                     {onRestart && (
                         <button
-                            onClick={onRestart}
+                            onClick={onNext}
                             className="flex-1 px-6 py-3 bg-dark-300 hover:bg-dark-400 text-white rounded-xl font-semibold transition-all text-lg"
                         >
                             Çıkış
                         </button>
                     )}
                     <button
-                        onClick={onNext}
+                        onClick={onRestart}
                         className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold transition-all text-lg"
                     >
                         Yeni Oyun

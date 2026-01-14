@@ -238,7 +238,7 @@ export default function ArenaBoard({
             <div className="px-4">
                 <BearTimer
                     key={guesses.length}
-                    duration={60}
+                    duration={duration}
                     onTimeUp={handleTimeUp}
                     isRunning={gameStatus === 'playing' && !showModal}
                 />

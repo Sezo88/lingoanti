@@ -89,6 +89,28 @@ BEGIN
       )
     WHERE id = p_room_id;
     
+    -- Check if game should end (max rounds reached)
+    DECLARE
+      v_player_count INT;
+      v_max_rounds INT;
+      v_new_round INT := (v_game_state->>'currentWordIndex')::INT + 1;
+    BEGIN
+      -- Get player count
+      SELECT COUNT(*) INTO v_player_count 
+      FROM room_participants 
+      WHERE room_id = p_room_id;
+      
+      -- Calculate max rounds: (player_count * 2) + 1
+      v_max_rounds := (v_player_count * 2) + 1;
+      
+      -- If max rounds reached, end game
+      IF v_new_round >= v_max_rounds THEN
+        UPDATE rooms
+        SET status = 'finished'
+        WHERE id = p_room_id;
+      END IF;
+    END;
+    
   ELSE
     -- Yanlış bilindi: Sadece sırayı ilerlet ve turnStartTime güncelle
     -- 6 tahmin dolsa bile yeni kelimeye GEÇMEYİN - birisi bilene kadar devam et

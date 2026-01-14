@@ -73,10 +73,10 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
 
     return (
         <>
-            {/* Floating Joker Button - Smaller */}
+            {/* Floating Joker Button - Right side, smaller */}
             <button
                 onClick={() => setShowPanel(!showPanel)}
-                className="fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-xl"
+                className="fixed top-20 right-3 z-50 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
             >
                 ✨
             </button>

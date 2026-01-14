@@ -206,7 +206,6 @@ export default function PracticePage() {
         setWon(true)
         setGameOver(true)
         setIsTimerRunning(false)
-        setShowModal(true)
 
         // Calculate score for this word (timed mode only)
         if (gameMode === 'timed') {
@@ -219,6 +218,11 @@ export default function PracticePage() {
         if (navigator.vibrate) {
             navigator.vibrate([100, 50, 100, 50, 100])
         }
+
+        // Auto-advance to next word after 1.5 seconds
+        setTimeout(() => {
+            startNewGame(gameMode === 'timed')
+        }, 1500)
     }
 
     const handleKeyPress = (key: string) => {
@@ -564,14 +568,16 @@ export default function PracticePage() {
 
     return (
         <div className="min-h-screen flex flex-col">
-            {/* Modal */}
-            <AnswerModal
-                isOpen={showModal}
-                isWin={won}
-                targetWord={targetWord}
-                onNext={() => startNewGame(gameMode === 'timed')}
-                onRestart={() => setIsSetup(false)}
-            />
+            {/* Modal - Only show on lose */}
+            {!won && (
+                <AnswerModal
+                    isOpen={showModal}
+                    isWin={won}
+                    targetWord={targetWord}
+                    onNext={() => startNewGame(gameMode === 'timed')}
+                    onRestart={() => setIsSetup(false)}
+                />
+            )}
 
             <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
                 <div className="container mx-auto px-3 py-2 flex items-center justify-between">
@@ -582,34 +588,31 @@ export default function PracticePage() {
                         ← Menü
                     </button>
 
-                    <div className="flex items-center gap-1.5">
-                        {/* Score Display - Timed mode only */}
-                        {gameMode === 'timed' && (
-                            <>
-                                <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-1.5 py-0.5 border border-white/10">
-                                    <div className="text-[8px] text-white/60">PUAN</div>
-                                    <div className="text-sm font-bold text-yellow-400">{totalScore}</div>
+                    {/* Score Display - Timed mode only - Vertical Stack */}
+                    {gameMode === 'timed' && (
+                        <div className="flex flex-col gap-1">
+                            <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-0.5 border border-white/10">
+                                <div className="text-[8px] text-white/60 text-center">PUAN</div>
+                                <div className="text-sm font-bold text-yellow-400 text-center">{totalScore}</div>
+                            </div>
+                            {personalBest > 0 && (
+                                <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-2 py-0.5 border border-green-500/30">
+                                    <div className="text-[8px] text-white/60 text-center">REKOR</div>
+                                    <div className="text-sm font-bold text-green-400 text-center">{personalBest}</div>
                                 </div>
+                            )}
+                        </div>
+                    )}
 
-                                {/* Personal Best */}
-                                {personalBest > 0 && (
-                                    <div className="bg-dark-200/80 backdrop-blur-sm rounded-lg px-1.5 py-0.5 border border-green-500/30">
-                                        <div className="text-[8px] text-white/60">REKOR</div>
-                                        <div className="text-sm font-bold text-green-400">{personalBest}</div>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
+                    <div className="flex items-center gap-2">
                         <CurrencyDisplay />
+                        <button
+                            onClick={toggleFullscreen}
+                            className="text-white/80 hover:text-white transition-colors text-2xl flex items-center justify-center w-9 h-9"
+                        >
+                            {isFullscreen ? '✕' : '⛶'}
+                        </button>
                     </div>
-
-                    <button
-                        onClick={toggleFullscreen}
-                        className="text-white/80 hover:text-white transition-colors text-lg flex items-center justify-center w-7 h-7"
-                    >
-                        {isFullscreen ? '⊗' : '⛶'}
-                    </button>
                 </div>
             </header>
 

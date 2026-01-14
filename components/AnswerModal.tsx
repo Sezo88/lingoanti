@@ -49,14 +49,14 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onResta
                             onClick={onRestart}
                             className="flex-1 px-6 py-3 bg-dark-300 hover:bg-dark-400 text-white rounded-xl font-semibold transition-all text-lg"
                         >
-                            Yeni Oyun
+                            Çıkış
                         </button>
                     )}
                     <button
                         onClick={onNext}
                         className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold transition-all text-lg"
                     >
-                        {isWin ? 'Devam Et' : 'Tamam'}
+                        Yeni Oyun
                     </button>
                 </div>
             </motion.div>

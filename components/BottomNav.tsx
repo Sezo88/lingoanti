@@ -9,7 +9,7 @@ export default function BottomNav() {
     const isActive = (path: string) => pathname === path
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-dark-200/95 backdrop-blur-md border-t border-white/10 z-10">
+        <nav className="fixed bottom-0 left-0 right-0 bg-dark-200/95 backdrop-blur-md border-t border-white/10 z-50">
             <div className="flex justify-around items-center h-16 max-w-md mx-auto px-4">
                 <Link href="/" className={`flex flex-col items-center gap-1 ${isActive('/') ? 'text-[#f86516]' : 'text-white/60 hover:text-white'} transition-colors group`}>
                     <span className={`material-symbols-outlined ${isActive('/') ? 'symbol-filled' : ''} text-2xl group-hover:scale-110 transition-transform`}>home</span>

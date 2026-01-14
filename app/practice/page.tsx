@@ -246,21 +246,25 @@ export default function PracticePage() {
     const handleEnter = async () => {
         if (gameOver || loading) return
 
-        if (currentGuess.length !== wordLength) {
+        // Count non-space characters
+        const filledCount = currentGuess.split('').filter(c => c && c !== ' ').length
+        if (filledCount !== wordLength) {
             setError(`${wordLength} harfli kelime giriniz`)
             setTimeout(() => setError(''), 2000)
             return
         }
 
-        const valid = await isValidWord(currentGuess)
+        // Remove spaces for validation
+        const guess = currentGuess.replace(/ /g, '')
+        const valid = await isValidWord(guess)
         if (!valid) {
             setError('Geçersiz kelime! Hak kaybettiniz.')
 
-            const invalidResult = currentGuess.split('').map(letter => ({
+            const invalidResult = guess.split('').map(letter => ({
                 letter,
                 status: 'invalid' as const
             }))
-            const newGuesses = [...guesses, currentGuess]
+            const newGuesses = [...guesses, guess]
             const newResults = [...results, invalidResult]
 
             setGuesses(newGuesses)
@@ -276,8 +280,8 @@ export default function PracticePage() {
             return
         }
 
-        const evalResult = evaluateGuess(currentGuess, targetWord)
-        const newGuesses = [...guesses, currentGuess]
+        const evalResult = evaluateGuess(guess, targetWord)
+        const newGuesses = [...guesses, guess]
         const newResults = [...results, evalResult]
 
         setGuesses(newGuesses)
@@ -286,7 +290,7 @@ export default function PracticePage() {
         setUsedJokers(new Set()) // Reset joker usage for next attempt
         setJokerLetters([]) // Reset joker letters
 
-        if (isCorrectGuess(currentGuess, targetWord)) {
+        if (isCorrectGuess(guess, targetWord)) {
             handleWin()
         } else if (newGuesses.length >= maxAttempts) {
             handleLose()

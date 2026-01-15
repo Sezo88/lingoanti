@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { SettingsProvider } from '@/contexts/SettingsContext'
 import FractalBackground from '@/components/FractalBackground'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -30,7 +31,9 @@ export default function RootLayout({
             <body className={inter.className}>
                 <FractalBackground />
                 <AuthProvider>
-                    {children}
+                    <SettingsProvider>
+                        {children}
+                    </SettingsProvider>
                 </AuthProvider>
             </body>
         </html>

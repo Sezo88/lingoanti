@@ -78,7 +78,15 @@ export default function HomePage() {
                             />
                         </div>
                     </div>
-                    <CurrencyDisplay />
+                    <div className="flex items-center gap-2">
+                        <CurrencyDisplay />
+                        <Link
+                            href="/settings"
+                            className="w-10 h-10 rounded-full bg-dark-200/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:text-white hover:bg-dark-300 transition-all"
+                        >
+                            <span className="material-symbols-outlined text-xl">settings</span>
+                        </Link>
+                    </div>
                 </header>
 
                 <div className="flex-1 px-4 space-y-4">

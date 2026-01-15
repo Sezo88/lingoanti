@@ -261,14 +261,20 @@ export default function ArenaBoard({
                     Kelime {wordIndex + 1} / {targetWords.length}
                 </span>
                 <div className="flex-1 flex justify-end">
-                    {gameStatus === 'playing' && (
-                        <button
-                            onClick={() => setShowJokerPanel(true)}
-                            className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
-                        >
-                            ✨
-                        </button>
-                    )}
+                    {(() => {
+                        console.log('🎮 ARENA JOKER BUTTON - gameStatus:', gameStatus)
+                        return gameStatus === 'playing' && (
+                            <button
+                                onClick={() => {
+                                    console.log('✨ ARENA JOKER BUTTON CLICKED')
+                                    setShowJokerPanel(true)
+                                }}
+                                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
+                            >
+                                ✨
+                            </button>
+                        )
+                    })()}
                 </div>
             </div>
 

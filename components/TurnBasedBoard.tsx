@@ -183,14 +183,20 @@ export default function TurnBasedBoard({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {isMyTurn && (
-                        <button
-                            onClick={() => setShowJokerPanel(true)}
-                            className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
-                        >
-                            ✨
-                        </button>
-                    )}
+                    {(() => {
+                        console.log('🎮 TURNBASED JOKER BUTTON - isMyTurn:', isMyTurn)
+                        return isMyTurn && (
+                            <button
+                                onClick={() => {
+                                    console.log('✨ TURNBASED JOKER BUTTON CLICKED')
+                                    setShowJokerPanel(true)
+                                }}
+                                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
+                            >
+                                ✨
+                            </button>
+                        )
+                    })()}
                     <div className="w-[50px]" /> {/* Spacer */}
                 </div>
             </div>

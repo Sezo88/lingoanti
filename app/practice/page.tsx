@@ -648,7 +648,7 @@ export default function PracticePage() {
                 </div>
             </header>
 
-            <main className={`flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full ${gameMode === 'timed' ? 'pt-32' : 'pt-20'}`}>
+            <main className={`flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full ${gameMode === 'timed' ? 'pt-[120px]' : 'pt-[95px]'}`}>
                 <div className="w-full max-w-md mx-auto relative">
                     {/* Timer Logic */}
                     {/* KEY ekleyerek her tahminde sayacın sıfırlandığını sağlıyoruz */}

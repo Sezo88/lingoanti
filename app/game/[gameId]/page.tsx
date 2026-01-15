@@ -347,7 +347,7 @@ export default function MultiplayerGamePage() {
                 </div>
             </header>
 
-            </header>
+
 
             <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
                 {/* Joker Panel */}

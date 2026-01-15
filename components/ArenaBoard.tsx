@@ -41,8 +41,9 @@ export default function ArenaBoard({
 
     // Joker State
     const [maxAttempts, setMaxAttempts] = useState(6)
-    const [revealedLetters, setRevealedLetters] = useState<{ position: number, letter: string }[]>([])
-    const [hintLetter, setHintLetter] = useState<string | null>(null)
+    const [usedJokers, setUsedJokers] = useState<Set<string>>(new Set())
+    const [jokerLetters, setJokerLetters] = useState<{ position: number, letter: string, status: 'correct' | 'present' }[]>([])
+    const [showJokerPanel, setShowJokerPanel] = useState(false)
 
     // Şu anki hedef kelime
     const targetWord = targetWords[wordIndex]
@@ -72,6 +73,15 @@ export default function ArenaBoard({
     const handleBackspace = () => {
         if (gameStatus !== 'playing') return
         setCurrentGuess(prev => prev.slice(0, -1))
+    }
+
+    const handleJokerUsed = (jokerType: string, data: any) => {
+        if (jokerType === 'green_letter' || jokerType === 'yellow_letter') {
+            setJokerLetters(prev => [...prev, data])
+        } else if (jokerType === 'extra_attempt') {
+            setMaxAttempts(prev => prev + 1)
+        }
+        setUsedJokers(prev => new Set([...prev, jokerType]))
     }
 
     // Helper functions defined before usage
@@ -244,11 +254,22 @@ export default function ArenaBoard({
                 />
             </div>
 
-            {/* Header: Kaçıncı kelime */}
-            <div className="text-center mb-4">
+            {/* Header: Kaçıncı kelime + Joker Button */}
+            <div className="flex items-center justify-between px-4 mb-4">
+                <div className="flex-1" />
                 <span className="bg-dark-200 text-primary-400 px-3 py-1 rounded-full text-sm font-bold border border-white/5">
                     Kelime {wordIndex + 1} / {targetWords.length}
                 </span>
+                <div className="flex-1 flex justify-end">
+                    {gameStatus === 'playing' && (
+                        <button
+                            onClick={() => setShowJokerPanel(true)}
+                            className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
+                        >
+                            ✨
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Grid */}
@@ -282,6 +303,18 @@ export default function ArenaBoard({
                     ))}
                 </div>
             </div>
+
+            {/* Joker Panel */}
+            {gameStatus === 'playing' && (
+                <JokerPanel
+                    targetWord={targetWord}
+                    currentGuesses={guesses}
+                    onJokerUsed={handleJokerUsed}
+                    usedJokers={usedJokers}
+                    showPanel={showJokerPanel}
+                    onClose={() => setShowJokerPanel(false)}
+                />
+            )}
 
             {/* Keyboard */}
             <div className="pb-4">

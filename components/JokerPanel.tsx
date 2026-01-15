@@ -69,9 +69,12 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
         }
 
         const result = await joker.action()
-        if (result) {
-            onJokerUsed(joker.id, result)
+        if (result && result.success) {
+            onJokerUsed(joker.id, result.data)
             if (onClose) onClose()
+        } else if (result && result.error) {
+            setError(result.error)
+            setTimeout(() => setError(null), 3000)
         }
     }
 

@@ -91,6 +91,8 @@ export default function MultiplayerGamePage() {
 
     // Joker Handler - Adapted from Practice Mode
     const handleJokerUsed = (jokerType: string, data: any) => {
+        if (!game) return
+
         // Silently ignore if already used
         if (usedJokers.has(jokerType)) return
 

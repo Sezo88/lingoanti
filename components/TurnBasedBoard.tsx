@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import GameKeyboard from './GameKeyboard'
+import JokerPanel from './JokerPanel'
 import { evaluateGuess, getKeyboardState } from '@/lib/gameLogic'
 import { isValidWord } from '@/lib/words'
 import type { LetterResult } from '@/lib/supabase'
@@ -40,6 +41,12 @@ export default function TurnBasedBoard({
     const [shakeRow, setShakeRow] = useState(false)
     const [error, setError] = useState('')
     const [timeLeft, setTimeLeft] = useState(duration)
+
+    // Joker State
+    const [maxAttempts, setMaxAttempts] = useState(6)
+    const [usedJokers, setUsedJokers] = useState<Set<string>>(new Set())
+    const [jokerLetters, setJokerLetters] = useState<{ position: number, letter: string, status: 'correct' | 'present' }[]>([])
+    const [showJokerPanel, setShowJokerPanel] = useState(false)
 
     // Server-Sync Timer Logic
     useEffect(() => {
@@ -91,6 +98,15 @@ export default function TurnBasedBoard({
     const handleBackspace = () => {
         if (!isMyTurn) return
         setCurrentGuess(prev => prev.slice(0, -1))
+    }
+
+    const handleJokerUsed = (jokerType: string, data: any) => {
+        if (jokerType === 'green_letter' || jokerType === 'yellow_letter') {
+            setJokerLetters(prev => [...prev, data])
+        } else if (jokerType === 'extra_attempt') {
+            setMaxAttempts(prev => prev + 1)
+        }
+        setUsedJokers(prev => new Set([...Array.from(prev), jokerType]))
     }
 
     const submitGuess = async () => {
@@ -166,7 +182,17 @@ export default function TurnBasedBoard({
                     </div>
                 </div>
 
-                <div className="w-[50px]"></div> {/* Spacer */}
+                <div className="flex items-center gap-2">
+                    {isMyTurn && (
+                        <button
+                            onClick={() => setShowJokerPanel(true)}
+                            className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
+                        >
+                            ✨
+                        </button>
+                    )}
+                    <div className="w-[50px]" /> {/* Spacer */}
+                </div>
             </div>
 
 
@@ -224,6 +250,18 @@ export default function TurnBasedBoard({
                     ))}
                 </div>
             </div>
+
+            {/* Joker Panel */}
+            {isMyTurn && (
+                <JokerPanel
+                    targetWord={targetWord}
+                    currentGuesses={sharedGuesses}
+                    onJokerUsed={handleJokerUsed}
+                    usedJokers={usedJokers}
+                    showPanel={showJokerPanel}
+                    onClose={() => setShowJokerPanel(false)}
+                />
+            )}
 
             <div className={`pb-2 ${!isMyTurn ? 'opacity-50 pointer-events-none' : ''}`}>
                 <GameKeyboard

@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase'
 import GameBoard from '@/components/GameBoard'
 import GameKeyboard from '@/components/GameKeyboard'
 import JokerPanel from '@/components/JokerPanel'
+import CurrencyDisplay from '@/components/CurrencyDisplay'
 import type { LetterResult } from '@/lib/supabase'
 
 export default function MultiplayerGamePage() {
@@ -274,60 +275,81 @@ export default function MultiplayerGamePage() {
     return (
         <div className="min-h-screen max-h-screen flex flex-col overflow-hidden">
             <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
-                <div className="container mx-auto px-4 py-4">
+                <div className="container mx-auto px-4 py-2">
                     <div className="flex items-center justify-between mb-2">
-                        <button onClick={() => router.push('/')} className="text-dark-500 hover:text-white transition-colors">
-                            ← Çık
-                        </button>
-                        {!isGameOver && isMyTurn && (
-                            <button
-                                onClick={async () => {
-                                    if (confirm('Pes etmek istediğinize emin misiniz? Rakibiniz kazanacak.')) {
-                                        try {
-                                            console.log('Pes et başlatıldı:', { gameId, userId: user!.id })
-                                            const result = await forfeitGame(gameId, user!.id)
-                                            console.log('Pes et sonucu:', result)
-
-                                            if (!result.success) {
-                                                console.error('Pes etme hatası:', result.error)
-                                                alert(`Pes etme işlemi başarısız: ${result.error?.message || 'Bilinmeyen hata'}`)
-                                            } else {
-                                                console.log('Pes et başarılı!')
-                                            }
-                                        } catch (e: any) {
-                                            console.error('Pes etme exception:', e)
-                                            alert(`Bir hata oluştu: ${e.message || 'Bilinmeyen hata'}`)
-                                        }
-                                    }
-                                }}
-                                className="text-danger-400 hover:text-danger-300 transition-colors text-sm font-semibold"
-                            >
-                                🏳️ Pes Et
+                        {/* Sol Taraf: Çıkış ve Pes Et */}
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => router.push('/')} className="text-dark-500 hover:text-white transition-colors">
+                                ← Çık
                             </button>
-                        )}
-                        <div className="text-center">
-                            <p className="text-xs text-dark-500">
-                                {game.best_of > 1 ? `Best of ${game.best_of} - El ${game.current_round}` : 'Tek El'}
-                            </p>
-                            <p className="font-semibold">{game.word_length} Harfli Kelime</p>
-                            {game.best_of > 1 && (
-                                <p className="text-xs text-primary-500 font-bold">
-                                    {game.player1_score} - {game.player2_score}
-                                </p>
+                            {!isGameOver && isMyTurn && (
+                                <button
+                                    onClick={async () => {
+                                        if (confirm('Pes etmek istediğinize emin misiniz? Rakibiniz kazanacak.')) {
+                                            try {
+                                                console.log('Pes et başlatıldı:', { gameId, userId: user!.id })
+                                                const result = await forfeitGame(gameId, user!.id)
+                                                console.log('Pes et sonucu:', result)
+
+                                                if (!result.success) {
+                                                    console.error('Pes etme hatası:', result.error)
+                                                    alert(`Pes etme işlemi başarısız: ${result.error?.message || 'Bilinmeyen hata'}`)
+                                                } else {
+                                                    console.log('Pes et başarılı!')
+                                                }
+                                            } catch (e: any) {
+                                                console.error('Pes etme exception:', e)
+                                                alert(`Bir hata oluştu: ${e.message || 'Bilinmeyen hata'}`)
+                                            }
+                                        }
+                                    }}
+                                    className="text-danger-400 hover:text-danger-300 transition-colors text-sm font-semibold bg-danger-500/10 px-3 py-1.5 rounded-lg border border-danger-500/20"
+                                >
+                                    🏳️ Pes Et
+                                </button>
                             )}
                         </div>
-                        <div className="flex items-center gap-2">
+
+                        {/* Orta: Oyun Bilgisi */}
+                        <div className="text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 pointer-events-none">
+                            <div className="flex flex-col items-center">
+                                <p className="text-[10px] text-dark-500 font-medium uppercase tracking-wider">
+                                    {game.best_of > 1 ? `Best of ${game.best_of} • El ${game.current_round}` : 'Tek El'}
+                                </p>
+                                <p className="font-bold text-white text-sm">{game.word_length} Harfli Kelime</p>
+                                {game.best_of > 1 && (
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className={`text-xs font-bold ${user?.id === game.player1_id ? 'text-primary-400' : 'text-dark-400'}`}>
+                                            {game.player1_score}
+                                        </span>
+                                        <span className="text-[10px] text-dark-600">-</span>
+                                        <span className={`text-xs font-bold ${user?.id === game.player2_id ? 'text-primary-400' : 'text-dark-400'}`}>
+                                            {game.player2_score}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Sağ Taraf: Bilet, Joker ve Tam Ekran */}
+                        <div className="flex items-center gap-3">
+                            <div className="scale-90 origin-right">
+                                <CurrencyDisplay />
+                            </div>
+
+                            <div className="h-8 w-px bg-white/10 mx-1"></div>
+
                             {!isGameOver && isMyTurn && (
                                 <button
                                     onClick={() => setShowJokerPanel(true)}
-                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
+                                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-lg border border-white/10"
                                 >
                                     ✨
                                 </button>
                             )}
                             <button
                                 onClick={toggleFullscreen}
-                                className="text-dark-400 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
+                                className="w-10 h-10 rounded-xl bg-dark-200 text-dark-400 hover:text-white hover:bg-dark-300 transition-all flex items-center justify-center border border-white/5"
                                 title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
                             >
                                 {isFullscreen ? '⊗' : '⛶'}

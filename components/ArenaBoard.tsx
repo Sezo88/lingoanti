@@ -81,7 +81,7 @@ export default function ArenaBoard({
         } else if (jokerType === 'extra_attempt') {
             setMaxAttempts(prev => prev + 1)
         }
-        setUsedJokers(prev => new Set([...prev, jokerType]))
+        setUsedJokers(prev => new Set([...Array.from(prev), jokerType]))
     }
 
     // Helper functions defined before usage

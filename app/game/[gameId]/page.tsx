@@ -13,6 +13,7 @@ import GameKeyboard from '@/components/GameKeyboard'
 import type { LetterResult } from '@/lib/supabase'
 
 export default function MultiplayerGamePage() {
+    console.log('📄 SAYFA: /game/[gameId] - MultiplayerGamePage AÇILDI')
     const params = useParams()
     const gameId = params?.gameId as string
     const { user } = useAuth()

@@ -12,6 +12,7 @@ import { ArrowLeft, Users, Clock, Trophy, Hash } from 'lucide-react'
 // ... existing code ...
 
 export default function RoomPage() {
+    console.log('📄 SAYFA: /rooms/[code] - RoomPage AÇILDI')
     const { code } = useParams()
     const router = useRouter()
     const { user } = useAuth()

@@ -281,6 +281,18 @@ export default function PracticePage() {
         }
     }
 
+    const handleJokerUsed = (jokerType: string, data: any) => {
+        if (jokerType === 'green_letter' || jokerType === 'yellow_letter') {
+            // Add joker letter to display
+            setJokerLetters(prev => [...prev, data])
+        } else if (jokerType === 'extra_attempt') {
+            // Increase max attempts
+            setMaxAttempts(prev => prev + 1)
+        }
+        // Mark joker as used
+        setUsedJokers(prev => new Set([...prev, jokerType]))
+    }
+
     const handleEnter = async () => {
         if (gameOver || loading) return
 

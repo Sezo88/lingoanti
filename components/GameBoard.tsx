@@ -20,7 +20,9 @@ export default function GameBoard({
     results,
     jokerLetters
 }: GameBoardProps) {
-    const emptyRows = maxGuesses - guesses.length - (currentGuess ? 1 : 0)
+    // Active row should be shown if we haven't reached max guesses
+    const showActiveRow = guesses.length < maxGuesses
+    const emptyRows = maxGuesses - guesses.length - (showActiveRow ? 1 : 0)
 
     return (
         <div className="flex flex-col gap-2 mb-6">
@@ -54,7 +56,7 @@ export default function GameBoard({
             ))}
 
             {/* Current guess (active row) */}
-            {currentGuess && (
+            {showActiveRow && (
                 <div className="flex gap-2 justify-center">
                     {Array.from({ length: wordLength }).map((_, colIndex) => {
                         const letter = currentGuess[colIndex] || ''

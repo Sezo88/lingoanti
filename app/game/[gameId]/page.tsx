@@ -10,6 +10,7 @@ import { evaluateGuess, isCorrectGuess } from '@/lib/gameLogic'
 import { supabase } from '@/lib/supabase'
 import GameBoard from '@/components/GameBoard'
 import GameKeyboard from '@/components/GameKeyboard'
+import JokerPanel from '@/components/JokerPanel'
 import type { LetterResult } from '@/lib/supabase'
 
 export default function MultiplayerGamePage() {
@@ -28,6 +29,12 @@ export default function MultiplayerGamePage() {
     const [showAnswerOverlay, setShowAnswerOverlay] = useState(false)
     const [roundEndMessage, setRoundEndMessage] = useState<string | null>(null)
     const [lastRoundWinner, setLastRoundWinner] = useState<string | null>(null)
+
+    // Joker State
+    const [maxAttempts, setMaxAttempts] = useState(6)
+    const [usedJokers, setUsedJokers] = useState<Set<string>>(new Set())
+    const [jokerLetters, setJokerLetters] = useState<{ position: number, letter: string, status: 'correct' | 'present' }[]>([])
+    const [showJokerPanel, setShowJokerPanel] = useState(false)
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -79,6 +86,15 @@ export default function MultiplayerGamePage() {
 
     const handleBackspace = () => {
         setCurrentGuess(prev => prev.slice(0, -1))
+    }
+
+    const handleJokerUsed = (jokerType: string, data: any) => {
+        if (jokerType === 'green_letter' || jokerType === 'yellow_letter') {
+            setJokerLetters(prev => [...prev, data])
+        } else if (jokerType === 'extra_attempt') {
+            setMaxAttempts(prev => prev + 1)
+        }
+        setUsedJokers(prev => new Set([...Array.from(prev), jokerType]))
     }
 
     const handleEnter = async () => {
@@ -300,13 +316,23 @@ export default function MultiplayerGamePage() {
                                 </p>
                             )}
                         </div>
-                        <button
-                            onClick={toggleFullscreen}
-                            className="text-dark-400 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
-                            title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
-                        >
-                            {isFullscreen ? '⊗' : '⛶'}
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {!isGameOver && isMyTurn && (
+                                <button
+                                    onClick={() => setShowJokerPanel(true)}
+                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-lg"
+                                >
+                                    ✨
+                                </button>
+                            )}
+                            <button
+                                onClick={toggleFullscreen}
+                                className="text-dark-400 hover:text-white transition-colors text-2xl flex items-center justify-center w-10 h-10"
+                                title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
+                            >
+                                {isFullscreen ? '⊗' : '⛶'}
+                            </button>
+                        </div>
                     </div>
 
                     {!isGameOver && (
@@ -321,14 +347,29 @@ export default function MultiplayerGamePage() {
                 </div>
             </header>
 
+            </header>
+
             <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
+                {/* Joker Panel */}
+                {!isGameOver && isMyTurn && (
+                    <JokerPanel
+                        targetWord={game.target_word}
+                        currentGuesses={allGuesses}
+                        onJokerUsed={handleJokerUsed}
+                        usedJokers={usedJokers}
+                        showPanel={showJokerPanel}
+                        onClose={() => setShowJokerPanel(false)}
+                    />
+                )}
+
                 <div className="w-full max-w-md mx-auto">
                     <GameBoard
                         guesses={allGuesses}
                         currentGuess={isMyTurn ? currentGuess : ''}
                         wordLength={game.word_length}
-                        maxGuesses={6}
+                        maxGuesses={maxAttempts}
                         results={allResults}
+                        jokerLetters={jokerLetters}
                     />
 
 

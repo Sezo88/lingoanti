@@ -57,11 +57,18 @@ export default function ArenaBoard({
 
     const handleKeyPress = (key: string) => {
         if (gameStatus !== 'playing') return
-        if (currentGuess.length < targetWord.length) {
-            // Sadece Türkçe karakterleri ve harfleri kabul et
-            if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
-                setCurrentGuess(prev => prev + key.toLocaleUpperCase('tr-TR'))
-            }
+
+        // Initialize with spaces if empty
+        let chars = currentGuess.split('')
+        if (chars.length === 0) {
+            chars = Array(targetWord.length).fill(' ')
+        }
+
+        // Find first empty position
+        const emptyIndex = chars.findIndex(c => c === ' ' || c === '')
+        if (emptyIndex !== -1 && /^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
+            chars[emptyIndex] = key.toLocaleUpperCase('tr-TR')
+            setCurrentGuess(chars.join(''))
         }
     }
 
@@ -72,7 +79,16 @@ export default function ArenaBoard({
 
     const handleBackspace = () => {
         if (gameStatus !== 'playing') return
-        setCurrentGuess(prev => prev.slice(0, -1))
+
+        // Find last non-empty, non-space character
+        const chars = currentGuess.split('')
+        for (let i = chars.length - 1; i >= 0; i--) {
+            if (chars[i] && chars[i] !== ' ') {
+                chars[i] = ' '
+                setCurrentGuess(chars.join(''))
+                break
+            }
+        }
     }
 
     const handleJokerUsed = (jokerType: string, data: any) => {
@@ -367,6 +383,7 @@ export default function ArenaBoard({
                             submitted={false}
                             shake={shakeRow}
                             length={targetWord.length}
+                            jokerLetters={jokerLetters}
                         />
                     )}
 
@@ -403,7 +420,7 @@ export default function ArenaBoard({
 }
 
 // Yardımcı Row Bileşeni
-function Row({ word, target, submitted, shake, length = 5, result }: any) {
+function Row({ word, target, submitted, shake, length = 5, result, jokerLetters = [] }: any) {
     const letters = word.split('')
     const emptyCount = length - letters.length
 
@@ -420,7 +437,13 @@ function Row({ word, target, submitted, shake, length = 5, result }: any) {
             {letters.map((letter: string, i: number) => {
                 let bgColor = 'bg-dark-200/50 border-white/10'
 
-                if (submitted && feedback[i]) {
+                // Check if this position has a joker letter
+                const jokerLetter = jokerLetters.find((j: any) => j.position === i)
+                if (jokerLetter && !submitted) {
+                    // Apply joker color
+                    if (jokerLetter.status === 'correct') bgColor = 'bg-success-500 border-success-500'
+                    else if (jokerLetter.status === 'present') bgColor = 'bg-warning-500 border-warning-500'
+                } else if (submitted && feedback[i]) {
                     if (feedback[i].status === 'correct') bgColor = 'bg-success-500 border-success-500'
                     else if (feedback[i].status === 'present') bgColor = 'bg-warning-500 border-warning-500'
                     else if (feedback[i].status === 'invalid') bgColor = 'bg-danger-500 border-danger-500' // Kırmızı

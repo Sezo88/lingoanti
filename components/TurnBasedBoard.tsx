@@ -84,10 +84,18 @@ export default function TurnBasedBoard({
 
     const handleKeyPress = (key: string) => {
         if (!isMyTurn) return
-        if (currentGuess.length < targetWord.length) {
-            if (/^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
-                setCurrentGuess(prev => prev + key.toLocaleUpperCase('tr-TR'))
-            }
+
+        // Initialize with spaces if empty
+        let chars = currentGuess.split('')
+        if (chars.length === 0) {
+            chars = Array(targetWord.length).fill(' ')
+        }
+
+        // Find first empty position
+        const emptyIndex = chars.findIndex(c => c === ' ' || c === '')
+        if (emptyIndex !== -1 && /^[a-zA-ZğüşıöçĞÜŞİÖÇ]$/.test(key)) {
+            chars[emptyIndex] = key.toLocaleUpperCase('tr-TR')
+            setCurrentGuess(chars.join(''))
         }
     }
 
@@ -98,7 +106,16 @@ export default function TurnBasedBoard({
 
     const handleBackspace = () => {
         if (!isMyTurn) return
-        setCurrentGuess(prev => prev.slice(0, -1))
+
+        // Find last non-empty, non-space character
+        const chars = currentGuess.split('')
+        for (let i = chars.length - 1; i >= 0; i--) {
+            if (chars[i] && chars[i] !== ' ') {
+                chars[i] = ' '
+                setCurrentGuess(chars.join(''))
+                break
+            }
+        }
     }
 
     const handleJokerUsed = (jokerType: string, data: any) => {
@@ -297,6 +314,7 @@ export default function TurnBasedBoard({
                             submitted={false}
                             shake={shakeRow}
                             length={targetWord.length}
+                            jokerLetters={jokerLetters}
                         />
                     )}
 

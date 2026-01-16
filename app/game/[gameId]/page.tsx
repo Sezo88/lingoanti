@@ -81,12 +81,45 @@ export default function MultiplayerGamePage() {
     const allResults = moves.map(m => m.result as LetterResult[])
 
     const handleKeyPress = (key: string) => {
-        if (!isMyTurn || currentGuess.length >= (game?.word_length || 5)) return
-        setCurrentGuess(prev => prev + key)
+        if (!isMyTurn || !game) return
+
+        const isGameOver = game.status === 'finished'
+        if (isGameOver) return
+
+        // Initialize with spaces if empty
+        let chars = currentGuess.split('')
+        if (chars.length === 0) {
+            chars = Array(game.word_length).fill(' ')
+        }
+
+        // Find first empty or space position
+        const firstEmptyIndex = chars.findIndex(c => !c || c === ' ')
+        if (firstEmptyIndex === -1) return // All positions filled
+
+        // Ensure array is full length
+        while (chars.length < game.word_length) {
+            chars.push(' ')
+        }
+
+        chars[firstEmptyIndex] = key.toLocaleUpperCase('tr-TR')
+        setCurrentGuess(chars.join(''))
     }
 
     const handleBackspace = () => {
-        setCurrentGuess(prev => prev.slice(0, -1))
+        if (!isMyTurn || !game) return
+
+        const isGameOver = game.status === 'finished'
+        if (isGameOver) return
+
+        // Find last non-empty, non-space character
+        const chars = currentGuess.split('')
+        for (let i = chars.length - 1; i >= 0; i--) {
+            if (chars[i] && chars[i] !== ' ') {
+                chars[i] = ' '
+                setCurrentGuess(chars.join(''))
+                return
+            }
+        }
     }
 
     // Joker Handler - Adapted from Practice Mode
@@ -108,8 +141,8 @@ export default function MultiplayerGamePage() {
                 }
             }
 
-            // Place the joker letter at the EXACT position
-            newGuess[data.position] = data.letter
+            // Place the joker letter at the EXACT position (UPPERCASE)
+            newGuess[data.position] = data.letter.toLocaleUpperCase('tr-TR')
             setCurrentGuess(newGuess.join(''))
 
             // Add to joker letters for coloring at CORRECT position
@@ -140,7 +173,7 @@ export default function MultiplayerGamePage() {
                         newGuess[i] = current[i]
                     }
                 }
-                newGuess[randomWrongPos] = data.letter
+                newGuess[randomWrongPos] = data.letter.toLocaleUpperCase('tr-TR')
                 setCurrentGuess(newGuess.join(''))
 
                 setJokerLetters(prev => [...prev, { position: randomWrongPos, letter: data.letter, status: 'present' }])

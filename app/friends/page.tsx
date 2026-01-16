@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { searchUsers, sendFriendRequest, getFriends, getPendingRequests, acceptFriendRequest, removeFriendship } from '@/lib/friendships'
@@ -9,7 +9,7 @@ import GameSettingsModal, { type GameSettings } from '@/components/GameSettingsM
 
 import { usePresence } from '@/hooks/usePresence'
 
-export default function FriendsPage() {
+function FriendsPageContent() {
     const { user, onlineUsers } = useAuth()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -328,5 +328,17 @@ export default function FriendsPage() {
                 />
             )}
         </div>
+    )
+}
+
+export default function FriendsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-500"></div>
+            </div>
+        }>
+            <FriendsPageContent />
+        </Suspense>
     )
 }

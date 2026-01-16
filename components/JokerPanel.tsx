@@ -98,7 +98,13 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-lg font-bold text-white">✨ Jokerler</h3>
+                                <div className="flex items-center gap-3">
+                                    <h3 className="text-lg font-bold text-white">✨ Jokerler</h3>
+                                    <div className="flex items-center gap-1.5 bg-primary-500/20 border border-primary-500/30 rounded-lg px-2 py-1">
+                                        <span className="text-sm">🎫</span>
+                                        <span className="text-sm font-bold text-primary-400">{tickets}</span>
+                                    </div>
+                                </div>
                                 <button
                                     onClick={onClose}
                                     className="text-white/60 hover:text-white text-xl"

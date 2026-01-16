@@ -11,7 +11,6 @@ import { supabase } from '@/lib/supabase'
 import GameBoard from '@/components/GameBoard'
 import GameKeyboard from '@/components/GameKeyboard'
 import JokerPanel from '@/components/JokerPanel'
-import CurrencyDisplay from '@/components/CurrencyDisplay'
 import type { LetterResult } from '@/lib/supabase'
 
 export default function MultiplayerGamePage() {
@@ -74,6 +73,22 @@ export default function MultiplayerGamePage() {
             return () => clearTimeout(timer)
         }
     }, [game?.round_message, isPlayer1, user?.id, opponent])
+
+    // Reset joker state when turn changes or new round starts
+    useEffect(() => {
+        if (!isMyTurn) {
+            setCurrentGuess('')
+            setJokerLetters([])
+        }
+    }, [isMyTurn])
+
+    // Reset joker state when round changes
+    useEffect(() => {
+        setCurrentGuess('')
+        setJokerLetters([])
+        setUsedJokers(new Set())
+        setMaxAttempts(6)
+    }, [game?.current_round])
 
     const totalMoves = moves.length
 
@@ -367,13 +382,13 @@ export default function MultiplayerGamePage() {
     return (
         <div className="min-h-screen max-h-screen flex flex-col overflow-hidden">
             <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
-                <div className="container mx-auto px-3 py-2">
-                    <div className="grid grid-cols-3 items-center gap-2">
-                        {/* LEFT: Menu & Game Info */}
-                        <div className="flex flex-col items-start gap-1">
+                <div className="container mx-auto px-4 py-3">
+                    <div className="grid grid-cols-3 items-center gap-4">
+                        {/* LEFT: Menu & Forfeit */}
+                        <div className="flex flex-col items-start gap-1.5">
                             <button
                                 onClick={() => router.push('/')}
-                                className="text-white/70 hover:text-white transition-colors text-xs flex items-center gap-1"
+                                className="text-white/70 hover:text-white transition-colors text-sm flex items-center gap-1"
                             >
                                 ← Çık
                             </button>
@@ -388,50 +403,58 @@ export default function MultiplayerGamePage() {
                                             }
                                         }
                                     }}
-                                    className="text-[10px] text-danger-400 hover:text-danger-300 font-semibold border border-danger-500/20 rounded px-1.5 py-0.5"
+                                    className="text-xs text-danger-400 hover:text-danger-300 font-semibold border border-danger-500/20 rounded px-2 py-1"
                                 >
                                     🏳️ Pes Et
                                 </button>
                             )}
                         </div>
 
-                        {/* CENTER: Title & Score */}
+                        {/* CENTER: Title, Score & Turn Indicator */}
                         <div className="text-center">
-                            <h1 className="text-lg font-bold gradient-text leading-tight">
+                            <h1 className="text-2xl font-bold gradient-text leading-tight mb-1">
                                 {game.word_length} Harfli
                             </h1>
-                            <div className="text-xs text-white/60 leading-tight mb-1">
+                            <div className="text-sm text-white/60 leading-tight mb-1.5">
                                 {game.best_of > 1 ? `Best of ${game.best_of} • El ${game.current_round}` : 'Tek El'}
                             </div>
 
                             {/* Score Badge */}
                             {game.best_of > 1 && (
-                                <div className="inline-flex items-center gap-2 bg-dark-200/50 rounded-lg px-2 py-0.5 border border-white/10">
-                                    <span className={`text-xs font-bold ${user?.id === game.player1_id ? 'text-primary-400' : 'text-white/50'}`}>
+                                <div className="inline-flex items-center gap-2 bg-dark-200/50 rounded-lg px-3 py-1 border border-white/10 mb-2">
+                                    <span className={`text-sm font-bold ${user?.id === game.player1_id ? 'text-primary-400' : 'text-white/50'}`}>
                                         {game.player1_score}
                                     </span>
-                                    <span className="text-[10px] text-white/30">-</span>
-                                    <span className={`text-xs font-bold ${user?.id === game.player2_id ? 'text-primary-400' : 'text-white/50'}`}>
+                                    <span className="text-xs text-white/30">-</span>
+                                    <span className={`text-sm font-bold ${user?.id === game.player2_id ? 'text-primary-400' : 'text-white/50'}`}>
                                         {game.player2_score}
                                     </span>
                                 </div>
                             )}
+
+                            {/* Turn Indicator */}
+                            {!isGameOver && (
+                                <div className={`inline-block px-3 py-1 rounded-lg ${isMyTurn ? 'bg-success-600' : 'bg-warning-600'}`}>
+                                    <p className="text-white font-semibold text-xs">
+                                        {isMyTurn ? '✨ Senin Sıran!' : '⏳ Rakip oynuyor...'}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
-                        {/* RIGHT: Currency + Buttons (Practice Style) */}
+                        {/* RIGHT: Joker & Fullscreen Buttons */}
                         <div className="flex items-center justify-end gap-2">
-                            <CurrencyDisplay />
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1.5">
                                 <button
                                     onClick={toggleFullscreen}
-                                    className="text-white/80 hover:text-white transition-colors text-xl flex items-center justify-center w-8 h-8 bg-dark-200/50 rounded-lg"
+                                    className="text-white/80 hover:text-white transition-colors text-xl flex items-center justify-center w-9 h-9 bg-dark-200/50 rounded-lg"
                                 >
                                     {isFullscreen ? '✕' : '⛶'}
                                 </button>
                                 {!isGameOver && isMyTurn && (
                                     <button
                                         onClick={() => setShowJokerPanel(!showJokerPanel)}
-                                        className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-sm"
+                                        className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-base"
                                     >
                                         ✨
                                     </button>
@@ -444,7 +467,7 @@ export default function MultiplayerGamePage() {
 
 
 
-            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-[95px]">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-[140px]">
                 {/* Joker Panel */}
                 {!isGameOver && isMyTurn && (
                     <JokerPanel

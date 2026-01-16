@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { searchUsers, sendFriendRequest, getFriends, getPendingRequests, acceptFriendRequest, removeFriendship } from '@/lib/friendships'
 import { createGame } from '@/lib/games'
@@ -12,6 +12,7 @@ import { usePresence } from '@/hooks/usePresence'
 export default function FriendsPage() {
     const { user, onlineUsers } = useAuth()
     const router = useRouter()
+    const searchParams = useSearchParams()
 
     // ... usePresence call removed
     const [searchQuery, setSearchQuery] = useState('')
@@ -34,6 +35,18 @@ export default function FriendsPage() {
             loadPendingRequests()
         }
     }, [user])
+
+    // Handle rematch parameter
+    useEffect(() => {
+        const rematchOpponentId = searchParams.get('rematch')
+        if (rematchOpponentId && friends.length > 0) {
+            const opponent = friends.find(f => f.friend.id === rematchOpponentId)
+            if (opponent) {
+                setSelectedFriend({ id: opponent.friend.id, name: opponent.friend.display_name })
+                setSettingsModalOpen(true)
+            }
+        }
+    }, [searchParams, friends])
 
     const loadFriends = async () => {
         if (!user) return

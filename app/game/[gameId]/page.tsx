@@ -225,6 +225,7 @@ export default function MultiplayerGamePage() {
             setSubmitting(true)
             await submitGuess(gameId, user.id, currentGuess, invalidResult)
             setCurrentGuess('')
+            setJokerLetters([])
 
             // 6. hamle bitti - kimse kazanamadı
             if (totalMoves + 1 >= 6) {
@@ -265,6 +266,7 @@ export default function MultiplayerGamePage() {
         setSubmitting(true)
         await submitGuess(gameId, user.id, currentGuess, evalResult)
         setCurrentGuess('')
+        setJokerLetters([])
 
         // Kelimeyi buldu!
         if (isCorrectGuess(currentGuess, game.target_word)) {
@@ -547,15 +549,26 @@ export default function MultiplayerGamePage() {
                                 </div>
 
                                 {isGameOver && (
-                                    <button
-                                        onClick={() => router.push('/friends')}
-                                        className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
-                                            ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
-                                            : 'bg-white hover:bg-gray-100 text-black'
-                                            }`}
-                                    >
-                                        Arkadaşlar 👥
-                                    </button>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => router.push('/')}
+                                            className="flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 bg-dark-200 hover:bg-dark-300 text-white border border-white/10"
+                                        >
+                                            Ana Sayfa 🏠
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                // Navigate to game mode selection with opponent info
+                                                router.push(`/friends?rematch=${opponent}`)
+                                            }}
+                                            className={`flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
+                                                ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
+                                                : 'bg-primary-600 hover:bg-primary-500 text-white shadow-primary-500/20'
+                                                }`}
+                                        >
+                                            Tekrar Oyna 🔄
+                                        </button>
+                                    </div>
                                 )}
                                 {!isGameOver && roundEndMessage && (
                                     <div className="space-y-2">

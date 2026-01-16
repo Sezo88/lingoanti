@@ -78,6 +78,7 @@ export default function TurnBasedBoard({
     useEffect(() => {
         if (!isMyTurn) {
             setCurrentGuess('')
+            setJokerLetters([])
         }
     }, [isMyTurn])
 
@@ -101,13 +102,50 @@ export default function TurnBasedBoard({
     }
 
     const handleJokerUsed = (jokerType: string, data: any) => {
-        if (jokerType === 'green_letter' || jokerType === 'yellow_letter') {
-            setJokerLetters(prev => [...prev, data])
+        if (jokerType === 'green_letter') {
+            const newGuess = Array(targetWord.length).fill(' ')
+            const current = currentGuess.split('')
+            for (let i = 0; i < current.length && i < targetWord.length; i++) {
+                if (current[i] && current[i] !== ' ') {
+                    newGuess[i] = current[i]
+                }
+            }
+            newGuess[data.position] = data.letter.toLocaleUpperCase('tr-TR')
+            setCurrentGuess(newGuess.join(''))
+            setJokerLetters(prev => [...prev, { position: data.position, letter: data.letter, status: 'correct' }])
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+        } else if (jokerType === 'yellow_letter') {
+            const correctPositions: number[] = []
+            for (let i = 0; i < targetWord.length; i++) {
+                if (targetWord[i] === data.letter) correctPositions.push(i)
+            }
+            const wrongPositions: number[] = []
+            for (let i = 0; i < targetWord.length; i++) {
+                if (!correctPositions.includes(i) && !currentGuess[i]) {
+                    wrongPositions.push(i)
+                }
+            }
+            if (wrongPositions.length > 0) {
+                const randomWrongPos = wrongPositions[Math.floor(Math.random() * wrongPositions.length)]
+                const newGuess = Array(targetWord.length).fill(' ')
+                for (let i = 0; i < currentGuess.length; i++) {
+                    if (currentGuess[i]) newGuess[i] = currentGuess[i]
+                }
+                newGuess[randomWrongPos] = data.letter.toLocaleUpperCase('tr-TR')
+                setCurrentGuess(newGuess.join(''))
+                setJokerLetters(prev => [...prev, { position: randomWrongPos, letter: data.letter, status: 'present' }])
+                setUsedJokers(prev => new Set(prev).add(jokerType))
+            }
         } else if (jokerType === 'extra_attempt') {
             setMaxAttempts(prev => prev + 1)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+        } else if (jokerType === 'reveal_word') {
+            setCurrentGuess(data.word)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
         }
-        setUsedJokers(prev => new Set([...Array.from(prev), jokerType]))
     }
+
+
 
     const submitGuess = async () => {
         if (currentGuess.length !== targetWord.length) {
@@ -200,6 +238,18 @@ export default function TurnBasedBoard({
                     <div className="w-[50px]" /> {/* Spacer */}
                 </div>
             </div>
+
+            {/* Joker Panel */}
+            {isMyTurn && (
+                <JokerPanel
+                    targetWord={targetWord}
+                    currentGuesses={sharedGuesses}
+                    onJokerUsed={handleJokerUsed}
+                    usedJokers={usedJokers}
+                    showPanel={showJokerPanel}
+                    onClose={() => setShowJokerPanel(false)}
+                />
+            )}
 
 
             {/* KAZANAN GERİ BİLDİRİMİ OVERLAY (Kelime tamamen doğru) */}

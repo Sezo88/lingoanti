@@ -113,15 +113,22 @@ export default function ArenaBoard({
             setUsedJokers(prev => new Set(prev).add(jokerType))
 
         } else if (jokerType === 'yellow_letter') {
-            // Find a wrong position to place the yellow letter
+            // Find positions where this letter exists in target word
             const correctPositions: number[] = []
             for (let i = 0; i < targetWord.length; i++) {
                 if (targetWord[i] === data.letter) correctPositions.push(i)
             }
 
+            // Find positions that are: 1) not correct, 2) not already filled, 3) not already revealed by jokers
             const wrongPositions: number[] = []
+            const revealedLetters = jokerLetters.map(j => j.letter.toLowerCase())
+
             for (let i = 0; i < targetWord.length; i++) {
-                if (!correctPositions.includes(i) && !currentGuess[i]) {
+                const isCorrectPosition = correctPositions.includes(i)
+                const isAlreadyFilled = currentGuess[i] && currentGuess[i] !== ' '
+                const isAlreadyRevealed = revealedLetters.includes(data.letter.toLowerCase())
+
+                if (!isCorrectPosition && !isAlreadyFilled && !isAlreadyRevealed) {
                     wrongPositions.push(i)
                 }
             }

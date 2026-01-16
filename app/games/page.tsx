@@ -21,15 +21,37 @@ export default function ActiveGamesPage() {
         // Realtime subscription for game updates
         if (!user) return
 
-        const channel = supabase
-            .channel(`user_games_${user.id}`)
+        // Need two separate subscriptions because Supabase doesn't support OR in filters
+        const channel1 = supabase
+            .channel(`user_games_p1_${user.id}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'games',
-                filter: `player1_id=eq.${user.id},player2_id=eq.${user.id}`
+                filter: `player1_id=eq.${user.id}`
             }, (payload) => {
-                console.log('Game update:', payload)
+                console.log('Game update (as player1):', payload)
+
+                // Show toast if invite was accepted
+                if (payload.eventType === 'UPDATE' && payload.new.status === 'active' && payload.old.status === 'waiting') {
+                    setToast('🎮 Oyun daveti kabul edildi!')
+                    setTimeout(() => setToast(null), 3000)
+                }
+
+                // Reload games
+                loadGames()
+            })
+            .subscribe()
+
+        const channel2 = supabase
+            .channel(`user_games_p2_${user.id}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'games',
+                filter: `player2_id=eq.${user.id}`
+            }, (payload) => {
+                console.log('Game update (as player2):', payload)
 
                 // Show toast if invite was accepted
                 if (payload.eventType === 'UPDATE' && payload.new.status === 'active' && payload.old.status === 'waiting') {
@@ -43,7 +65,8 @@ export default function ActiveGamesPage() {
             .subscribe()
 
         return () => {
-            supabase.removeChannel(channel)
+            supabase.removeChannel(channel1)
+            supabase.removeChannel(channel2)
         }
     }, [user])
 

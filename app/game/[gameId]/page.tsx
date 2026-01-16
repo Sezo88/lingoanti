@@ -206,7 +206,7 @@ export default function MultiplayerGamePage() {
     }
 
     const handleEnter = async () => {
-        if (!game || !user) return
+        if (!game || !user || submitting) return
         if (currentGuess.length !== game.word_length) {
             setError(`${game.word_length} harfli kelime giriniz`)
             setTimeout(() => setError(''), 2000)
@@ -581,7 +581,7 @@ export default function MultiplayerGamePage() {
                                 onEnter={handleEnter}
                                 onBackspace={handleBackspace}
                                 keyStates={keyboardState}
-                                disabled={!isMyTurn}
+                                disabled={!isMyTurn || submitting}
                             />
                         </div>
                     )

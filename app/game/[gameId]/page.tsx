@@ -81,21 +81,113 @@ export default function MultiplayerGamePage() {
     const allResults = moves.map(m => m.result as LetterResult[])
 
     const handleKeyPress = (key: string) => {
-        if (!isMyTurn || currentGuess.length >= (game?.word_length || 5)) return
-        setCurrentGuess(prev => prev + key)
+        if (!isMyTurn || !game) return
+
+        const isGameOver = game.status === 'finished'
+        if (isGameOver) return
+
+        // Initialize with spaces if empty
+        let chars = currentGuess.split('')
+        if (chars.length === 0) {
+            chars = Array(game.word_length).fill(' ')
+        }
+
+        // Find first empty or space position
+        const firstEmptyIndex = chars.findIndex(c => !c || c === ' ')
+        if (firstEmptyIndex === -1) return // All positions filled
+
+        // Ensure array is full length
+        while (chars.length < game.word_length) {
+            chars.push(' ')
+        }
+
+        chars[firstEmptyIndex] = key.toLocaleUpperCase('tr-TR')
+        setCurrentGuess(chars.join(''))
     }
 
     const handleBackspace = () => {
-        setCurrentGuess(prev => prev.slice(0, -1))
+        if (!isMyTurn || !game) return
+
+        const isGameOver = game.status === 'finished'
+        if (isGameOver) return
+
+        // Find last non-empty, non-space character
+        const chars = currentGuess.split('')
+        for (let i = chars.length - 1; i >= 0; i--) {
+            if (chars[i] && chars[i] !== ' ') {
+                chars[i] = ' '
+                setCurrentGuess(chars.join(''))
+                return
+            }
+        }
     }
 
+    // Joker Handler - Adapted from Practice Mode
     const handleJokerUsed = (jokerType: string, data: any) => {
-        if (jokerType === 'green_letter' || jokerType === 'yellow_letter') {
-            setJokerLetters(prev => [...prev, data])
+        if (!game) return
+
+        // Silently ignore if already used
+        if (usedJokers.has(jokerType)) return
+
+        if (jokerType === 'green_letter') {
+            // Create array with SPACE characters (not empty strings!)
+            const newGuess = Array(game.word_length).fill(' ')
+
+            // Copy existing letters from current guess
+            const current = currentGuess.split('')
+            for (let i = 0; i < current.length && i < game.word_length; i++) {
+                if (current[i] && current[i] !== ' ') {
+                    newGuess[i] = current[i]
+                }
+            }
+
+            // Place the joker letter at the EXACT position (UPPERCASE)
+            newGuess[data.position] = data.letter.toLocaleUpperCase('tr-TR')
+            setCurrentGuess(newGuess.join(''))
+
+            // Add to joker letters for coloring at CORRECT position
+            setJokerLetters(prev => [...prev, { position: data.position, letter: data.letter, status: 'correct' }])
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+
+        } else if (jokerType === 'yellow_letter') {
+            // Find a wrong position to place the yellow letter
+            const correctPositions: number[] = []
+            for (let i = 0; i < game.target_word.length; i++) {
+                if (game.target_word[i] === data.letter) correctPositions.push(i)
+            }
+
+            const wrongPositions: number[] = []
+            for (let i = 0; i < game.word_length; i++) {
+                if (!correctPositions.includes(i) && !currentGuess[i]) {
+                    wrongPositions.push(i)
+                }
+            }
+
+            if (wrongPositions.length > 0) {
+                const randomWrongPos = wrongPositions[Math.floor(Math.random() * wrongPositions.length)]
+
+                const newGuess = Array(game.word_length).fill(' ')
+                const current = currentGuess.split('')
+                for (let i = 0; i < current.length && i < game.word_length; i++) {
+                    if (current[i] && current[i] !== ' ') {
+                        newGuess[i] = current[i]
+                    }
+                }
+                newGuess[randomWrongPos] = data.letter.toLocaleUpperCase('tr-TR')
+                setCurrentGuess(newGuess.join(''))
+
+                setJokerLetters(prev => [...prev, { position: randomWrongPos, letter: data.letter, status: 'present' }])
+                setUsedJokers(prev => new Set(prev).add(jokerType))
+            }
+
         } else if (jokerType === 'extra_attempt') {
             setMaxAttempts(prev => prev + 1)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+
+        } else if (jokerType === 'reveal_word') {
+            setCurrentGuess(data.word)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
         }
-        setUsedJokers(prev => new Set([...Array.from(prev), jokerType]))
     }
 
     const handleEnter = async () => {
@@ -274,104 +366,85 @@ export default function MultiplayerGamePage() {
 
     return (
         <div className="min-h-screen max-h-screen flex flex-col overflow-hidden">
-            <header className="glass-effect border-b border-dark-200 sticky top-0 z-50">
-                <div className="container mx-auto px-4 py-2">
-                    <div className="flex items-center justify-between mb-2">
-                        {/* Sol Taraf: Çıkış ve Pes Et */}
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => router.push('/')} className="text-dark-500 hover:text-white transition-colors">
+            <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
+                <div className="container mx-auto px-3 py-2">
+                    <div className="grid grid-cols-3 items-center gap-2">
+                        {/* LEFT: Menu & Game Info */}
+                        <div className="flex flex-col items-start gap-1">
+                            <button
+                                onClick={() => router.push('/')}
+                                className="text-white/70 hover:text-white transition-colors text-xs flex items-center gap-1"
+                            >
                                 ← Çık
                             </button>
                             {!isGameOver && isMyTurn && (
                                 <button
                                     onClick={async () => {
-                                        if (confirm('Pes etmek istediğinize emin misiniz? Rakibiniz kazanacak.')) {
+                                        if (confirm('Pes etmek istediğinize emin misiniz?')) {
                                             try {
-                                                console.log('Pes et başlatıldı:', { gameId, userId: user!.id })
-                                                const result = await forfeitGame(gameId, user!.id)
-                                                console.log('Pes et sonucu:', result)
-
-                                                if (!result.success) {
-                                                    console.error('Pes etme hatası:', result.error)
-                                                    alert(`Pes etme işlemi başarısız: ${result.error?.message || 'Bilinmeyen hata'}`)
-                                                } else {
-                                                    console.log('Pes et başarılı!')
-                                                }
-                                            } catch (e: any) {
-                                                console.error('Pes etme exception:', e)
-                                                alert(`Bir hata oluştu: ${e.message || 'Bilinmeyen hata'}`)
+                                                await forfeitGame(gameId, user!.id)
+                                            } catch (e) {
+                                                console.error(e)
                                             }
                                         }
                                     }}
-                                    className="text-danger-400 hover:text-danger-300 transition-colors text-sm font-semibold bg-danger-500/10 px-3 py-1.5 rounded-lg border border-danger-500/20"
+                                    className="text-[10px] text-danger-400 hover:text-danger-300 font-semibold border border-danger-500/20 rounded px-1.5 py-0.5"
                                 >
                                     🏳️ Pes Et
                                 </button>
                             )}
                         </div>
 
-                        {/* Orta: Oyun Bilgisi */}
-                        <div className="text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 pointer-events-none">
-                            <div className="flex flex-col items-center">
-                                <p className="text-[10px] text-dark-500 font-medium uppercase tracking-wider">
-                                    {game.best_of > 1 ? `Best of ${game.best_of} • El ${game.current_round}` : 'Tek El'}
-                                </p>
-                                <p className="font-bold text-white text-sm">{game.word_length} Harfli Kelime</p>
-                                {game.best_of > 1 && (
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className={`text-xs font-bold ${user?.id === game.player1_id ? 'text-primary-400' : 'text-dark-400'}`}>
-                                            {game.player1_score}
-                                        </span>
-                                        <span className="text-[10px] text-dark-600">-</span>
-                                        <span className={`text-xs font-bold ${user?.id === game.player2_id ? 'text-primary-400' : 'text-dark-400'}`}>
-                                            {game.player2_score}
-                                        </span>
-                                    </div>
+                        {/* CENTER: Title & Score */}
+                        <div className="text-center">
+                            <h1 className="text-lg font-bold gradient-text leading-tight">
+                                {game.word_length} Harfli
+                            </h1>
+                            <div className="text-xs text-white/60 leading-tight mb-1">
+                                {game.best_of > 1 ? `Best of ${game.best_of} • El ${game.current_round}` : 'Tek El'}
+                            </div>
+
+                            {/* Score Badge */}
+                            {game.best_of > 1 && (
+                                <div className="inline-flex items-center gap-2 bg-dark-200/50 rounded-lg px-2 py-0.5 border border-white/10">
+                                    <span className={`text-xs font-bold ${user?.id === game.player1_id ? 'text-primary-400' : 'text-white/50'}`}>
+                                        {game.player1_score}
+                                    </span>
+                                    <span className="text-[10px] text-white/30">-</span>
+                                    <span className={`text-xs font-bold ${user?.id === game.player2_id ? 'text-primary-400' : 'text-white/50'}`}>
+                                        {game.player2_score}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* RIGHT: Currency + Buttons (Practice Style) */}
+                        <div className="flex items-center justify-end gap-2">
+                            <CurrencyDisplay />
+                            <div className="flex flex-col gap-1">
+                                <button
+                                    onClick={toggleFullscreen}
+                                    className="text-white/80 hover:text-white transition-colors text-xl flex items-center justify-center w-8 h-8 bg-dark-200/50 rounded-lg"
+                                >
+                                    {isFullscreen ? '✕' : '⛶'}
+                                </button>
+                                {!isGameOver && isMyTurn && (
+                                    <button
+                                        onClick={() => setShowJokerPanel(!showJokerPanel)}
+                                        className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-sm"
+                                    >
+                                        ✨
+                                    </button>
                                 )}
                             </div>
                         </div>
-
-                        {/* Sağ Taraf: Bilet, Joker ve Tam Ekran */}
-                        <div className="flex items-center gap-3">
-                            <div className="scale-90 origin-right">
-                                <CurrencyDisplay />
-                            </div>
-
-                            <div className="h-8 w-px bg-white/10 mx-1"></div>
-
-                            {!isGameOver && isMyTurn && (
-                                <button
-                                    onClick={() => setShowJokerPanel(true)}
-                                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-lg border border-white/10"
-                                >
-                                    ✨
-                                </button>
-                            )}
-                            <button
-                                onClick={toggleFullscreen}
-                                className="w-10 h-10 rounded-xl bg-dark-200 text-dark-400 hover:text-white hover:bg-dark-300 transition-all flex items-center justify-center border border-white/5"
-                                title={isFullscreen ? 'Tam ekrandan çık' : 'Tam ekran'}
-                            >
-                                {isFullscreen ? '⊗' : '⛶'}
-                            </button>
-                        </div>
                     </div>
-
-                    {!isGameOver && (
-                        <div className="text-center">
-                            <div className={`inline-block px-4 py-2 rounded-lg ${isMyTurn ? 'bg-success-600' : 'bg-warning-600'}`}>
-                                <p className="text-white font-semibold text-sm">
-                                    {isMyTurn ? '✨ Senin Sıran!' : '⏳ Rakip oynuyor...'}
-                                </p>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </header>
 
 
 
-            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-[95px]">
                 {/* Joker Panel */}
                 {!isGameOver && isMyTurn && (
                     <JokerPanel

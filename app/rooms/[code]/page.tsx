@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import ArenaBoard from '@/components/ArenaBoard'
 import TurnBasedBoard from '@/components/TurnBasedBoard'
+import GameResultScreen from '@/components/GameResultScreen'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Users, Clock, Trophy, Hash } from 'lucide-react'
 
@@ -37,6 +38,13 @@ export default function RoomPage() {
         fetchRoomData()
     }, [code, user])
 
+    // Participants Ref to access state inside Realtime callback
+    const participantsRef = useRef(participants)
+
+    useEffect(() => {
+        participantsRef.current = participants
+    }, [participants])
+
     // REALTIME ABONELİĞİ (Sadece room.id gelince başlar)
     useEffect(() => {
         if (!room?.id) return
@@ -51,24 +59,23 @@ export default function RoomPage() {
                 table: 'room_participants',
                 filter: `room_id=eq.${room.id}`
             }, (payload) => {
-                console.log('Değişiklik algılandı:', payload)
+                console.log('Değişiklik algılandı (Realtime):', payload)
 
                 // LEAVE ALERT Logic
                 if (payload.eventType === 'UPDATE' && payload.new.status === 'left' && payload.old.status !== 'left') {
-                    // Oyuncuyu bul (state'den veya payload'dan)
-                    // Not: Payload'da sadece user_id var, isim için katılımcı listesine bakmalıyız
                     const leaverId = payload.new.user_id
-                    // State'deki katılımcılardan ismi bulmaya çalış (bir sonraki render'da güncellenecek ama şimdilik elimizdekine bakalım)
-                    // Participants state'i closure içinde eski kalabilir, bu yüzden payload'dan yola çıkıp genel bir mesaj verelim veya ref kullanalım.
-                    // Basitçe:
-                    const leaverName = participants.find(p => p.user_id === leaverId)?.display_name || 'Bir oyuncu'
+                    // Ref kullanarak güncel listeyi al
+                    const currentParticipants = participantsRef.current
+                    const leaverName = currentParticipants.find(p => p.user_id === leaverId)?.display_name || 'Bilinmeyen Oyuncu'
 
-                    // Custom Toast (Basit DOM manipülasyonu ile, çünkü component library yok)
+                    console.log('Ayrılan bulundu:', leaverName, leaverId)
+
+                    // Custom Toast
                     const toast = document.createElement('div')
-                    toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-bold animate-bounce'
-                    toast.textContent = `👋 ${leaverName} oyundan ayrıldı!`
+                    toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-bold animate-bounce flex items-center gap-2'
+                    toast.innerHTML = `<span>👋</span> <span><strong>${leaverName}</strong> oyundan ayrıldı!</span>`
                     document.body.appendChild(toast)
-                    setTimeout(() => toast.remove(), 3000)
+                    setTimeout(() => toast.remove(), 4000)
                 }
 
                 fetchRoomData()
@@ -80,7 +87,6 @@ export default function RoomPage() {
                 filter: `id=eq.${room.id}`
             }, (payload) => {
                 console.log('Oda güncellendi (DB), veriler yenileniyor...')
-                // Payload yerine veriyi tekrar çekiyoruz ki tutarsızlık olmasın
                 fetchRoomData()
             })
             .subscribe((status) => {
@@ -598,6 +604,19 @@ export default function RoomPage() {
                     </div>
                 </div>
             </div>
+        )
+    }
+
+    // --- OYUN SONU EKRANI ---
+    if (room?.status === 'finished') {
+        const lastWin = room.game_state?.lastWin || {}
+        return (
+            <GameResultScreen
+                participants={participants}
+                winner={participants.find(p => p.user_id === lastWin.userId)}
+                lastWinType={lastWin.type}
+                roomCode={room.code}
+            />
         )
     }
 

@@ -202,6 +202,11 @@ export default function TurnBasedBoard({
 
     return (
         <div className="flex flex-col h-full max-w-lg mx-auto w-full relative">
+            {/* CURRENT PLAYER INDICATOR */}
+            <div className={`text-center mb-2 font-bold text-lg transition-colors ${isMyTurn ? 'text-green-400 animate-pulse' : 'text-white/70'}`}>
+                {isMyTurn ? 'SIRA SENDE!' : `Sıra: ${currentPlayerName}`}
+            </div>
+
             {/* TİMER BAR */}
             <div className="w-full bg-dark-300 h-1 overflow-hidden rounded-full mb-4">
                 <motion.div

@@ -45,7 +45,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
             id: 'extra_attempt',
             name: 'Ekstra Hak',
             icon: '➕',
-            cost: 40,
+            cost: 100,
             description: '1 ekstra tahmin hakkı',
             action: useExtraAttempt
         },
@@ -53,7 +53,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
             id: 'reveal_word',
             name: 'Kelimeyi Göster',
             icon: '💡',
-            cost: 100,
+            cost: 300,
             description: 'Doğru kelimeyi göster',
             action: useRevealWord
         }

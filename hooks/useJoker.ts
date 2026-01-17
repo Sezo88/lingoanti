@@ -123,17 +123,17 @@ export function useJoker(targetWord: string, currentGuesses: string[], gameId?: 
         }
     }, [targetWord, currentGuesses, tickets, spendTickets, gameId])
 
-    // ➕ Extra Attempt Joker (40 tickets)
+    // ➕ Extra Attempt Joker (100 tickets)
     // Adds one extra attempt
     const useExtraAttempt = useCallback(async (): Promise<JokerResult> => {
-        if (tickets < 40) {
-            return { success: false, error: 'Yetersiz bilet! 40 bilet gerekli.' }
+        if (tickets < 100) {
+            return { success: false, error: 'Yetersiz bilet! 100 bilet gerekli.' }
         }
 
         setLoading(true)
         try {
             // Spend tickets
-            const success = await spendTickets(40, 'extra_attempt', gameId)
+            const success = await spendTickets(100, 'extra_attempt', gameId)
             if (!success) {
                 return { success: false, error: 'Bilet harcama başarısız!' }
             }
@@ -149,17 +149,17 @@ export function useJoker(targetWord: string, currentGuesses: string[], gameId?: 
         }
     }, [tickets, spendTickets, gameId])
 
-    // 🔓 Reveal Word Joker (200 tickets)
+    // 🔓 Reveal Word Joker (300 tickets)
     // Reveals the entire word (instant win)
     const useRevealWord = useCallback(async (): Promise<JokerResult> => {
-        if (tickets < 200) {
-            return { success: false, error: 'Yetersiz bilet! 200 bilet gerekli.' }
+        if (tickets < 300) {
+            return { success: false, error: 'Yetersiz bilet! 300 bilet gerekli.' }
         }
 
         setLoading(true)
         try {
             // Spend tickets
-            const success = await spendTickets(200, 'reveal_word', gameId)
+            const success = await spendTickets(300, 'reveal_word', gameId)
             if (!success) {
                 return { success: false, error: 'Bilet harcama başarısız!' }
             }

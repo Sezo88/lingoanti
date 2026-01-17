@@ -186,6 +186,41 @@ export function useCurrency() {
         }
     }
 
+    // Reward ad (watch ad to earn currency)
+    const rewardAd = async (rewardType: 'hearts' | 'tickets') => {
+        if (!user) return false
+
+        try {
+            // Determine amount based on type
+            const amount = rewardType === 'hearts' ? 1 : 50
+
+            const { data, error: rpcError } = await supabase.rpc('reward_ad', {
+                p_user_id: user.id,
+                p_reward_type: rewardType,
+                p_amount: amount
+            })
+
+            if (rpcError) throw rpcError
+
+            if (data) {
+                // Update local state
+                if (rewardType === 'hearts') {
+                    // Assuming data returns boolean, but we need to fetch or manually increment
+                    // Since regenerate logic might overwrite, fetching is safer, but let's increment for speed
+                    await fetchCurrency()
+                } else {
+                    await fetchCurrency()
+                }
+                return true
+            }
+            return false
+        } catch (err: any) {
+            console.error('Reward ad error:', err)
+            setError(err.message)
+            return false
+        }
+    }
+
     // Initial fetch
     useEffect(() => {
         fetchCurrency()
@@ -231,6 +266,7 @@ export function useCurrency() {
         regenerateHearts,
         addTickets,
         buyHearts,
+        rewardAd,
         fetchCurrency,
         getTimeUntilNextHeart
     }

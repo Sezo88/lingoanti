@@ -5,7 +5,8 @@ import { useCurrency } from '@/hooks/useCurrency'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function CurrencyDisplay() {
-    const { tickets, hearts, loading, getTimeUntilNextHeart } = useCurrency()
+    const useCurrencyInstance = useCurrency()
+    const { tickets, hearts, loading, getTimeUntilNextHeart } = useCurrencyInstance
     const [timeUntilRegen, setTimeUntilRegen] = useState<string | null>(null)
 
     // Update countdown every second
@@ -49,6 +50,32 @@ export default function CurrencyDisplay() {
                     <div className="flex items-center gap-1">
                         <span className="text-base">🎫</span>
                         <span className="font-bold text-white text-sm">{hearts}/5</span>
+                        {hearts < 5 && (
+                            <button
+                                onClick={async () => {
+                                    if (confirm('📺 Reklam izleyip +1 Lbilet kazanmak ister misin?')) {
+                                        // Simulate ad watch
+                                        const btn = document.activeElement as HTMLButtonElement
+                                        if (btn) btn.disabled = true;
+                                        await new Promise(r => setTimeout(r, 1000)); // 1s simulation
+
+                                        const { rewardAd } = useCurrencyInstance;
+                                        const success = await rewardAd('hearts');
+
+                                        if (success) {
+                                            alert('🎉 Tebrikler! +1 Lbilet kazandın.');
+                                        } else {
+                                            alert('❌ Bir hata oluştu.');
+                                        }
+                                        if (btn) btn.disabled = false;
+                                    }
+                                }}
+                                className="w-4 h-4 rounded-full bg-green-500 hover:bg-green-400 flex items-center justify-center text-white text-[10px] font-bold leading-none shadow-sm transition-colors ml-0.5"
+                                title="Reklam izle +1 Lbilet kazan"
+                            >
+                                +
+                            </button>
+                        )}
                     </div>
                     {timeUntilRegen && hearts < 5 ? (
                         <span className="text-[8px] text-white/60 font-mono">{timeUntilRegen}</span>

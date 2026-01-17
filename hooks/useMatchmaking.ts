@@ -2,12 +2,14 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCurrency } from './useCurrency'
 
 export function useMatchmaking() {
     const { user } = useAuth()
     const router = useRouter()
     const [isSearching, setIsSearching] = useState(false)
     const subscriptionRef = useRef<any>(null)
+    const useCurrencyInstance = useCurrency()
 
     const findMatch = async () => {
         if (!user) {
@@ -18,6 +20,15 @@ export function useMatchmaking() {
         console.log('Starting matchmaking search for user:', user.id)
 
         try {
+            // Spend Lbilet (Heart) check
+            const { spendHeart } = useCurrencyInstance
+            const success = await spendHeart()
+
+            if (!success) {
+                alert('Yetersiz Lbilet! Oyun oynamak için önce biletlerini Lbilet\'e dönüştür veya bekle.')
+                return
+            }
+
             setIsSearching(true)
             // 1. Önce RPC yöntemini dene (Atomic eşleşme)
             const { data: gameId, error } = await supabase.rpc('find_match', { p_user_id: user.id })

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCurrency } from './useCurrency'
 
 type GameMode = 'arena' | 'turn_based'
 
@@ -30,6 +31,7 @@ export function useTournamentMatchmaking() {
     const [matchmakingStatus, setMatchmakingStatus] = useState<MatchmakingStatus>({ status: 'idle' })
     const [currentLobby, setCurrentLobby] = useState<LobbyInfo | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const { spendHeart } = useCurrency()
 
     const subscriptionRef = useRef<any>(null)
     const countdownTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -43,6 +45,13 @@ export function useTournamentMatchmaking() {
         }
 
         try {
+            // Spend Lbilet
+            const success = await spendHeart()
+            if (!success) {
+                alert('Yetersiz Lbilet! Turnuvaya katılmak için 1 Lbilet gerekli.')
+                return
+            }
+
             setError(null)
             cancelledRef.current = false // Reset cancelled flag
             setMatchmakingStatus({ status: 'searching' })
@@ -138,6 +147,13 @@ export function useTournamentMatchmaking() {
         }
 
         try {
+            // Spend Lbilet (Only leader pays to start?) - For now yes
+            const success = await spendHeart()
+            if (!success) {
+                alert('Yetersiz Lbilet! Aramayı başlatmak için Lbilet gerekli.')
+                return
+            }
+
             setError(null)
             cancelledRef.current = false // Reset cancelled flag
             setMatchmakingStatus({ status: 'searching' })

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { searchUsers, sendFriendRequest, getFriends, getPendingRequests, acceptFriendRequest, removeFriendship } from '@/lib/friendships'
 import { createGame } from '@/lib/games'
 import GameSettingsModal, { type GameSettings } from '@/components/GameSettingsModal'
+import { useCurrency } from '@/hooks/useCurrency'
 
 import { usePresence } from '@/hooks/usePresence'
 
@@ -13,6 +14,7 @@ function FriendsPageContent() {
     const { user, onlineUsers } = useAuth()
     const router = useRouter()
     const searchParams = useSearchParams()
+    const { spendHeart } = useCurrency()
 
     // ... usePresence call removed
     const [searchQuery, setSearchQuery] = useState('')
@@ -111,6 +113,14 @@ function FriendsPageContent() {
 
     const handleGameSettingsConfirm = async (settings: GameSettings) => {
         if (!user || !selectedFriend) return
+
+        // Spend Lbilet (Inviter pays)
+        const success = await spendHeart()
+        if (!success) {
+            alert('Yetersiz Lbilet! Oyun başlatmak için 1 Lbilet gerekli.')
+            return
+        }
+
         setLoading(true)
 
         const wordLength = settings.wordLength === 'mixed' ? 0 : settings.wordLength

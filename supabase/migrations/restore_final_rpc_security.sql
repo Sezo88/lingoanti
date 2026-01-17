@@ -1,8 +1,6 @@
--- FINAL ROBUST RPC FOR TURN-BASED MODE
--- FIXES:
--- 1. Uses 'guesses' and 'results' keys (Legacy Compatibility)
--- 2. Uses jsonb_build_array to avoid flattening nested result arrays
--- 3. Proper currentTurn iteration
+-- FINAL ROBUST RPC WITH SECURITY DEFINER
+-- Added SECURITY DEFINER to bypass RLS policies
+-- This allows any authenticated user (Player 2) to update the room state via this function
 
 DROP FUNCTION IF EXISTS submit_turn_guess(uuid,uuid,text,jsonb,boolean);
 
@@ -13,12 +11,15 @@ CREATE OR REPLACE FUNCTION submit_turn_guess(
     p_result JSONB,
     p_is_correct BOOLEAN
 )
-RETURNS JSONB AS $$
+RETURNS JSONB 
+LANGUAGE plpgsql
+SECURITY DEFINER -- Runs with privileges of the function creator (postgres/admin)
+AS $$
 DECLARE
     v_room RECORD;
     v_current_turn INT;
 BEGIN
-    -- Get room
+    -- Get room (No FOR UPDATE to avoid locks/deadlocks)
     SELECT * INTO v_room FROM rooms WHERE id = p_room_id;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Room not found';
@@ -28,7 +29,7 @@ BEGIN
     v_current_turn := COALESCE((v_room.config->>'currentTurn')::INT, 0);
 
     -- Add guess to shared state
-    -- IMPORTANT: jsonb_build_array ensures the element is added as a single unit
+    -- Using jsonb_build_array to ensure consistent nested array structure
     UPDATE rooms SET
         game_state = jsonb_set(
             jsonb_set(
@@ -47,7 +48,7 @@ BEGIN
         SET score = COALESCE(score, 0) + 100
         WHERE room_id = p_room_id AND user_id = p_user_id;
         
-        -- Mark last win for feedback
+        -- Mark last win for feedback AND clear board
         UPDATE rooms SET
             game_state = jsonb_set(
                 jsonb_set(
@@ -73,7 +74,7 @@ BEGIN
     -- Move to next turn
     v_current_turn := v_current_turn + 1;
 
-    -- Update room configuration
+    -- Update room configuration (turn and timer)
     UPDATE rooms SET
         config = jsonb_set(
             jsonb_set(
@@ -88,4 +89,4 @@ BEGIN
 
     RETURN jsonb_build_object('success', true, 'nextTurn', v_current_turn);
 END;
-$$ LANGUAGE plpgsql;
+$$;

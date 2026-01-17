@@ -386,6 +386,13 @@ export default function RoomPage() {
             // Doğru mu kontrol et
             const isCorrect = result.every((r: any) => r.status === 'correct')
 
+            console.log('--- HAMLE KONTROLÜ ---')
+            console.log('Hedef Kelime:', currentWord)
+            console.log('Tahmin:', guess)
+            console.log('Sonuç:', result)
+            console.log('Doğru mu:', isCorrect)
+            console.log('----------------------')
+
             try {
                 // RPC fonksiyonunu çağır (Güvenli ve Atomic)
                 const { error } = await supabase.rpc('submit_turn_guess', {

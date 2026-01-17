@@ -362,7 +362,7 @@ export default function TurnBasedBoard({
     )
 }
 
-function Row({ word, target, submitted, shake, length = 5, result }: any) {
+function Row({ word, target, submitted, shake, length = 5, result, jokerLetters }: any) {
     const letters = word.split('')
     const emptyCount = length - letters.length
     const feedback = result || []
@@ -381,6 +381,13 @@ function Row({ word, target, submitted, shake, length = 5, result }: any) {
                     else if (feedback[i].status === 'present') bgColor = 'bg-warning-500 border-warning-500'
                     else if (feedback[i].status === 'invalid') bgColor = 'bg-danger-500 border-danger-500'
                     else bgColor = 'bg-dark-300 border-dark-300'
+                } else if (!submitted && jokerLetters && jokerLetters.length > 0) {
+                    // Joker kontrolü (Henüz gönderilmemiş satırda)
+                    const joker = jokerLetters.find((j: any) => j.position === i)
+                    if (joker) {
+                        if (joker.status === 'correct') bgColor = 'bg-success-500 border-success-500'
+                        else if (joker.status === 'present') bgColor = 'bg-warning-500 border-warning-500'
+                    }
                 }
 
                 return (

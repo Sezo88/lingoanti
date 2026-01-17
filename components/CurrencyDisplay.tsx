@@ -3,11 +3,22 @@
 import { useEffect, useState } from 'react'
 import { useCurrency } from '@/hooks/useCurrency'
 import { motion, AnimatePresence } from 'framer-motion'
+import AdModal from './AdModal'
 
 export default function CurrencyDisplay() {
     const useCurrencyInstance = useCurrency()
-    const { tickets, hearts, loading, getTimeUntilNextHeart } = useCurrencyInstance
+    const { tickets, hearts, loading, getTimeUntilNextHeart, rewardAd } = useCurrencyInstance
     const [timeUntilRegen, setTimeUntilRegen] = useState<string | null>(null)
+    const [showAdModal, setShowAdModal] = useState(false)
+
+    const handleAdReward = async () => {
+        const success = await rewardAd('hearts')
+        if (success) {
+            alert('🎉 Tebrikler! +1 Lbilet kazandın.')
+        } else {
+            alert('❌ Bir hata oluştu.')
+        }
+    }
 
     // Update countdown every second
     useEffect(() => {
@@ -52,24 +63,7 @@ export default function CurrencyDisplay() {
                         <span className="font-bold text-white text-sm">{hearts}/5</span>
                         {hearts < 5 && (
                             <button
-                                onClick={async () => {
-                                    if (confirm('📺 Reklam izleyip +1 Lbilet kazanmak ister misin?')) {
-                                        // Simulate ad watch
-                                        const btn = document.activeElement as HTMLButtonElement
-                                        if (btn) btn.disabled = true;
-                                        await new Promise(r => setTimeout(r, 1000)); // 1s simulation
-
-                                        const { rewardAd } = useCurrencyInstance;
-                                        const success = await rewardAd('hearts');
-
-                                        if (success) {
-                                            alert('🎉 Tebrikler! +1 Lbilet kazandın.');
-                                        } else {
-                                            alert('❌ Bir hata oluştu.');
-                                        }
-                                        if (btn) btn.disabled = false;
-                                    }
-                                }}
+                                onClick={() => setShowAdModal(true)}
                                 className="w-4 h-4 rounded-full bg-green-500 hover:bg-green-400 flex items-center justify-center text-white text-[10px] font-bold leading-none shadow-sm transition-colors ml-0.5"
                                 title="Reklam izle +1 Lbilet kazan"
                             >
@@ -84,6 +78,11 @@ export default function CurrencyDisplay() {
                     )}
                 </div>
             </div>
+            <AdModal
+                isOpen={showAdModal}
+                onClose={() => setShowAdModal(false)}
+                onReward={handleAdReward}
+            />
         </motion.div>
     )
 }

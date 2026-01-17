@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase'
 import GameBoard from '@/components/GameBoard'
 import GameKeyboard from '@/components/GameKeyboard'
 import JokerPanel from '@/components/JokerPanel'
+import TimerBar from '@/components/TimerBar'
 import type { LetterResult } from '@/lib/supabase'
 
 export default function MultiplayerGamePage() {
@@ -384,13 +385,13 @@ export default function MultiplayerGamePage() {
     return (
         <div className="min-h-screen max-h-screen flex flex-col overflow-hidden">
             <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
-                <div className="container mx-auto px-4 py-3">
-                    <div className="grid grid-cols-3 items-center gap-4">
+                <div className="container mx-auto px-4 py-2">
+                    <div className="flex items-center justify-between gap-2">
                         {/* LEFT: Menu & Forfeit */}
-                        <div className="flex flex-col items-start gap-1.5">
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={() => router.push('/')}
-                                className="text-white/70 hover:text-white transition-colors text-sm flex items-center gap-1"
+                                className="text-white/70 hover:text-white transition-colors text-xs flex items-center gap-1 bg-white/5 px-2 py-1.5 rounded-lg"
                             >
                                 ← Çık
                             </button>
@@ -405,71 +406,79 @@ export default function MultiplayerGamePage() {
                                             }
                                         }
                                     }}
-                                    className="text-xs text-danger-400 hover:text-danger-300 font-semibold border border-danger-500/20 rounded px-2 py-1"
+                                    className="text-xs text-danger-400 hover:text-danger-300 font-semibold border border-danger-500/20 rounded px-2 py-1.5"
                                 >
                                     🏳️ Pes Et
                                 </button>
                             )}
                         </div>
 
-                        {/* CENTER: Title, Score & Turn Indicator */}
-                        <div className="text-center">
-                            <h1 className="text-2xl font-bold gradient-text leading-tight mb-1">
-                                {game.word_length} Harfli
-                            </h1>
-                            <div className="text-sm text-white/60 leading-tight mb-1.5">
-                                {game.best_of > 1 ? `Best of ${game.best_of} • El ${game.current_round}` : 'Tek El'}
+                        {/* CENTER: Compact Info */}
+                        <div className="flex-1 flex flex-col items-center justify-center min-w-0">
+                            <div className="flex items-center gap-2 text-sm whitespace-nowrap">
+                                <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400">
+                                    {game.word_length} Harfli
+                                </span>
+                                <span className="text-white/20">|</span>
+                                <span className="text-white/60">
+                                    {game.best_of > 1 ? `Best of ${game.best_of} • El ${game.current_round}` : 'Tek El'}
+                                </span>
                             </div>
 
-                            {/* Score Badge */}
-                            {game.best_of > 1 && (
-                                <div className="inline-flex items-center gap-2 bg-dark-200/50 rounded-lg px-3 py-1 border border-white/10 mb-2">
-                                    <span className={`text-sm font-bold ${user?.id === game.player1_id ? 'text-primary-400' : 'text-white/50'}`}>
-                                        {game.player1_score}
-                                    </span>
-                                    <span className="text-xs text-white/30">-</span>
-                                    <span className={`text-sm font-bold ${user?.id === game.player2_id ? 'text-primary-400' : 'text-white/50'}`}>
-                                        {game.player2_score}
-                                    </span>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2 mt-0.5">
+                                {/* Score */}
+                                {game.best_of > 1 && (
+                                    <div className="flex items-center gap-2 text-xs font-bold bg-black/20 px-2 py-0.5 rounded whitespace-nowrap">
+                                        <span className={user?.id === game.player1_id ? 'text-primary-400' : 'text-white/40'}>{game.player1_score}</span>
+                                        <span className="text-white/20">-</span>
+                                        <span className={user?.id === game.player2_id ? 'text-primary-400' : 'text-white/40'}>{game.player2_score}</span>
+                                    </div>
+                                )}
 
-                            {/* Turn Indicator */}
-                            {!isGameOver && (
-                                <div className={`inline-block px-3 py-1 rounded-lg ${isMyTurn ? 'bg-success-600' : 'bg-warning-600'}`}>
-                                    <p className="text-white font-semibold text-xs">
-                                        {isMyTurn ? '✨ Senin Sıran!' : '⏳ Rakip oynuyor...'}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* RIGHT: Joker & Fullscreen Buttons */}
-                        <div className="flex items-center justify-end gap-2">
-                            <div className="flex flex-col gap-1.5">
-                                <button
-                                    onClick={toggleFullscreen}
-                                    className="text-white/80 hover:text-white transition-colors text-xl flex items-center justify-center w-9 h-9 bg-dark-200/50 rounded-lg"
-                                >
-                                    {isFullscreen ? '✕' : '⛶'}
-                                </button>
-                                {!isGameOver && isMyTurn && (
-                                    <button
-                                        onClick={() => setShowJokerPanel(!showJokerPanel)}
-                                        className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg hover:scale-110 transition-transform flex items-center justify-center text-base"
-                                    >
-                                        ✨
-                                    </button>
+                                {/* Status Badge */}
+                                {!isGameOver && (
+                                    <div className={`text-xs px-2 py-0.5 rounded whitespace-nowrap font-medium ${isMyTurn ? 'bg-success-500/20 text-success-400' : 'bg-warning-500/20 text-warning-400'}`}>
+                                        {isMyTurn ? 'Senin Sıran' : 'Rakip Oynuyor'}
+                                    </div>
                                 )}
                             </div>
                         </div>
+
+                        {/* RIGHT: Buttons */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={toggleFullscreen}
+                                className="w-8 h-8 flex items-center justify-center bg-white/5 rounded-lg text-white/70 hover:text-white"
+                            >
+                                {isFullscreen ? '✕' : '⛶'}
+                            </button>
+                            {!isGameOver && isMyTurn && (
+                                <button
+                                    onClick={() => setShowJokerPanel(!showJokerPanel)}
+                                    className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg flex items-center justify-center"
+                                >
+                                    ✨
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
+
+                {/* TIMER BAR */}
+                {!isGameOver && (
+                    <div className="h-1 w-full bg-dark-300 overflow-hidden">
+                        <TimerBar
+                            startTime={moves.length > 0 ? moves[moves.length - 1].created_at : game.created_at}
+                            duration={(game as any).duration || 60}
+                            isMyTurn={isMyTurn}
+                        />
+                    </div>
+                )}
             </header>
 
 
 
-            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-[140px]">
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-[90px]">
                 {/* Joker Panel */}
                 {!isGameOver && isMyTurn && (
                     <JokerPanel

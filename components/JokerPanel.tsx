@@ -63,7 +63,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
         setError(null)
 
         if (tickets < joker.cost) {
-            setError(`Yeterli biletiniz yok! ${joker.cost} bilet gerekli.`)
+            setError(`Yeterli paranız yok! ${joker.cost} LPara gerekli.`)
             setTimeout(() => setError(null), 3000)
             return
         }
@@ -101,7 +101,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                                 <div className="flex items-center gap-3">
                                     <h3 className="text-lg font-bold text-white">✨ Jokerler</h3>
                                     <div className="flex items-center gap-1.5 bg-primary-500/20 border border-primary-500/30 rounded-lg px-2 py-1">
-                                        <span className="text-sm">🎫</span>
+                                        <span className="text-sm">🪙</span>
                                         <span className="text-sm font-bold text-primary-400">{tickets}</span>
                                     </div>
                                 </div>
@@ -141,7 +141,7 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
                                             <div className="flex items-start justify-between mb-1">
                                                 <span className="text-2xl">{joker.icon}</span>
                                                 <div className="text-xs font-bold text-yellow-400">
-                                                    🎫 {joker.cost}
+                                                    🪙 {joker.cost}
                                                 </div>
                                             </div>
                                             <div className="text-sm font-bold text-white mb-0.5">{joker.name}</div>

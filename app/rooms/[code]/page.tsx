@@ -400,8 +400,9 @@ export default function RoomPage() {
                     console.error('RPC Hatası:', error)
                     alert('Hata: ' + error.message)
                 } else {
-                    console.log('Tahmin başarıyla işlendi')
-                    // Not: Veriler realtime aboneliği ile güncellenecek
+                    console.log('Tahmin başarıyla işlendi, veriler tazeleniyor...')
+                    // Realtime'ı beklemeden veriyi kendimiz çekiyoruz (UX için)
+                    await fetchRoomData()
                 }
             } catch (e) {
                 console.error('Tahmin gönderme hatası:', e)

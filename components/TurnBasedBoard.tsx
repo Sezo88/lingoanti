@@ -202,6 +202,19 @@ export default function TurnBasedBoard({
 
     return (
         <div className="flex flex-col h-full max-w-lg mx-auto w-full relative">
+            {/* TİMER BAR */}
+            <div className="w-full bg-dark-300 h-1 overflow-hidden rounded-full mb-4">
+                <motion.div
+                    initial={{ width: '100%' }}
+                    animate={{
+                        width: `${(timeLeft / duration) * 100}%`,
+                        backgroundColor: timeLeft < 10 ? '#ef4444' : timeLeft < 30 ? '#f59e0b' : '#3b82f6'
+                    }}
+                    transition={{ duration: 1, ease: 'linear' }}
+                    className="h-full"
+                />
+            </div>
+
             {error && (
                 <div className="absolute top-10 left-1/2 transform -translate-x-1/2 z-50">
                     <div className="bg-danger-500/90 text-white px-4 py-2 rounded-lg shadow-lg font-bold animate-pulse">

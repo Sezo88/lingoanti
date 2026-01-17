@@ -348,14 +348,19 @@ export default function RoomPage() {
         const handleLeaveRoom = async () => {
             if (!user) return
 
-            if (confirm('Odadan ayrılmak istiyor musunuz?')) {
-                await supabase
-                    .from('room_participants')
-                    .delete()
-                    .eq('room_id', room.id)
-                    .eq('user_id', user.id)
+            if (confirm('Odadan ayrılmak istiyor musunuz? Sıranız atlanacak.')) {
+                try {
+                    const { error } = await supabase.rpc('leave_room', {
+                        p_room_id: room.id
+                    })
 
-                router.push('/rooms')
+                    if (error) throw error
+
+                    router.push('/rooms')
+                } catch (e) {
+                    console.error('Ayrılma hatası:', e)
+                    alert('Odadan ayrılırken hata oluştu')
+                }
             }
         }
 

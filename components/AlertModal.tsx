@@ -1,47 +1,18 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, CheckCircle, AlertTriangle, info, AlertCircle } from 'lucide-react'
+import { X, CheckCircle, AlertTriangle, Info, AlertCircle } from 'lucide-react'
 import { useEffect } from 'react'
-
-interface AlertAction {
-    label: string
-    onClick: () => void
-    variant?: 'primary' | 'secondary' | 'outline' | 'danger'
-}
-
-interface AlertOptions {
-    title?: string
-    message: string
-    type?: 'success' | 'error' | 'info' | 'warning'
-    actions?: AlertAction[]
-    showAdButton?: boolean
-}
-
-interface AlertModalProps {
-    isOpen: boolean
-    onClose: () => void
-    config: AlertOptions
-}
-
+// ...
 export function AlertModal({ isOpen, onClose, config }: AlertModalProps) {
-    // Escape ile kapatma
-    useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose()
-        }
-        window.addEventListener('keydown', handleEsc)
-        return () => window.removeEventListener('keydown', handleEsc)
-    }, [onClose])
-
-    if (!isOpen) return null
-
+    // ...
     const getTypeIcon = () => {
         switch (config.type) {
             case 'success': return <CheckCircle className="text-green-500" size={32} />
             case 'error': return <AlertCircle className="text-red-500" size={32} />
             case 'warning': return <AlertTriangle className="text-yellow-500" size={32} />
-            default: return <AlertCircle className="text-blue-500" size={32} />
+            case 'info': return <Info className="text-blue-500" size={32} />
+            default: return <Info className="text-blue-500" size={32} />
         }
     }
 
@@ -100,10 +71,10 @@ export function AlertModal({ isOpen, onClose, config }: AlertModalProps) {
                                         onClose()
                                     }}
                                     className={`w-full py-3 rounded-xl font-medium transition-all ${action.variant === 'primary'
-                                            ? 'bg-primary-600 hover:bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                                            : action.variant === 'danger'
-                                                ? 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-500/20'
-                                                : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
+                                        ? 'bg-primary-600 hover:bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+                                        : action.variant === 'danger'
+                                            ? 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-500/20'
+                                            : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
                                         }`}
                                 >
                                     {action.label}

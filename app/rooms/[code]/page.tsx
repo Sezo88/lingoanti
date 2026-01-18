@@ -620,5 +620,32 @@ export default function RoomPage() {
         )
     }
 
-    return null
+    // DEBUG: Unhandled state
+    console.error('⚠️ UNHANDLED ROOM STATE:', {
+        roomStatus: room?.status,
+        gameMode: room?.game_mode,
+        gameWordsLength: gameWords?.length,
+        config: room?.config,
+        participants: participants?.length
+    })
+
+    return (
+        <div className="min-h-screen bg-dark-100 text-white flex items-center justify-center p-4">
+            <div className="max-w-md w-full glass-card p-8 rounded-2xl border border-white/10">
+                <h2 className="text-2xl font-bold mb-4 text-center text-red-400">Beklenmeyen Durum</h2>
+                <div className="space-y-2 text-sm">
+                    <p><strong>Oda Durumu:</strong> {room?.status || 'Bilinmiyor'}</p>
+                    <p><strong>Oyun Modu:</strong> {room?.game_mode || 'Bilinmiyor'}</p>
+                    <p><strong>Kelime Sayısı:</strong> {gameWords?.length || 0}</p>
+                    <p><strong>Katılımcı:</strong> {participants?.length || 0}</p>
+                </div>
+                <button
+                    onClick={() => router.push('/')}
+                    className="w-full mt-6 py-3 bg-primary-600 hover:bg-primary-500 rounded-xl font-semibold transition-colors"
+                >
+                    Ana Sayfaya Dön
+                </button>
+            </div>
+        </div>
+    )
 }

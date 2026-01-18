@@ -9,7 +9,7 @@ import FractalBackground from '@/components/FractalBackground'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    title: 'Lingo Türkiye',
+    title: 'Lingo Master',
     description: 'Çok oyunculu Türkçe kelime tahmin oyunu',
 }
 

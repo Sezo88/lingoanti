@@ -41,7 +41,7 @@ export default function RegisterPage() {
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <h1 className="text-5xl font-bold gradient-text mb-2">Lingo Türkiye</h1>
+                    <h1 className="text-5xl font-bold gradient-text mb-2">Lingo Master</h1>
                     <p className="text-white/70">Arkadaşlarınla kelime yarışı!</p>
                 </div>
 

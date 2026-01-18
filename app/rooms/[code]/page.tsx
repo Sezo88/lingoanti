@@ -208,7 +208,7 @@ export default function RoomPage() {
     useEffect(() => {
         if (isMyTurn && document.hidden && Notification.permission === 'granted') {
             new Notification('Sıra Sende! 🎯', {
-                body: 'Lingo Türkiye: Hamle yapma sırası sana geldi.',
+                body: 'Lingo Master: Hamle yapma sırası sana geldi.',
                 icon: '/favicon.ico'
             })
         }

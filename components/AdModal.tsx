@@ -70,6 +70,14 @@ export default function AdModal({ isOpen, onClose, onReward }: AdModalProps) {
                         exit={{ scale: 0.9, opacity: 0 }}
                         className="relative w-full max-w-lg aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10 flex flex-col items-center justify-center p-6 z-[101]"
                     >
+                        {/* 
+                            TODO: REAL AD INTEGRATION START
+                            Once AdMob ID is available and Capacitor is installed:
+                            1. Remove this fake UI.
+                            2. Call AdMob.showRewardVideoAd().
+                            3. Listen for onReward event.
+                        */}
+
                         {/* Fake Ad Video Content */}
                         <div className="text-center space-y-4">
                             <div className="w-20 h-20 bg-primary-500 rounded-2xl mx-auto flex items-center justify-center animate-bounce">

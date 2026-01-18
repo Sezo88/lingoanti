@@ -16,10 +16,14 @@ BEGIN
   SELECT game_mode INTO v_game_mode FROM rooms WHERE id = p_room_id;
 
   -- Rastgele kelimeler seç
-  -- FIX: p_word_length = 0 ise uzunluk kısıtlaması yapma (Karışık/Mixed)
+  -- FIX: p_word_length = 0 ise uzunluk 4 ile 7 arasında olsun (Karışık/Mixed)
   SELECT ARRAY(
     SELECT word FROM words 
-    WHERE (p_word_length = 0 OR length = p_word_length)
+    WHERE (
+        (p_word_length = 0 AND length BETWEEN 4 AND 7) 
+        OR 
+        (p_word_length > 0 AND length = p_word_length)
+    )
     ORDER BY RANDOM() 
     LIMIT p_word_count
   ) INTO v_words;
@@ -40,8 +44,8 @@ BEGIN
 
   -- Turn-based mode için ek ayarlar
   IF v_game_mode = 'turn_based' THEN
-    -- Katılımcı ID'lerini al
-    SELECT ARRAY_AGG(user_id ORDER BY joined_at) INTO v_participant_ids
+    -- Katılımcı ID'lerini al - FIX: Sıralamayı RASTGELE yap (Randomize Turn Order)
+    SELECT ARRAY_AGG(user_id ORDER BY RANDOM()) INTO v_participant_ids
     FROM room_participants
     WHERE room_id = p_room_id;
 

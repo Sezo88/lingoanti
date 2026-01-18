@@ -3,7 +3,26 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, CheckCircle, AlertTriangle, Info, AlertCircle } from 'lucide-react'
 import { useEffect } from 'react'
-// ...
+
+interface AlertAction {
+    label: string
+    onClick: () => void
+    variant?: 'primary' | 'secondary' | 'outline' | 'danger'
+}
+
+interface AlertOptions {
+    title?: string
+    message: string
+    type?: 'success' | 'error' | 'info' | 'warning'
+    actions?: AlertAction[]
+    showAdButton?: boolean
+}
+
+interface AlertModalProps {
+    isOpen: boolean
+    onClose: () => void
+    config: AlertOptions
+}
 export function AlertModal({ isOpen, onClose, config }: AlertModalProps) {
     // ...
     const getTypeIcon = () => {

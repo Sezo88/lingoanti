@@ -25,13 +25,18 @@ type LobbyInfo = {
     members: Array<{ id: string; userId: string; username: string }>
 }
 
+import { useAlert } from '@/contexts/AlertContext'
+
+// ... existing imports
+
 export function useTournamentMatchmaking() {
     const { user } = useAuth()
     const router = useRouter()
     const [matchmakingStatus, setMatchmakingStatus] = useState<MatchmakingStatus>({ status: 'idle' })
     const [currentLobby, setCurrentLobby] = useState<LobbyInfo | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const { spendHeart } = useCurrency()
+    const { spendHeart, rewardAd } = useCurrency()
+    const { showAlert } = useAlert()
 
     const subscriptionRef = useRef<any>(null)
     const countdownTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -48,7 +53,26 @@ export function useTournamentMatchmaking() {
             // Spend Lbilet
             const success = await spendHeart()
             if (!success) {
-                alert('Yetersiz Lbilet! Turnuvaya katılmak için 1 Lbilet gerekli.')
+                showAlert({
+                    title: 'Biletin Kalmadı 😔',
+                    message: 'Turnuvaya katılmak için 1 Lbilet gerekli.',
+                    type: 'warning',
+                    actions: [
+                        {
+                            label: 'Reklam İzle (+1 ❤️)',
+                            onClick: async () => {
+                                const ok = await rewardAd('hearts')
+                                if (ok) showAlert({ message: '1 Lbilet Kazandın! Şimdi katılabilirsin.', type: 'success' })
+                            },
+                            variant: 'primary'
+                        },
+                        {
+                            label: 'Kapat',
+                            onClick: () => { },
+                            variant: 'outline'
+                        }
+                    ]
+                })
                 return
             }
 
@@ -150,7 +174,26 @@ export function useTournamentMatchmaking() {
             // Spend Lbilet (Only leader pays to start?) - For now yes
             const success = await spendHeart()
             if (!success) {
-                alert('Yetersiz Lbilet! Aramayı başlatmak için Lbilet gerekli.')
+                showAlert({
+                    title: 'Liderin Bileti Bitti!',
+                    message: 'Odayı başlatmak için 1 Lbilet gerekli.',
+                    type: 'warning',
+                    actions: [
+                        {
+                            label: 'Reklam İzle (+1 ❤️)',
+                            onClick: async () => {
+                                const ok = await rewardAd('hearts')
+                                if (ok) showAlert({ message: '1 Lbilet Kazandın! Şimdi başlatabilirsin.', type: 'success' })
+                            },
+                            variant: 'primary'
+                        },
+                        {
+                            label: 'Vazgeç',
+                            onClick: () => { },
+                            variant: 'outline'
+                        }
+                    ]
+                })
                 return
             }
 

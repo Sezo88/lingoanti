@@ -3,13 +3,15 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCurrency } from './useCurrency'
+import { useAlert } from '@/contexts/AlertContext'
 
 export function useMatchmaking() {
     const { user } = useAuth()
     const router = useRouter()
     const [isSearching, setIsSearching] = useState(false)
     const subscriptionRef = useRef<any>(null)
-    const useCurrencyInstance = useCurrency()
+    const { spendHeart, rewardAd } = useCurrency()
+    const { showAlert } = useAlert()
 
     const findMatch = async () => {
         if (!user) {
@@ -21,11 +23,29 @@ export function useMatchmaking() {
 
         try {
             // Spend Lbilet (Heart) check
-            const { spendHeart } = useCurrencyInstance
             const success = await spendHeart()
 
             if (!success) {
-                alert('Yetersiz Lbilet! Oyun oynamak için önce biletlerini Lbilet\'e dönüştür veya bekle.')
+                showAlert({
+                    title: 'Biletin Bitti! 😱',
+                    message: 'Oyun oynamak için 1 Lbilet gerekli.',
+                    type: 'warning',
+                    actions: [
+                        {
+                            label: 'Reklam İzle (+1 ❤️)',
+                            onClick: async () => {
+                                const ok = await rewardAd('hearts')
+                                if (ok) showAlert({ message: '1 Lbilet Kazandın!', type: 'success' })
+                            },
+                            variant: 'primary'
+                        },
+                        {
+                            label: 'Kapat',
+                            onClick: () => { },
+                            variant: 'outline'
+                        }
+                    ]
+                })
                 return
             }
 
@@ -37,7 +57,7 @@ export function useMatchmaking() {
 
             if (error) {
                 console.error('Eşleşme hatası:', error)
-                alert(`Eşleşme Hatası: ${error.message || error.details || 'Bilinmeyen hata'}`)
+                showAlert({ message: `Eşleşme Hatası: ${error.message || error.details || 'Bilinmeyen hata'}`, type: 'error' })
                 setIsSearching(false)
                 return
             }

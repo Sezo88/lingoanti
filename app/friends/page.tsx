@@ -7,14 +7,15 @@ import { searchUsers, sendFriendRequest, getFriends, getPendingRequests, acceptF
 import { createGame } from '@/lib/games'
 import GameSettingsModal, { type GameSettings } from '@/components/GameSettingsModal'
 import { useCurrency } from '@/hooks/useCurrency'
-
 import { usePresence } from '@/hooks/usePresence'
+import { useAlert } from '@/contexts/AlertContext'
 
 function FriendsPageContent() {
     const { user, onlineUsers } = useAuth()
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { spendHeart } = useCurrency()
+    const { spendHeart, rewardAd } = useCurrency()
+    const { showAlert } = useAlert()
 
     // ... usePresence call removed
     const [searchQuery, setSearchQuery] = useState('')
@@ -79,7 +80,7 @@ function FriendsPageContent() {
         setLoading(true)
         const { success } = await sendFriendRequest(user.id, friendId)
         if (success) {
-            alert('Arkadaşlık isteği gönderildi!')
+            showAlert({ message: 'Arkadaşlık isteği gönderildi!', type: 'success' })
             setSearchResults([])
             setSearchQuery('')
         }
@@ -96,14 +97,28 @@ function FriendsPageContent() {
         setLoading(false)
     }
 
-    const handleRemoveFriend = async (friendshipId: string) => {
-        if (!confirm('Arkadaşlığı kaldırmak istediğinize emin misiniz?')) return
-        setLoading(true)
-        const { success } = await removeFriendship(friendshipId)
-        if (success) {
-            await loadFriends()
-        }
-        setLoading(false)
+    const handleRemoveFriend = (friendshipId: string) => {
+        showAlert({
+            title: 'Arkadaşı Sil',
+            message: 'Bu arkadaşı listenizden çıkarmak istediğinize emin misiniz?',
+            type: 'warning',
+            actions: [
+                {
+                    label: 'Evet, Sil',
+                    variant: 'danger',
+                    onClick: async () => {
+                        setLoading(true)
+                        const { success } = await removeFriendship(friendshipId)
+                        if (success) {
+                            await loadFriends()
+                            showAlert({ message: 'Arkadaş silindi', type: 'info' })
+                        }
+                        setLoading(false)
+                    }
+                },
+                { label: 'Vazgeç', onClick: () => { }, variant: 'outline' }
+            ]
+        })
     }
 
     const handlePlayWithFriend = (friendId: string, friendName: string) => {
@@ -117,7 +132,26 @@ function FriendsPageContent() {
         // Spend Lbilet (Inviter pays)
         const success = await spendHeart()
         if (!success) {
-            alert('Yetersiz Lbilet! Oyun başlatmak için 1 Lbilet gerekli.')
+            showAlert({
+                title: 'Biletin Bitti!',
+                message: 'Oyun başlatmak için 1 Lbilet gerekli.',
+                type: 'warning',
+                actions: [
+                    {
+                        label: 'Reklam İzle (+1 ❤️)',
+                        onClick: async () => {
+                            const ok = await rewardAd('hearts')
+                            if (ok) showAlert({ message: '1 Lbilet Kazandın!', type: 'success' })
+                        },
+                        variant: 'primary'
+                    },
+                    {
+                        label: 'Kapat',
+                        onClick: () => { },
+                        variant: 'outline'
+                    }
+                ]
+            })
             return
         }
 
@@ -133,10 +167,14 @@ function FriendsPageContent() {
         )
 
         if (game) {
-            alert('🎮 Oyun daveti gönderildi!')
+            showAlert({
+                title: 'Davet Gönderildi! 🎮',
+                message: 'Arkadaşının kabul etmesi bekleniyor.',
+                type: 'success'
+            })
             router.push('/')
         } else {
-            alert('Oyun daveti gönderilemedi!')
+            showAlert({ message: 'Oyun daveti gönderilemedi!', type: 'error' })
         }
         setLoading(false)
         setSelectedFriend(null)

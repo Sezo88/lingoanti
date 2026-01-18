@@ -2,21 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useCurrency } from '@/hooks/useCurrency'
+import { useAlert } from '@/contexts/AlertContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import AdModal from './AdModal'
 
 export default function CurrencyDisplay() {
-    const useCurrencyInstance = useCurrency()
-    const { tickets, hearts, loading, getTimeUntilNextHeart, rewardAd } = useCurrencyInstance
+    const { tickets, hearts, loading, getTimeUntilNextHeart, rewardAd } = useCurrency()
+    const { showAlert } = useAlert()
     const [timeUntilRegen, setTimeUntilRegen] = useState<string | null>(null)
     const [showAdModal, setShowAdModal] = useState(false)
 
     const handleAdReward = async () => {
         const success = await rewardAd('hearts')
         if (success) {
-            alert('🎉 Tebrikler! +1 Lbilet kazandın.')
+            showAlert({ message: '🎉 Tebrikler! +1 Lbilet kazandın.', type: 'success' })
         } else {
-            alert('❌ Bir hata oluştu.')
+            showAlert({ message: '❌ Bir hata oluştu.', type: 'error' })
         }
     }
 

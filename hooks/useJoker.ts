@@ -166,7 +166,7 @@ export function useJoker(targetWord: string, currentGuesses: string[], gameId?: 
 
             return {
                 success: true,
-                data: { word: targetWord }
+                data: { word: targetWord.toLocaleUpperCase('tr-TR') }
             }
         } catch (err: any) {
             return { success: false, error: err.message }

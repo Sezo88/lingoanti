@@ -57,7 +57,11 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
             description: 'Doğru kelimeyi göster',
             action: useRevealWord
         }
-    ]
+    ].filter(joker => {
+        // If tournament mode, hide "Reveal Word"
+        if (gameId === 'tournament' && joker.id === 'reveal_word') return false
+        return true
+    })
 
     const handleJokerClick = async (joker: typeof jokers[0]) => {
         setError(null)

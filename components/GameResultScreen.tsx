@@ -83,18 +83,32 @@ export default function GameResultScreen({ participants, winner, lastWinType, ro
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.4 + (index * 0.1) }}
                             className={`flex items-center justify-between p-4 rounded-xl border ${index === 0
-                                    ? 'bg-yellow-500/10 border-yellow-500/50 shadow-lg shadow-yellow-500/10'
+                                ? 'bg-yellow-500/10 border-yellow-500/50 shadow-lg shadow-yellow-500/10'
+                                : index === 1
+                                    ? 'bg-gray-400/10 border-gray-400/30' // Silver for 2nd
                                     : 'bg-white/5 border-white/5'
                                 }`}
                         >
                             <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${index === 0 ? 'bg-yellow-500 text-black' : 'bg-dark-300 text-white/50'
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${index === 0 ? 'bg-yellow-500 text-black'
+                                    : index === 1 ? 'bg-gray-400 text-black'
+                                        : index === 2 ? 'bg-orange-700 text-white'
+                                            : 'bg-dark-300 text-white/50'
                                     }`}>
                                     {index + 1}
                                 </div>
                                 <div className="text-left">
-                                    <div className={`font-bold text-lg ${index === 0 ? 'text-yellow-400' : 'text-white'}`}>
-                                        {p.display_name}
+                                    <div className="flex items-center gap-2">
+                                        <div className={`font-bold text-lg ${index === 0 ? 'text-yellow-400' : 'text-white'}`}>
+                                            {p.display_name}
+                                        </div>
+                                        {/* Reward Badge */}
+                                        <div className="flex items-center gap-1 bg-primary-500/20 border border-primary-500/30 rounded px-1.5 py-0.5 ml-2">
+                                            <span className="text-xs">🪙</span>
+                                            <span className="text-xs font-bold text-primary-400">
+                                                +{index === 0 ? 50 : index === 1 ? 25 : 10}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="text-xs text-white/50">
                                         {p.status === 'left' ? 'Ayrıldı' : p.status === 'finished' ? 'Tamamladı' : 'Oynuyor'}

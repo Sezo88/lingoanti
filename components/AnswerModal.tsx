@@ -17,7 +17,7 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onResta
             // Auto-advance only if no restart option (multiplayer)
             const timer = setTimeout(() => {
                 onNext()
-            }, 10000)
+            }, 3000)
             return () => clearTimeout(timer)
         }
     }, [isOpen, onNext, onRestart])
@@ -40,7 +40,15 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onResta
                         {targetWord.toLocaleUpperCase('tr-TR')}
                     </div>
                     {!onRestart && (
-                        <p className="text-sm text-white/60 mt-4">10 saniye sonra otomatik devam edecek...</p>
+                        <div className="flex flex-col gap-3 mt-6 w-full">
+                            <button
+                                onClick={onNext}
+                                className="w-full px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold transition-all text-lg shadow-lg shadow-primary-600/20"
+                            >
+                                Tamam
+                            </button>
+                            <p className="text-xs text-white/40 animate-pulse">3 saniye sonra otomatik devam edecek...</p>
+                        </div>
                     )}
                 </div>
                 <div className="flex gap-3">

@@ -189,7 +189,9 @@ export default function ArenaBoard({
         setResults([])
         setCurrentGuess('')
         setJokerLetters([])
-        setUsedJokers(new Set())
+        setCurrentGuess('')
+        setJokerLetters([])
+        // setUsedJokers(new Set()) // REMOVED: Jokers are per-game, not per-word
         setMaxAttempts(6)
         setGameStatus('playing')
         setWordStartTime(Date.now()) // Reset timer

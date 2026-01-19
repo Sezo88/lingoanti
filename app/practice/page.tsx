@@ -599,7 +599,8 @@ export default function PracticePage() {
                                 <span className="material-symbols-outlined text-base">arrow_back</span>
                                 <span>Menü</span>
                             </button>
-                            {!isSetup && !gameOver && (
+                            {/* Show Finish button ONLY when game is running (isSetup is true) */}
+                            {isSetup && !gameOver && (
                                 <button
                                     onClick={() => handleLose()}
                                     className="bg-danger-500/20 hover:bg-danger-500/30 text-danger-400 text-xs px-2 py-1 rounded border border-danger-500/30"

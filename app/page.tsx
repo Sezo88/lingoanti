@@ -144,7 +144,7 @@ export default function HomePage() {
                                 </div>
                                 <div>
                                     <h3 className="text-white font-bold text-sm">Oyunlarım</h3>
-                                    <p className="text-white/50 text-[10px]">Geçmiş oyunlar</p>
+                                    <p className="text-white/50 text-[10px]">Aktif oyunlar</p>
                                 </div>
                             </Link>
                         </div>

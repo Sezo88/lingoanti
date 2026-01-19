@@ -174,7 +174,7 @@ export default function TournamentModeCard() {
                                 <div className="flex gap-1">
                                     <button
                                         onClick={() => handleTeamCreate('arena')}
-                                        className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-500/30 flex items-center gap-1"
+                                        className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-500/30 flex items-center gap-1"
                                         title="Lobby Oluştur"
                                     >
                                         <span className="material-symbols-outlined text-sm">group_add</span>
@@ -182,10 +182,11 @@ export default function TournamentModeCard() {
                                     </button>
                                     <button
                                         onClick={() => handleTeamJoin('arena')}
-                                        className="px-3 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm flex items-center justify-center"
+                                        className="px-3 py-2 rounded-xl text-[10px] leading-tight font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center h-full min-w-[60px]"
                                         title="Lobby'ye Katıl"
                                     >
-                                        <span className="material-symbols-outlined text-sm">login</span>
+                                        <span>Takıma</span>
+                                        <span>Katıl</span>
                                     </button>
                                 </div>
                             </div>
@@ -209,7 +210,7 @@ export default function TournamentModeCard() {
                                 <div className="flex gap-1">
                                     <button
                                         onClick={() => handleTeamCreate('turn_based')}
-                                        className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-500/30 flex items-center gap-1"
+                                        className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-500/30 flex items-center gap-1"
                                         title="Lobby Oluştur"
                                     >
                                         <span className="material-symbols-outlined text-sm">group_add</span>
@@ -217,10 +218,11 @@ export default function TournamentModeCard() {
                                     </button>
                                     <button
                                         onClick={() => handleTeamJoin('turn_based')}
-                                        className="px-3 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm flex items-center justify-center"
+                                        className="px-3 py-2 rounded-xl text-[10px] leading-tight font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center h-full min-w-[60px]"
                                         title="Lobby'ye Katıl"
                                     >
-                                        <span className="material-symbols-outlined text-sm">login</span>
+                                        <span>Takıma</span>
+                                        <span>Katıl</span>
                                     </button>
                                 </div>
                             </div>

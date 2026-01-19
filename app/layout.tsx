@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { SettingsProvider } from '@/contexts/SettingsContext'
 import { AlertProvider } from '@/contexts/AlertContext'
+import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import FractalBackground from '@/components/FractalBackground'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -33,9 +34,11 @@ export default function RootLayout({
                 <FractalBackground />
                 <AuthProvider>
                     <AlertProvider>
-                        <SettingsProvider>
-                            {children}
-                        </SettingsProvider>
+                        <CurrencyProvider>
+                            <SettingsProvider>
+                                {children}
+                            </SettingsProvider>
+                        </CurrencyProvider>
                     </AlertProvider>
                 </AuthProvider>
             </body>

@@ -594,10 +594,19 @@ export default function PracticePage() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setIsSetup(false)}
-                                className="text-white/70 hover:text-white transition-colors text-xs"
+                                className="text-white/70 hover:text-white transition-colors text-xs flex items-center gap-1"
                             >
-                                ← Menü
+                                <span className="material-symbols-outlined text-base">arrow_back</span>
+                                <span>Menü</span>
                             </button>
+                            {!isSetup && !gameOver && (
+                                <button
+                                    onClick={() => handleLose()}
+                                    className="bg-danger-500/20 hover:bg-danger-500/30 text-danger-400 text-xs px-2 py-1 rounded border border-danger-500/30"
+                                >
+                                    Bitir
+                                </button>
+                            )}
 
                             {/* Score Display - Timed mode only - Vertical Stack */}
                             {gameMode === 'timed' && (

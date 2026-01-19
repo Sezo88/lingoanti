@@ -158,7 +158,7 @@ export default function RegisterPage() {
                     <div className="mt-6 text-center">
                         <p className="text-white/70">
                             Zaten hesabın var mı?{' '}
-                            <Link href="/auth-new/login" className="text-primary-500 font-semibold hover:underline">
+                            <Link href="/auth/login" className="text-primary-500 font-semibold hover:underline">
                                 Giriş Yap
                             </Link>
                         </p>

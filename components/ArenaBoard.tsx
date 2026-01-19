@@ -15,6 +15,7 @@ interface ArenaBoardProps {
     duration?: number
     onProgress: (wordIndex: number, isFinished: boolean) => void
     onWordCompleted: (wordIndex: number, timeSeconds: number, score: number) => void
+    gameId?: string
 }
 
 export default function ArenaBoard({
@@ -282,16 +283,29 @@ export default function ArenaBoard({
         }
     }
 
-    if (gameStatus === 'finished') {
-        return (
-            <div className="flex flex-col items-center justify-center p-10 text-center animate-in zoom-in">
-                <div className="text-6xl mb-4">🏆</div>
-                <h2 className="text-3xl font-bold text-white mb-2">Tebrikler!</h2>
-                <div className="text-4xl font-black text-yellow-400 mb-4">{totalScore} Puan</div>
-                <p className="text-dark-300">Tüm kelimeleri tamamladın.</p>
-                <p className="text-sm text-dark-400 mt-4">Diğerlerinin bitirmesi bekleniyor...</p>
-            </div>
-        )
+    const allFinished = participants.length > 0 && participants.every(p => p.status === 'finished')
+
+    // If local game is finished OR everyone is finished, show result
+    if (gameStatus === 'finished' || allFinished || room?.status === 'finished') {
+        if (!allFinished && room?.status !== 'finished') {
+            // Wait screen (Still waiting for others)
+            return (
+                <div className="flex flex-col items-center justify-center p-10 text-center animate-in zoom-in">
+                    <div className="text-6xl mb-4">🏆</div>
+                    <h2 className="text-3xl font-bold text-white mb-2">Tebrikler!</h2>
+                    <div className="text-4xl font-black text-yellow-400 mb-4">{totalScore} Puan</div>
+                    <p className="text-dark-300">Tüm kelimeleri tamamladın.</p>
+                    <p className="text-sm text-dark-400 mt-4 animate-pulse">Diğerlerinin bitirmesi bekleniyor...</p>
+                </div>
+            )
+        }
+
+        // Everyone finished! Show full result screen logic is handled by parent RoomPage usually, 
+        // but ArenaBoard renders content. Wait, RoomPage handles 'finished' status logic.
+        // If RoomPage sees allFinished, it renders GameResultScreen.
+        // So ArenaBoard just needs to render the "Waiting" state until RoomPage takes over.
+        // BUT user says it stays on Waiting. 
+        // Logic fix: In RoomPage, we check allFinished and switch view.
     }
 
     // Klavye durumunu hesapla

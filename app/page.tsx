@@ -118,84 +118,79 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    {/* Oyunlarım Card */}
-                    <Link href="/games" className="block glass-card rounded-[24px] p-4 shadow-xl transition-transform active:scale-[0.98]">
-                        <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
-                                    <span className="material-symbols-outlined text-2xl">sports_esports</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <h3 className="text-lg font-bold leading-tight text-white">Oyunlarım</h3>
-                                    <p className="text-white/80 text-sm font-medium">Devam eden oyunlar</p>
-                                </div>
-                            </div>
-                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10">
-                                <span className="material-symbols-outlined text-white">chevron_right</span>
-                            </div>
-                        </div>
-                    </Link>
 
                     {/* Turnuva Modu Card */}
                     <TournamentModeCard />
 
-                    {/* Kelime Yarışı Card */}
-                    <div className="glass-card rounded-[24px] p-5 shadow-xl transition-transform active:scale-[0.98]">
-                        <div className="flex flex-col gap-3">
-                            <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
-                                        <span className="material-symbols-outlined text-2xl">flag</span>
-                                    </div>
-                                    <div>
-                                        <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-500/90 text-white text-[10px] font-black tracking-wide uppercase mb-1 shadow-sm">
-                                            Yeni
-                                        </div>
-                                        <h3 className="text-lg font-bold leading-tight text-white">Kelime Yarışı</h3>
-                                        <p className="text-white/80 text-sm">Arkadaşlarınla yarış</p>
-                                    </div>
-                                </div>
+                    {/* Çok Oyunculu Bölümü (Grid) */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Oda Kur */}
+                        <Link href="/rooms?action=create" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-lg mb-1">
+                                <span className="material-symbols-outlined text-2xl">add_circle</span>
                             </div>
-                            <div className="flex gap-2 mt-1">
-                                <Link href="/rooms" className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2.5 rounded-full text-sm font-bold shadow-md text-center">
-                                    Oda Kur
-                                </Link>
-                                <Link href="/rooms" className="px-6 py-2.5 rounded-full text-sm font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm text-center">
-                                    Katıl
-                                </Link>
+                            <div>
+                                <h3 className="text-base font-bold text-white leading-tight">Oda Kur</h3>
+                                <p className="text-[10px] text-white/60 mt-0.5">Arkadaşlarını davet et</p>
                             </div>
-                        </div>
+                        </Link>
+
+                        {/* Odaya Katıl */}
+                        <Link href="/rooms" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-lg mb-1">
+                                <span className="material-symbols-outlined text-2xl">login</span>
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-white leading-tight">Odaya Katıl</h3>
+                                <p className="text-[10px] text-white/60 mt-0.5">Varolan odaya gir</p>
+                            </div>
+                        </Link>
                     </div>
 
-                    {/* Pratik Yap Card */}
-                    <div className="glass-card rounded-[24px] p-5 shadow-xl transition-transform active:scale-[0.98]">
-                        <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-4 flex-1">
-                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
-                                    <span className="material-symbols-outlined text-2xl">track_changes</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <h3 className="text-lg font-bold leading-tight text-white">Pratik Yap</h3>
-                                    <p className="text-white/80 text-sm">Tek başına pratik yap</p>
-                                </div>
+                    {/* Pratik & Oyunlarım (Grid) */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Pratik Yap */}
+                        <Link href="/practice" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg mb-1">
+                                <span className="material-symbols-outlined text-2xl">track_changes</span>
                             </div>
-                            <Link href="/practice" className="bg-white text-[#991b1b] px-5 py-2 rounded-full text-sm font-bold shadow-lg whitespace-nowrap hover:bg-gray-100 transition-colors">
-                                Başla
-                            </Link>
-                        </div>
+                            <div>
+                                <h3 className="text-base font-bold text-white leading-tight">Pratik Yap</h3>
+                                <p className="text-[10px] text-white/60 mt-0.5">Tek başına çalış</p>
+                            </div>
+                        </Link>
+
+                        {/* Oyunlarım */}
+                        <Link href="/games" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg mb-1">
+                                <span className="material-symbols-outlined text-2xl">sports_esports</span>
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-white leading-tight">Oyunlarım</h3>
+                                <p className="text-[10px] text-white/60 mt-0.5">Kayıtlı oyunlar</p>
+                            </div>
+                        </Link>
                     </div>
 
-                    {/* Arkadaşlarınla Oyna Card */}
-                    <Link href="/friends" className="block glass-card rounded-[24px] p-4 shadow-xl transition-transform active:scale-[0.98]">
-                        <div className="flex items-center justify-between gap-4">
+                    {/* Arkadaşlarınla Oyna (Full Width) */}
+                    <Link href="/friends" className="block glass-card rounded-[24px] p-5 shadow-xl transition-transform active:scale-[0.98] relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-rose-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="flex items-center justify-between gap-4 relative z-10">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white shadow-lg">
                                     <span className="material-symbols-outlined text-2xl">group</span>
                                 </div>
-                                <h3 className="text-lg font-bold text-white">Arkadaşlarınla Oyna</h3>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Arkadaşlar</h3>
+                                    <p className="text-sm text-white/60">Listeni yönet</p>
+                                </div>
                             </div>
-                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10">
-                                <span className="material-symbols-outlined text-white">chevron_right</span>
+                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 border border-white/10">
+                                <span className="material-symbols-outlined text-white text-lg">arrow_forward</span>
                             </div>
                         </div>
                     </Link>

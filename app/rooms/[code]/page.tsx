@@ -542,6 +542,7 @@ export default function RoomPage() {
                         duration={room.config?.duration || 60}
                         onProgress={handleProgress}
                         onWordCompleted={handleWordCompleted}
+                        gameId="multiplayer"
                     />
                 </div>
 
@@ -608,12 +609,22 @@ export default function RoomPage() {
     }
 
     // --- OYUN SONU EKRANI ---
-    if (room?.status === 'finished') {
+    // Show if room is finished OR if all participants are finished (Client-side trigger)
+    const allParticipantsFinished = participants.length > 0 && participants.every(p => p.status === 'finished')
+
+    if (room?.status === 'finished' || (room?.status === 'playing' && room?.game_mode !== 'turn_based' && allParticipantsFinished)) {
         const lastWin = room.game_state?.lastWin || {}
+
+        // If I am the host and status is not yet finished, update it!
+        if (room?.status !== 'finished' && room.host_id === user?.id) {
+            // Fire and forget update to ensure clean state for everyone eventually
+            supabase.from('rooms').update({ status: 'finished' }).eq('id', room.id).then(() => console.log('Oyun bitti olarak güncellendi'))
+        }
+
         return (
             <GameResultScreen
                 participants={participants}
-                winner={participants.find(p => p.user_id === lastWin.userId)}
+                winner={participants.find(p => p.user_id === lastWin.userId) || participants.sort((a, b) => b.score - a.score)[0]}
                 lastWinType={lastWin.type}
                 roomCode={room.code}
             />

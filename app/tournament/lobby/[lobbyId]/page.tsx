@@ -148,9 +148,9 @@ export default function TournamentLobbyPage() {
                         <button
                             onClick={handleStartSearch}
                             disabled={matchmakingStatus.status !== 'idle'}
-                            className="w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                            className="w-full py-4 rounded-xl font-bold text-lg bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-orange-500/30 border border-orange-400/20 transform hover:scale-[1.02] active:scale-[0.98]"
                         >
-                            {matchmakingStatus.status === 'idle' ? 'Aramaya Başla' : 'Aranıyor...'}
+                            {matchmakingStatus.status === 'idle' ? '🚀 Aramayı Başlat' : '🔍 Aranıyor...'}
                         </button>
                     )}
 

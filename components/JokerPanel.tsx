@@ -58,8 +58,8 @@ export default function JokerPanel({ targetWord, currentGuesses, gameId, onJoker
             action: useRevealWord
         }
     ].filter(joker => {
-        // If tournament mode, hide "Reveal Word"
-        if (gameId === 'tournament' && joker.id === 'reveal_word') return false
+        // Hide "Reveal Word" in ALL multiplayer modes (tournament, arena rooms, turn-based)
+        if ((gameId === 'tournament' || gameId === 'multiplayer') && joker.id === 'reveal_word') return false
         return true
     })
 

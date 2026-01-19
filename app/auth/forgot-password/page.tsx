@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
 
             if (error) throw error
 
-            setMessage('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.')
+            setMessage('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. (Lütfen spam/gereksiz klasörünü de kontrol edin!)')
         } catch (err: any) {
             setError(err.message || 'Bir hata oluştu.')
         } finally {

@@ -74,11 +74,11 @@ export default function LoginPage() {
                         </div>
 
                         <div>
-                            <div className="flex justify-between mb-2">
+                            <div className="flex justify-between items-center mb-2">
                                 <label className="block text-sm font-medium text-white/70">Şifre</label>
                                 <Link
                                     href="/auth/forgot-password"
-                                    className="text-xs text-primary-400 hover:text-primary-300"
+                                    className="text-sm font-bold text-primary-400 hover:text-primary-300 hover:underline transition-all"
                                 >
                                     Şifremi Unuttum?
                                 </Link>

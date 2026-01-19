@@ -125,30 +125,42 @@ export default function ArenaBoard({
                 if (targetWord[i] === data.letter) correctPositions.push(i)
             }
 
-            // Find positions that are: 1) not correct, 2) not already filled, 3) not already revealed by jokers
-            const wrongPositions: number[] = []
+            // Find positions that are: 1) not correct, 2) not already revealed by jokers
+            const validPositions: number[] = []
             const revealedLetters = jokerLetters.map(j => j.letter.toLowerCase())
 
             for (let i = 0; i < targetWord.length; i++) {
                 const isCorrectPosition = correctPositions.includes(i)
-                const isAlreadyFilled = currentGuess[i] && currentGuess[i] !== ' '
-                const isAlreadyRevealed = revealedLetters.includes(data.letter.toLowerCase())
+                const isAlreadyRevealed = revealedLetters.includes(data.letter.toLowerCase()) // Note: fuzzy check
 
-                if (!isCorrectPosition && !isAlreadyFilled && !isAlreadyRevealed) {
-                    wrongPositions.push(i)
+                // Specific check: Is this specific position already revealed as a joker?
+                const isPositionRevealed = jokerLetters.some(j => j.position === i)
+
+                if (!isCorrectPosition && !isPositionRevealed) {
+                    validPositions.push(i)
                 }
             }
 
-            if (wrongPositions.length > 0) {
-                const randomWrongPos = wrongPositions[Math.floor(Math.random() * wrongPositions.length)]
+            if (validPositions.length > 0) {
+                // Prioritize empty positions
+                const emptyPositions = validPositions.filter(i => !currentGuess[i] || currentGuess[i] === ' ')
+
+                const targetPos = emptyPositions.length > 0
+                    ? emptyPositions[Math.floor(Math.random() * emptyPositions.length)]
+                    : validPositions[Math.floor(Math.random() * validPositions.length)]
+
                 const newGuess = Array(targetWord.length).fill(' ')
-                for (let i = 0; i < currentGuess.length; i++) {
-                    if (currentGuess[i]) newGuess[i] = currentGuess[i]
+                // Reconstruct current guess but formatted
+                for (let i = 0; i < targetWord.length; i++) {
+                    // Keep existing letters unless we are overwriting
+                    if (i !== targetPos && currentGuess[i]) {
+                        newGuess[i] = currentGuess[i]
+                    }
                 }
-                newGuess[randomWrongPos] = data.letter.toLocaleUpperCase('tr-TR')
+                newGuess[targetPos] = data.letter.toLocaleUpperCase('tr-TR')
                 setCurrentGuess(newGuess.join(''))
 
-                setJokerLetters(prev => [...prev, { position: randomWrongPos, letter: data.letter, status: 'present' }])
+                setJokerLetters(prev => [...prev, { position: targetPos, letter: data.letter, status: 'present' }])
                 setUsedJokers(prev => new Set(prev).add(jokerType))
             }
 

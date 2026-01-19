@@ -182,7 +182,7 @@ export default function TournamentModeCard() {
                                     </button>
                                     <button
                                         onClick={() => handleTeamJoin('arena')}
-                                        className="px-3 py-2 rounded-xl text-[10px] leading-tight font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center h-full min-w-[60px]"
+                                        className="px-3 py-2 rounded-xl text-[10px] leading-tight font-bold bg-gradient-to-br from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 text-cyan-300 border border-cyan-500/30 backdrop-blur-sm flex flex-col items-center justify-center text-center h-full min-w-[60px] shadow-lg shadow-cyan-500/10 transition-all active:scale-[0.98]"
                                         title="Lobby'ye Katıl"
                                     >
                                         <span>Takıma</span>
@@ -218,7 +218,7 @@ export default function TournamentModeCard() {
                                     </button>
                                     <button
                                         onClick={() => handleTeamJoin('turn_based')}
-                                        className="px-3 py-2 rounded-xl text-[10px] leading-tight font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center h-full min-w-[60px]"
+                                        className="px-3 py-2 rounded-xl text-[10px] leading-tight font-bold bg-gradient-to-br from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 text-cyan-300 border border-cyan-500/30 backdrop-blur-sm flex flex-col items-center justify-center text-center h-full min-w-[60px] shadow-lg shadow-cyan-500/10 transition-all active:scale-[0.98]"
                                         title="Lobby'ye Katıl"
                                     >
                                         <span>Takıma</span>

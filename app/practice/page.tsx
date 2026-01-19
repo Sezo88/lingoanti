@@ -54,6 +54,10 @@ export default function PracticePage() {
     const [jokerLetters, setJokerLetters] = useState<{ position: number, letter: string, status: 'correct' | 'present' }[]>([])
     const [showJokerPanel, setShowJokerPanel] = useState(false)
 
+    // Manual Exit State
+    const [manualExit, setManualExit] = useState(false)
+    const { addTickets } = useCurrency()
+
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen()
@@ -129,7 +133,7 @@ export default function PracticePage() {
 
     const startNewGame = async (shouldStartTimer = false, selectedLength?: number) => {
         setLoading(true)
-
+        setManualExit(false)
         // Use provided length or current wordLength
         let currentLength = selectedLength || wordLength
 
@@ -187,11 +191,14 @@ export default function PracticePage() {
         }
     }
 
-    const handleLose = () => {
+    const handleLose = (isManual = false) => {
         setGameOver(true)
         setWon(false)
         setIsTimerRunning(false)
         setShowModal(true)
+        if (isManual) {
+            setManualExit(true)
+        }
 
         // Timed mode: save score on game end
         if (gameMode === 'timed') {
@@ -207,6 +214,11 @@ export default function PracticePage() {
         setWon(true)
         setGameOver(true)
         setIsTimerRunning(false)
+
+        // Award LPara (5 Tickets) per word
+        addTickets(5, 'practice_win')
+        setError('💰 +5 LPara Kazanıldı!')
+        setTimeout(() => setError(''), 2000)
 
         // Calculate score for this word (timed mode only)
         if (gameMode === 'timed') {
@@ -579,11 +591,12 @@ export default function PracticePage() {
                         saveScore()
                         setIsSetup(false)
                     }}
-                    onRestart={() => {
+                    onRestart={manualExit ? () => router.push('/') : () => {
                         setTotalScore(0)
                         setWordsCompleted(0)
                         startNewGame(gameMode === 'timed')
                     }}
+                    restartLabel={manualExit ? 'Ana Menü' : 'Yeni Oyun'}
                 />
             )}
 
@@ -593,21 +606,12 @@ export default function PracticePage() {
                         {/* LEFT: Menu + Score */}
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={() => setIsSetup(false)}
-                                className="text-white/70 hover:text-white transition-colors text-xs flex items-center gap-1"
+                                onClick={() => handleLose(true)}
+                                className="bg-danger-500/20 hover:bg-danger-500/30 text-danger-400 text-xs px-3 py-1.5 rounded-lg border border-danger-500/30 font-bold transition-all active:scale-95 flex items-center gap-1"
                             >
-                                <span className="material-symbols-outlined text-base">arrow_back</span>
-                                <span>Menü</span>
+                                <span className="material-symbols-outlined text-base">flag</span>
+                                <span>Bitir</span>
                             </button>
-                            {/* Show Finish button ONLY when game is running (isSetup is true) */}
-                            {isSetup && !gameOver && (
-                                <button
-                                    onClick={() => handleLose()}
-                                    className="bg-danger-500/20 hover:bg-danger-500/30 text-danger-400 text-xs px-2 py-1 rounded border border-danger-500/30"
-                                >
-                                    Bitir
-                                </button>
-                            )}
 
                             {/* Score Display - Timed mode only - Vertical Stack */}
                             {gameMode === 'timed' && (

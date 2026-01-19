@@ -78,26 +78,24 @@ export default function RoomsPage() {
                             </div>
                         </div>
 
-                        {/* Kelime Uzunluğu (Sadece Sıra Sende için) */}
-                        {gameMode === 'turn_based' && (
-                            <div className="mb-6">
-                                <label className="block text-sm text-white/80 mb-2">Kelime Uzunluğu</label>
-                                <div className="grid grid-cols-5 bg-black/20 rounded-xl p-1 gap-1">
-                                    {[4, 5, 6, 7, 0].map(len => (
-                                        <button
-                                            key={len}
-                                            onClick={() => setWordLength(len)}
-                                            className={`py-2 rounded-lg text-sm font-semibold transition-all ${wordLength === len ? 'bg-primary-600 text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
-                                        >
-                                            {len === 0 ? '🎲' : len}
-                                        </button>
-                                    ))}
-                                </div>
-                                {wordLength === 0 && (
-                                    <p className="text-xs text-white/60 mt-2 text-center">Karışık: Her el farklı uzunluk (4-7)</p>
-                                )}
+                        {/* Kelime Uzunluğu */}
+                        <div className="mb-6">
+                            <label className="block text-sm text-white/80 mb-2">Kelime Uzunluğu</label>
+                            <div className="grid grid-cols-5 bg-black/20 rounded-xl p-1 gap-1">
+                                {[4, 5, 6, 7, 0].map(len => (
+                                    <button
+                                        key={len}
+                                        onClick={() => setWordLength(len)}
+                                        className={`py-2 rounded-lg text-sm font-semibold transition-all ${wordLength === len ? 'bg-primary-600 text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
+                                    >
+                                        {len === 0 ? '🎲' : len}
+                                    </button>
+                                ))}
                             </div>
-                        )}
+                            {wordLength === 0 && (
+                                <p className="text-xs text-white/60 mt-2 text-center">Karışık: Her el farklı uzunluk (4-7)</p>
+                            )}
+                        </div>
 
                         {/* Süre Seçimi */}
                         <div className="mb-6">

@@ -9,9 +9,10 @@ interface AnswerModalProps {
     targetWord: string
     onNext: () => void
     onRestart?: () => void
+    restartLabel?: string
 }
 
-export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onRestart }: AnswerModalProps) {
+export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onRestart, restartLabel = 'Yeni Oyun' }: AnswerModalProps) {
     useEffect(() => {
         if (isOpen && !onRestart) {
             // Auto-advance only if no restart option (multiplayer)
@@ -57,7 +58,7 @@ export default function AnswerModal({ isOpen, isWin, targetWord, onNext, onResta
                             onClick={onRestart}
                             className="w-full px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold transition-all text-lg"
                         >
-                            Yeni Oyun
+                            {restartLabel}
                         </button>
                     ) : (
                         /* Multiplayer / Auto-advance mode */

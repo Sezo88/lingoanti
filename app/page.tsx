@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import TournamentModeCard from '@/components/TournamentModeCard'
 import CurrencyDisplay from '@/components/CurrencyDisplay'
+import LeaderboardWidget from '@/components/LeaderboardWidget'
 
 import { useMatchmaking } from '@/hooks/useMatchmaking'
 
@@ -202,6 +203,9 @@ export default function HomePage() {
                             </div>
                         </div>
                     </Link>
+
+                    {/* Leaderboard Widget */}
+                    <LeaderboardWidget />
                 </div>
 
                 {/* Footer Stats */}

@@ -119,61 +119,69 @@ export default function HomePage() {
                     </div>
 
 
+                    {/* Pratik & Oyunlarım Section */}
+                    <div className="glass-card rounded-[28px] p-5 shadow-xl relative overflow-hidden">
+                        <div className="flex items-center gap-3 mb-4 text-white/80">
+                            <span className="material-symbols-outlined text-xl">school</span>
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Gelişim & Kayıtlar</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Pratik Yap */}
+                            <Link href="/practice" className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-4 transition-all flex flex-col items-center text-center gap-2 group active:scale-[0.98]">
+                                <div className="w-10 h-10 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined text-2xl">track_changes</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-white font-bold text-sm">Pratik Yap</h3>
+                                    <p className="text-white/50 text-[10px]">Kendini geliştir</p>
+                                </div>
+                            </Link>
+
+                            {/* Oyunlarım */}
+                            <Link href="/games" className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-4 transition-all flex flex-col items-center text-center gap-2 group active:scale-[0.98]">
+                                <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined text-2xl">history</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-white font-bold text-sm">Oyunlarım</h3>
+                                    <p className="text-white/50 text-[10px]">Geçmiş oyunlar</p>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+
                     {/* Turnuva Modu Card */}
                     <TournamentModeCard />
 
-                    {/* Çok Oyunculu Bölümü (Grid) */}
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Oda Kur */}
-                        <Link href="/rooms?action=create" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-lg mb-1">
-                                <span className="material-symbols-outlined text-2xl">add_circle</span>
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-white leading-tight">Oda Kur</h3>
-                                <p className="text-[10px] text-white/60 mt-0.5">Arkadaşlarını davet et</p>
-                            </div>
-                        </Link>
+                    {/* Çok Oyunculu Bölümü Card */}
+                    <div className="glass-card rounded-[28px] p-5 shadow-xl relative overflow-hidden">
+                        <div className="flex items-center gap-3 mb-4 text-white/80">
+                            <span className="material-symbols-outlined text-xl">hub</span>
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Özel Odalar</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Oda Kur */}
+                            <Link href="/rooms?action=create" className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 border border-purple-500/20 rounded-2xl p-4 transition-all flex flex-col items-center text-center gap-2 group active:scale-[0.98]">
+                                <div className="w-10 h-10 rounded-xl bg-purple-500 text-white flex items-center justify-center mb-1 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined text-2xl">add</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-white font-bold text-sm">Oda Kur</h3>
+                                    <p className="text-white/50 text-[10px]">Arkadaşlarını çağır</p>
+                                </div>
+                            </Link>
 
-                        {/* Odaya Katıl */}
-                        <Link href="/rooms" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-lg mb-1">
-                                <span className="material-symbols-outlined text-2xl">login</span>
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-white leading-tight">Odaya Katıl</h3>
-                                <p className="text-[10px] text-white/60 mt-0.5">Varolan odaya gir</p>
-                            </div>
-                        </Link>
-                    </div>
-
-                    {/* Pratik & Oyunlarım (Grid) */}
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Pratik Yap */}
-                        <Link href="/practice" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg mb-1">
-                                <span className="material-symbols-outlined text-2xl">track_changes</span>
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-white leading-tight">Pratik Yap</h3>
-                                <p className="text-[10px] text-white/60 mt-0.5">Tek başına çalış</p>
-                            </div>
-                        </Link>
-
-                        {/* Oyunlarım */}
-                        <Link href="/games" className="glass-card rounded-[24px] p-4 shadow-xl active:scale-[0.98] transition-transform flex flex-col items-center text-center justify-center gap-2 aspect-square relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg mb-1">
-                                <span className="material-symbols-outlined text-2xl">sports_esports</span>
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-white leading-tight">Oyunlarım</h3>
-                                <p className="text-[10px] text-white/60 mt-0.5">Kayıtlı oyunlar</p>
-                            </div>
-                        </Link>
+                            {/* Odaya Katıl */}
+                            <Link href="/rooms" className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 border border-cyan-500/20 rounded-2xl p-4 transition-all flex flex-col items-center text-center gap-2 group active:scale-[0.98]">
+                                <div className="w-10 h-10 rounded-xl bg-cyan-500 text-white flex items-center justify-center mb-1 shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined text-2xl">login</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-white font-bold text-sm">Katıl</h3>
+                                    <p className="text-white/50 text-[10px]">Kod ile giriş yap</p>
+                                </div>
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Arkadaşlarınla Oyna (Full Width) */}

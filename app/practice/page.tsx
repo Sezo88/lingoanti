@@ -13,6 +13,7 @@ import { evaluateGuess, isCorrectGuess, getKeyboardState } from '@/lib/gameLogic
 import { calculateWordScore } from '@/lib/scoring'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCurrency } from '@/hooks/useCurrency'
 import type { LetterResult } from '@/lib/supabase'
 
 export default function PracticePage() {

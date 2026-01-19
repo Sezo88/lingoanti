@@ -16,13 +16,18 @@ interface ArenaBoardProps {
     onProgress: (wordIndex: number, isFinished: boolean) => void
     onWordCompleted: (wordIndex: number, timeSeconds: number, score: number) => void
     gameId?: string
+    participants?: any[]
+    roomStatus?: string
 }
 
 export default function ArenaBoard({
     targetWords,
     duration = 60,
     onProgress,
-    onWordCompleted
+    onWordCompleted,
+    gameId,
+    participants = [],
+    roomStatus
 }: ArenaBoardProps) {
     const [wordIndex, setWordIndex] = useState(0)
     const [guesses, setGuesses] = useState<string[]>([])
@@ -286,8 +291,8 @@ export default function ArenaBoard({
     const allFinished = participants.length > 0 && participants.every(p => p.status === 'finished')
 
     // If local game is finished OR everyone is finished, show result
-    if (gameStatus === 'finished' || allFinished || room?.status === 'finished') {
-        if (!allFinished && room?.status !== 'finished') {
+    if (gameStatus === 'finished' || allFinished || roomStatus === 'finished') {
+        if (!allFinished && roomStatus !== 'finished') {
             // Wait screen (Still waiting for others)
             return (
                 <div className="flex flex-col items-center justify-center p-10 text-center animate-in zoom-in">

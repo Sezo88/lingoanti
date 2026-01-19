@@ -543,6 +543,8 @@ export default function RoomPage() {
                         onProgress={handleProgress}
                         onWordCompleted={handleWordCompleted}
                         gameId="multiplayer"
+                        participants={participants}
+                        roomStatus={room?.status}
                     />
                 </div>
 

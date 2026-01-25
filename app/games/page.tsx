@@ -82,7 +82,7 @@ export default function ActiveGamesPage() {
     const handleAcceptInvite = async (gameId: string) => {
         const { success } = await acceptGameInvite(gameId)
         if (success) {
-            router.push(`/game/${gameId}`)
+            router.push(`/game/play?id=${gameId}`)
         }
     }
 
@@ -274,7 +274,7 @@ export default function ActiveGamesPage() {
                                         </div>
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() => router.push(`/game/${game.id}`)}
+                                                onClick={() => router.push(`/game/play?id=${game.id}`)}
                                                 className="flex-1 py-2 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"
                                             >
                                                 Devam Et →

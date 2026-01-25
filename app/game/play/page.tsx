@@ -1,0 +1,622 @@
+'use client'
+
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRealtimeGame } from '@/hooks/useRealtimeGame'
+import { submitGuess, switchTurn, finishGame, forfeitGame } from '@/lib/games'
+import { isValidWord } from '@/lib/words'
+import { evaluateGuess, isCorrectGuess } from '@/lib/gameLogic'
+import { supabase } from '@/lib/supabase'
+import GameBoard from '@/components/GameBoard'
+import GameKeyboard from '@/components/GameKeyboard'
+import JokerPanel from '@/components/JokerPanel'
+import TimerBar from '@/components/TimerBar'
+import type { LetterResult } from '@/lib/supabase'
+
+function GamePageContent() {
+    console.log('📄 SAYFA: /game/play - MultiplayerGamePage AÇILDI')
+    const searchParams = useSearchParams()
+    const gameId = searchParams.get('id') as string
+    const { user } = useAuth()
+    const router = useRouter()
+
+    const { game, moves, loading } = useRealtimeGame(gameId)
+
+    const [currentGuess, setCurrentGuess] = useState('')
+    const [error, setError] = useState('')
+    const [submitting, setSubmitting] = useState(false)
+    const [isFullscreen, setIsFullscreen] = useState(false)
+    const [showAnswerOverlay, setShowAnswerOverlay] = useState(false)
+    const [roundEndMessage, setRoundEndMessage] = useState<string | null>(null)
+    const [lastRoundWinner, setLastRoundWinner] = useState<string | null>(null)
+
+    // Joker State
+    const [maxAttempts, setMaxAttempts] = useState(6)
+    const [usedJokers, setUsedJokers] = useState<Set<string>>(new Set())
+    const [jokerLetters, setJokerLetters] = useState<{ position: number, letter: string, status: 'correct' | 'present' }[]>([])
+    const [showJokerPanel, setShowJokerPanel] = useState(false)
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen()
+            setIsFullscreen(true)
+        } else {
+            document.exitFullscreen()
+            setIsFullscreen(false)
+        }
+    }
+
+    const isPlayer1 = user?.id === game?.player1_id
+    const isMyTurn = game?.current_turn === user?.id
+    const opponent = isPlayer1 ? game?.player2_id : game?.player1_id
+
+    // Show overlay when round ends
+    useEffect(() => {
+        if (game?.round_message) {
+            setRoundEndMessage(game.round_message)
+
+            // Determine who won the last round based on score change
+            // If message contains 🎉, someone won - check who has higher score
+            if (game.round_message.includes('🎉')) {
+                const myScore = isPlayer1 ? game.player1_score : game.player2_score
+                const opponentScore = isPlayer1 ? game.player2_score : game.player1_score
+                setLastRoundWinner(myScore > opponentScore ? user?.id || null : opponent || null)
+            } else {
+                setLastRoundWinner(null) // Draw
+            }
+
+            // Auto-dismiss after 3 seconds
+            const timer = setTimeout(() => {
+                setRoundEndMessage(null)
+                setLastRoundWinner(null)
+            }, 3000)
+            return () => clearTimeout(timer)
+        }
+    }, [game?.round_message, isPlayer1, user?.id, opponent])
+
+    // Reset joker state when turn changes or new round starts
+    useEffect(() => {
+        if (!isMyTurn) {
+            setCurrentGuess('')
+            setJokerLetters([])
+        }
+    }, [isMyTurn])
+
+    // Reset joker state when round changes
+    useEffect(() => {
+        setCurrentGuess('')
+        setJokerLetters([])
+        setUsedJokers(new Set())
+        setMaxAttempts(6)
+    }, [game?.current_round])
+
+    const totalMoves = moves.length
+
+    const allGuesses = moves.map(m => m.guess)
+    const allResults = moves.map(m => m.result as LetterResult[])
+
+    const handleKeyPress = (key: string) => {
+        if (!isMyTurn || !game) return
+
+        const isGameOver = game.status === 'finished'
+        if (isGameOver) return
+
+        // Initialize with spaces if empty
+        let chars = currentGuess.split('')
+        if (chars.length === 0) {
+            chars = Array(game.word_length).fill(' ')
+        }
+
+        // Find first empty or space position
+        const firstEmptyIndex = chars.findIndex(c => !c || c === ' ')
+        if (firstEmptyIndex === -1) return // All positions filled
+
+        // Ensure array is full length
+        while (chars.length < game.word_length) {
+            chars.push(' ')
+        }
+
+        chars[firstEmptyIndex] = key.toLocaleUpperCase('tr-TR')
+        setCurrentGuess(chars.join(''))
+    }
+
+    const handleBackspace = () => {
+        if (!isMyTurn || !game) return
+
+        const isGameOver = game.status === 'finished'
+        if (isGameOver) return
+
+        // Find last non-empty, non-space character
+        const chars = currentGuess.split('')
+        for (let i = chars.length - 1; i >= 0; i--) {
+            if (chars[i] && chars[i] !== ' ') {
+                chars[i] = ' '
+                setCurrentGuess(chars.join(''))
+                return
+            }
+        }
+    }
+
+    // Joker Handler - Adapted from Practice Mode
+    const handleJokerUsed = (jokerType: string, data: any) => {
+        if (!game) return
+
+        // Silently ignore if already used
+        if (usedJokers.has(jokerType)) return
+
+        if (jokerType === 'green_letter') {
+            // Create array with SPACE characters (not empty strings!)
+            const newGuess = Array(game.word_length).fill(' ')
+
+            // Copy existing letters from current guess
+            const current = currentGuess.split('')
+            for (let i = 0; i < current.length && i < game.word_length; i++) {
+                if (current[i] && current[i] !== ' ') {
+                    newGuess[i] = current[i]
+                }
+            }
+
+            // Place the joker letter at the EXACT position (UPPERCASE)
+            newGuess[data.position] = data.letter.toLocaleUpperCase('tr-TR')
+            setCurrentGuess(newGuess.join(''))
+
+            // Add to joker letters for coloring at CORRECT position
+            setJokerLetters(prev => [...prev, { position: data.position, letter: data.letter, status: 'correct' }])
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+
+        } else if (jokerType === 'yellow_letter') {
+            // Find a wrong position to place the yellow letter
+            const correctPositions: number[] = []
+            for (let i = 0; i < game.target_word.length; i++) {
+                if (game.target_word[i] === data.letter) correctPositions.push(i)
+            }
+
+            const wrongPositions: number[] = []
+            for (let i = 0; i < game.word_length; i++) {
+                if (!correctPositions.includes(i) && !currentGuess[i]) {
+                    wrongPositions.push(i)
+                }
+            }
+
+            if (wrongPositions.length > 0) {
+                const randomWrongPos = wrongPositions[Math.floor(Math.random() * wrongPositions.length)]
+
+                const newGuess = Array(game.word_length).fill(' ')
+                const current = currentGuess.split('')
+                for (let i = 0; i < current.length && i < game.word_length; i++) {
+                    if (current[i] && current[i] !== ' ') {
+                        newGuess[i] = current[i]
+                    }
+                }
+                newGuess[randomWrongPos] = data.letter.toLocaleUpperCase('tr-TR')
+                setCurrentGuess(newGuess.join(''))
+
+                setJokerLetters(prev => [...prev, { position: randomWrongPos, letter: data.letter, status: 'present' }])
+                setUsedJokers(prev => new Set(prev).add(jokerType))
+            }
+
+        } else if (jokerType === 'extra_attempt') {
+            setMaxAttempts(prev => prev + 1)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+
+        } else if (jokerType === 'reveal_word') {
+            setCurrentGuess(data.word)
+            setUsedJokers(prev => new Set(prev).add(jokerType))
+        }
+    }
+
+    const handleEnter = async () => {
+        if (!game || !user || submitting) return
+        if (currentGuess.length !== game.word_length) {
+            setError(`${game.word_length} harfli kelime giriniz`)
+            setTimeout(() => setError(''), 2000)
+            return
+        }
+
+        const valid = await isValidWord(currentGuess)
+        if (!valid) {
+            setError('Geçersiz kelime! Hak kaybettiniz.')
+
+            const invalidResult = currentGuess.split('').map(letter => ({
+                letter,
+                status: 'invalid' as const
+            }))
+
+            setSubmitting(true)
+            await submitGuess(gameId, user.id, currentGuess, invalidResult)
+            setCurrentGuess('')
+            setJokerLetters([])
+
+            // 6. hamle bitti - kimse kazanamadı
+            if (totalMoves + 1 >= 6) {
+                const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
+                await finishRound(gameId, null) // Beraberlik
+
+                // Mesajı göster
+                await supabase
+                    .from('games')
+                    .update({ round_message: `✋ Kimse bulamadı! Kelime: ${game.target_word.toUpperCase()}` })
+                    .eq('id', gameId)
+
+                const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
+                if (updatedGame.data) {
+                    const matchResult = isMatchFinished(updatedGame.data.player1_score, updatedGame.data.player2_score, game.best_of)
+
+                    if (!matchResult.isFinished) {
+                        // Yeni el başlat
+                        await new Promise(resolve => setTimeout(resolve, 3000))
+                        await startNextRound(gameId)
+                        await supabase.from('games').update({ round_message: null }).eq('id', gameId)
+                    } else {
+                        // Maç bitti
+                        await finishGame(gameId, matchResult.winnerId === 'player1' ? updatedGame.data.player1_id : updatedGame.data.player2_id)
+                    }
+                }
+            } else {
+                await switchTurn(gameId, opponent!)
+            }
+
+            setSubmitting(false)
+            setTimeout(() => setError(''), 3000)
+            return
+        }
+
+        const evalResult = evaluateGuess(currentGuess, game.target_word)
+
+        setSubmitting(true)
+        await submitGuess(gameId, user.id, currentGuess, evalResult)
+        setCurrentGuess('')
+        setJokerLetters([])
+
+        // Kelimeyi buldu!
+        if (isCorrectGuess(currentGuess, game.target_word)) {
+            const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
+            await finishRound(gameId, user.id)
+
+            const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
+            if (updatedGame.data) {
+                const player1Score = user.id === updatedGame.data.player1_id ? updatedGame.data.player1_score : updatedGame.data.player2_score
+                const player2Score = user.id === updatedGame.data.player1_id ? updatedGame.data.player2_score : updatedGame.data.player1_score
+
+                const matchResult = isMatchFinished(player1Score, player2Score, game.best_of)
+
+                if (matchResult.isFinished) {
+                    await finishGame(gameId, user.id)
+                } else {
+                    // Mesajı database'e kaydet (her iki oyuncu görecek)
+                    await supabase
+                        .from('games')
+                        .update({ round_message: `🎉 El bitti! Skor: ${player1Score}-${player2Score}` })
+                        .eq('id', gameId)
+
+                    await new Promise(resolve => setTimeout(resolve, 3000))
+                    await startNextRound(gameId)
+
+                    // Mesajı temizle
+                    await supabase.from('games').update({ round_message: null }).eq('id', gameId)
+                }
+            }
+
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100])
+        } else if (totalMoves + 1 >= 6) {
+            // 6. hamle - kimse bulamadı, berabere
+            const { finishRound, isMatchFinished, startNextRound } = await import('@/lib/matchSeries')
+            await finishRound(gameId, null)
+
+            // Mesajı database'e kaydet (her iki oyuncu görecek)
+            await supabase
+                .from('games')
+                .update({ round_message: `✋ Kimse bulamadı! Kelime: ${game.target_word.toUpperCase()}` })
+                .eq('id', gameId)
+
+            const updatedGame = await supabase.from('games').select('*').eq('id', gameId).single()
+            if (updatedGame.data) {
+                const matchResult = isMatchFinished(updatedGame.data.player1_score, updatedGame.data.player2_score, game.best_of)
+
+                if (!matchResult.isFinished) {
+                    await new Promise(resolve => setTimeout(resolve, 3000))
+                    await startNextRound(gameId)
+                    await supabase.from('games').update({ round_message: null }).eq('id', gameId)
+                } else {
+                    await finishGame(gameId, matchResult.winnerId === 'player1' ? updatedGame.data.player1_id : updatedGame.data.player2_id)
+                }
+            }
+
+            if (navigator.vibrate) navigator.vibrate(500)
+        } else {
+            // Sıra değiştir
+            await switchTurn(gameId, opponent!)
+        }
+
+        setSubmitting(false)
+    }
+
+    const getKeyboardStateFromResults = (results: LetterResult[][]): Map<string, 'correct' | 'present' | 'absent'> => {
+        const keyState = new Map<string, 'correct' | 'present' | 'absent'>()
+        results.forEach(guessResult => {
+            guessResult.forEach(({ letter, status }) => {
+                if (status === 'invalid') return
+                const currentStatus = keyState.get(letter)
+                if (status === 'correct') {
+                    keyState.set(letter, 'correct')
+                } else if (status === 'present' && currentStatus !== 'correct') {
+                    keyState.set(letter, 'present')
+                } else if (!currentStatus && status === 'absent') {
+                    keyState.set(letter, status)
+                }
+            })
+        })
+        return keyState
+    }
+
+    const keyboardState = getKeyboardStateFromResults(allResults)
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary-500 mx-auto"></div>
+                    <p className="mt-4 text-dark-500">Oyun yükleniyor...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (!game) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-danger-500">Oyun bulunamadı</p>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="mt-4 px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold"
+                    >
+                        Ana Sayfa
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    const isGameOver = game.status === 'finished'
+    const iWon = game.winner_id === user?.id
+
+    return (
+        <div className="min-h-screen max-h-screen flex flex-col overflow-hidden">
+            <header className="glass-effect border-b border-dark-200 w-full fixed top-0 z-40">
+                <div className="container mx-auto px-4 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                        {/* LEFT: Menu & Forfeit */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => router.push('/')}
+                                className="text-white/70 hover:text-white transition-colors text-xs flex items-center gap-1 bg-white/5 px-2 py-1.5 rounded-lg"
+                            >
+                                ← Çık
+                            </button>
+                            {!isGameOver && isMyTurn && (
+                                <button
+                                    onClick={async () => {
+                                        if (confirm('Pes etmek istediğinize emin misiniz?')) {
+                                            try {
+                                                await forfeitGame(gameId, user!.id)
+                                            } catch (e) {
+                                                console.error(e)
+                                            }
+                                        }
+                                    }}
+                                    className="text-xs text-danger-400 hover:text-danger-300 font-semibold border border-danger-500/20 rounded px-2 py-1.5"
+                                >
+                                    🏳️ Pes Et
+                                </button>
+                            )}
+                        </div>
+
+                        {/* CENTER: Compact Info */}
+                        <div className="flex-1 flex flex-col items-center justify-center min-w-0">
+                            <div className="flex items-center gap-2 text-sm whitespace-nowrap">
+                                <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400">
+                                    {game.word_length} Harfli
+                                </span>
+                                <span className="text-white/20">|</span>
+                                <span className="text-white/60">
+                                    {game.best_of > 1 ? `Best of ${game.best_of} • El ${game.current_round}` : 'Tek El'}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-0.5">
+                                {/* Score */}
+                                {game.best_of > 1 && (
+                                    <div className="flex items-center gap-2 text-xs font-bold bg-black/20 px-2 py-0.5 rounded whitespace-nowrap">
+                                        <span className={user?.id === game.player1_id ? 'text-primary-400' : 'text-white/40'}>{game.player1_score}</span>
+                                        <span className="text-white/20">-</span>
+                                        <span className={user?.id === game.player2_id ? 'text-primary-400' : 'text-white/40'}>{game.player2_score}</span>
+                                    </div>
+                                )}
+
+                                {/* Status Badge */}
+                                {!isGameOver && (
+                                    <div className={`text-xs px-2 py-0.5 rounded whitespace-nowrap font-medium ${isMyTurn ? 'bg-success-500/20 text-success-400' : 'bg-warning-500/20 text-warning-400'}`}>
+                                        {isMyTurn ? 'Senin Sıran' : 'Rakip Oynuyor'}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* RIGHT: Buttons */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={toggleFullscreen}
+                                className="w-8 h-8 flex items-center justify-center bg-white/5 rounded-lg text-white/70 hover:text-white"
+                            >
+                                {isFullscreen ? '✕' : '⛶'}
+                            </button>
+                            {!isGameOver && isMyTurn && (
+                                <button
+                                    onClick={() => setShowJokerPanel(!showJokerPanel)}
+                                    className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg flex items-center justify-center"
+                                >
+                                    ✨
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* TIMER BAR */}
+                {!isGameOver && (
+                    <div className="h-1 w-full bg-dark-300 overflow-hidden">
+                        <TimerBar
+                            startTime={moves.length > 0 ? moves[moves.length - 1].created_at : game.created_at}
+                            duration={(game as any).duration || 60}
+                            isMyTurn={isMyTurn}
+                        />
+                    </div>
+                )}
+            </header>
+
+
+
+            <main className="flex-1 flex flex-col p-2 gap-2 overflow-y-auto w-full pt-[90px]">
+                {/* Joker Panel */}
+                {!isGameOver && isMyTurn && (
+                    <JokerPanel
+                        targetWord={game.target_word}
+                        currentGuesses={allGuesses}
+                        onJokerUsed={handleJokerUsed}
+                        usedJokers={usedJokers}
+                        showPanel={showJokerPanel}
+                        onClose={() => setShowJokerPanel(false)}
+                    />
+                )}
+
+                <div className="w-full max-w-md mx-auto">
+                    <GameBoard
+                        guesses={allGuesses}
+                        currentGuess={isMyTurn ? currentGuess : ''}
+                        wordLength={game.word_length}
+                        maxGuesses={maxAttempts}
+                        results={allResults}
+                        jokerLetters={jokerLetters}
+                    />
+
+
+                    {/* Remove toast, use overlay instead */}
+
+                    {/* Modern Answer Overlay - for game over OR round end */}
+                    {(isGameOver || roundEndMessage) && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                            <div className="w-full max-w-sm bg-dark-100 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden text-center">
+                                <div className={`absolute top-0 left-0 w-full h-2 ${isGameOver
+                                    ? (iWon ? 'bg-success-500' : 'bg-danger-500')
+                                    : lastRoundWinner === user?.id
+                                        ? 'bg-success-500'
+                                        : lastRoundWinner
+                                            ? 'bg-danger-500'
+                                            : 'bg-warning-500'
+                                    } shadow-[0_0_20px_rgba(var(--tw-colors-primary-500),0.5)]`}></div>
+
+                                <div className="text-5xl mb-4 animate-bounce-subtle">
+                                    {isGameOver
+                                        ? (iWon ? '🎉' : '💔')
+                                        : lastRoundWinner === user?.id
+                                            ? '🎉'
+                                            : lastRoundWinner
+                                                ? '😔'
+                                                : '😵'}
+                                </div>
+
+                                <h2 className={`text-2xl font-bold mb-1 ${isGameOver
+                                    ? (iWon ? 'text-white' : 'text-danger-400')
+                                    : lastRoundWinner === user?.id
+                                        ? 'text-success-400'
+                                        : lastRoundWinner
+                                            ? 'text-danger-400'
+                                            : 'text-warning-400'
+                                    }`}>
+                                    {isGameOver
+                                        ? (iWon ? 'Tebrikler! 🎉' : game.winner_id ? 'Rakibiniz Kazandı!' : 'Berabere!')
+                                        : lastRoundWinner === user?.id
+                                            ? 'Tebrikler!'
+                                            : lastRoundWinner
+                                                ? 'Bir Daha Dene!'
+                                                : 'Kimse Bulamadı!'}
+                                </h2>
+
+                                <p className="text-white/50 text-sm mb-6 uppercase tracking-widest font-semibold">
+                                    Doğru Kelime:
+                                </p>
+
+                                <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
+                                    <p className={`text-3xl font-mono font-bold tracking-[0.2em] ${isGameOver
+                                        ? (iWon ? 'text-success-400' : 'text-white')
+                                        : 'text-warning-400'
+                                        }`}>
+                                        {game.target_word.toUpperCase()}
+                                    </p>
+                                </div>
+
+                                {isGameOver && (
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => router.push('/')}
+                                            className="flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 bg-dark-200 hover:bg-dark-300 text-white border border-white/10"
+                                        >
+                                            Ana Sayfa 🏠
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                // Navigate to game mode selection with opponent info
+                                                router.push(`/friends?rematch=${opponent}`)
+                                            }}
+                                            className={`flex-1 py-4 rounded-xl font-bold text-lg shadow-lg transition-transform active:scale-95 ${iWon
+                                                ? 'bg-success-600 hover:bg-success-500 text-white shadow-success-500/20'
+                                                : 'bg-primary-600 hover:bg-primary-500 text-white shadow-primary-500/20'
+                                                }`}
+                                        >
+                                            Tekrar Oyna 🔄
+                                        </button>
+                                    </div>
+                                )}
+                                {!isGameOver && roundEndMessage && (
+                                    <div className="space-y-2">
+                                        <p className="text-white/70 text-sm">Yeni el başlıyor...</p>
+                                        <div className="flex gap-1 justify-center">
+                                            <div className="w-2 h-2 bg-warning-500 rounded-full animate-pulse"></div>
+                                            <div className="w-2 h-2 bg-warning-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                                            <div className="w-2 h-2 bg-warning-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+
+                {
+                    !isGameOver && (
+                        <div className="w-full max-w-md mx-auto pb-12">
+                            <GameKeyboard
+                                onKeyPress={handleKeyPress}
+                                onEnter={handleEnter}
+                                onBackspace={handleBackspace}
+                                keyStates={keyboardState}
+                                disabled={!isMyTurn || submitting}
+                            />
+                        </div>
+                    )
+                }
+            </main >
+        </div >
+    )
+}
+
+export default function MultiplayerGamePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-dark-100 flex items-center justify-center text-white">Oyun Yükleniyor...</div>}>
+            <GamePageContent />
+        </Suspense>
+    )
+}

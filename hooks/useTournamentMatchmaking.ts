@@ -301,7 +301,7 @@ export function useTournamentMatchmaking() {
         if (data.status === 'matched') {
             setMatchmakingStatus({ status: 'matched', roomId: data.room_id })
             // Navigate to room using code, not ID
-            router.push(`/rooms/${data.room_code || data.room_id}`)
+            router.push(`/rooms/join?code=${data.room_code || data.room_id}`)
         } else if (data.status === 'countdown') {
             setMatchmakingStatus({
                 status: 'countdown',
@@ -407,7 +407,7 @@ export function useTournamentMatchmaking() {
                             supabase.from('rooms').select('code').eq('id', updated.room_id).single()
                                 .then(({ data: room }) => {
                                     if (room) {
-                                        router.push(`/rooms/${room.code}`)
+                                        router.push(`/rooms/join?code=${room.code}`)
                                     }
                                 })
                             return { status: 'matched', roomId: updated.room_id }

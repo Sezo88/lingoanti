@@ -32,7 +32,7 @@ export default function TournamentModeCard() {
         const lobbyId = await createLobby(selectedMode)
         if (lobbyId) {
             setShowLobbyModal(false)
-            router.push(`/tournament/lobby/${lobbyId}`)
+            router.push(`/tournament/lobby/view?id=${lobbyId}`)
         }
     }
 
@@ -45,7 +45,7 @@ export default function TournamentModeCard() {
         if (lobbyId) {
             setShowJoinModal(false)
             setLobbyCode('')
-            router.push(`/tournament/lobby/${lobbyId}`)
+            router.push(`/tournament/lobby/view?id=${lobbyId}`)
         }
     }
 

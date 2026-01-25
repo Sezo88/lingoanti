@@ -13,7 +13,7 @@ DECLARE
   v_turn_order UUID[];
   v_current_turn INT;
   v_current_player UUID;
-  v_timeout_guess TEXT := '-----';
+
   v_timeout_result JSONB;
   v_word_length INT;
 BEGIN
@@ -44,8 +44,8 @@ BEGIN
   v_timeout_result := (
     SELECT jsonb_agg(
       jsonb_build_object(
-        'letter', '-',
-        'status', 'absent'
+        'letter', '?',
+        'status', 'invalid'
       )
     )
     FROM generate_series(1, v_word_length)
@@ -57,7 +57,7 @@ BEGIN
     jsonb_set(
         v_game_state, 
         '{guesses}', 
-        (v_game_state->'guesses') || to_jsonb(v_timeout_guess)
+        (v_game_state->'guesses') || to_jsonb(repeat('?', v_word_length))
     ),
     '{results}',
     (v_game_state->'results') || jsonb_build_array(v_timeout_result)

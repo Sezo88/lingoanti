@@ -1,5 +1,5 @@
 import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { SettingsProvider } from '@/contexts/SettingsContext'
@@ -12,6 +12,20 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
     title: 'Lingo Master',
     description: 'Çok oyunculu Türkçe kelime tahmin oyunu',
+    manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "black-translucent",
+        title: "Lingo Master",
+    },
+}
+
+export const viewport: Viewport = {
+    themeColor: "#667eea",
+    minimumScale: 1,
+    initialScale: 1,
+    width: "device-width",
+    userScalable: false,
 }
 
 export default function RootLayout({
@@ -22,11 +36,6 @@ export default function RootLayout({
     return (
         <html lang="tr">
             <head>
-                <link rel="manifest" href="/manifest.json" />
-                <meta name="theme-color" content="#667eea" />
-                <meta name="mobile-web-app-capable" content="yes" />
-                <meta name="apple-mobile-web-app-capable" content="yes" />
-                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
                 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
                 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
             </head>

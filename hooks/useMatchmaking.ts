@@ -65,7 +65,7 @@ export function useMatchmaking() {
             if (gameId) {
                 // Eşleşme bulundu!
                 console.log('Eşleşme bulundu, yönlendiriliyor:', gameId)
-                router.push(`/game/${gameId}`)
+                router.push(`/game/play?id=${gameId}`)
                 return
             }
 
@@ -87,7 +87,7 @@ export function useMatchmaking() {
                         const newGame = payload.new
                         if (newGame.player1_id === user.id || newGame.player2_id === user.id) {
                             console.log('Oyun oluşturuldu!', newGame.id)
-                            router.push(`/game/${newGame.id}`)
+                            router.push(`/game/play?id=${newGame.id}`)
                         }
                     }
                 )

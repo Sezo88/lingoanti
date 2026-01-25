@@ -132,7 +132,7 @@ export default function GameResultScreen({ participants, winner, lastWinType, ro
                         Ana Menü
                     </button>
                     <button
-                        onClick={() => router.push(`/rooms/${roomCode}`)} // Just reload/rejoin
+                        onClick={() => router.push(`/rooms/join?code=${roomCode}`)} // Just reload/rejoin
                         className="flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-primary-600/20"
                     >
                         <RotateCcw size={20} />

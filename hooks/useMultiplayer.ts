@@ -57,7 +57,7 @@ export function useMultiplayer() {
 
             if (joinError) throw joinError
 
-            router.push(`/rooms/${data.code}`)
+            router.push(`/rooms/join?code=${data.code}`)
             return data
         } catch (e: any) {
             console.error('Oda oluşturma hatası:', e)
@@ -106,7 +106,7 @@ export function useMultiplayer() {
                 if (joinError) throw joinError
             }
 
-            router.push(`/rooms/${code}`)
+            router.push(`/rooms/join?code=${code}`)
         } catch (e: any) {
             console.error('Odaya katılma hatası:', e)
             setError(e.message)

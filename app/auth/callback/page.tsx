@@ -11,6 +11,23 @@ function AuthCallbackContent() {
 
     useEffect(() => {
         const handleAuth = async () => {
+            // --- MOBILE FALLBACK LOGIC ---
+            // Android App Link çalışmazsa ve site açılırsa, burası devreye girer.
+            // URL'deki tokenleri alıp native şemaya (lingoanti://) fırlatır.
+            if (typeof window !== 'undefined') {
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
+                const accessToken = params.get('access_token');
+                const refreshToken = params.get('refresh_token');
+
+                if (accessToken && refreshToken) {
+                    // Native app'i zorla aç
+                    window.location.href = `lingoanti://auth/callback#access_token=${accessToken}&refresh_token=${refreshToken}`;
+                    return; // Web işlemine devam etme
+                }
+            }
+            // -----------------------------
+
             const code = searchParams.get('code')
 
             if (code) {

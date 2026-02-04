@@ -195,16 +195,27 @@ export async function deleteUser(userId: string) {
 
     const supabase = createServerActionClient({ cookies })
 
-    // Hard delete from public.users
-    // Note: This won't delete from auth.users without Service Role Key + Admin API
-    // But it will effectively remove them from the app logic
-    const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId)
+    // Try to use the safe delete RPC function first (handles cascading)
+    const { error } = await supabase.rpc('delete_user_data', {
+        target_user_id: userId
+    })
 
-    if (error) return { success: false, error: error.message }
+    if (error) {
+        console.error("RPC delete error:", error)
+
+        // If RPC is missing, try legacy direct delete (might fail due to FKs)
+        console.log("RPC missing or failed, trying direct delete...")
+        const { error: directError } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', userId)
+
+        if (directError) {
+            console.error("Direct delete error:", directError)
+            return { success: false, error: directError.message }
+        }
+    }
 
     revalidatePath('/admin')
-    return { success: true, message: 'Kullanıcı silindi' }
+    return { success: true, message: 'Kullanıcı ve tüm verileri silindi' }
 }

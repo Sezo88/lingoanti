@@ -65,7 +65,7 @@ export default function AdminDashboard({ stats }: AdminDashboardProps) {
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (searchQuery.length < 2) return
+        // Allow empty search to list recent users
 
         setIsSearching(true)
         const users = await searchUsers(searchQuery)
@@ -267,8 +267,8 @@ export default function AdminDashboard({ stats }: AdminDashboardProps) {
                                                 <button
                                                     onClick={() => handleBan(user.id, !user.is_banned)}
                                                     className={`px-3 py-1 rounded text-sm font-semibold transition-colors ${user.is_banned
-                                                            ? 'bg-green-500/20 text-green-300 hover:bg-green-500/30'
-                                                            : 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30'
+                                                        ? 'bg-green-500/20 text-green-300 hover:bg-green-500/30'
+                                                        : 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30'
                                                         }`}
                                                 >
                                                     {user.is_banned ? 'Yasağı Kaldır' : 'Yasakla'}

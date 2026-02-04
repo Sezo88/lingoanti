@@ -124,8 +124,22 @@ export async function searchUsers(query: string) {
     const isAdmin = await checkAdmin()
     if (!isAdmin) throw new Error("Unauthorized")
 
-    // Require at least 2 chars to search, otherwise return empty
-    if (!query || query.length < 2) return []
+    // If query is empty, return latest 50 users
+    if (!query || query.trim() === '') {
+        const supabase = createServerActionClient({ cookies })
+
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50)
+
+        if (error) {
+            console.error("Search error:", error)
+            return []
+        }
+        return users
+    }
 
     const supabase = createServerActionClient({ cookies })
 

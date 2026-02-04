@@ -32,7 +32,7 @@ export default function SettingsPage() {
             const { data } = await supabase
                 .from('users')
                 .select('role')
-                .eq('id', user.id)
+                .eq('id', user?.id)
                 .single()
 
             if (data?.role === 'super_admin' || data?.role === 'admin') {

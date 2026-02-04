@@ -1,13 +1,12 @@
 "use server"
 
-import { createClient } from "@/lib/supabase"
+import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 
 // Helper to verify admin role
 async function checkAdmin() {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createServerActionClient({ cookies })
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return false
@@ -25,8 +24,7 @@ export async function getAdminStats() {
     const isAdmin = await checkAdmin()
     if (!isAdmin) throw new Error("Unauthorized")
 
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createServerActionClient({ cookies })
 
     const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true })
     const { count: activeGames } = await supabase.from('games').select('*', { count: 'exact', head: true }).eq('status', 'waiting')
@@ -46,28 +44,11 @@ export async function distributeTickets(amount: number) {
     const isAdmin = await checkAdmin()
     if (!isAdmin) throw new Error("Unauthorized")
 
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
-
-    // This might timeout for huge user bases, but fine for now
-    // A better way is a database function, but let's try direct update
-    // RPC is safer for batch updates if available, but simple update works for smaller sets
+    const supabase = createServerActionClient({ cookies })
 
     // We need to use RPC or raw SQL because Supabase API doesn't support "update all" easily without where
-    // Or we can fetch all IDs and update (slow)
-    // Best approach: Use a Postgres function if we can, 
-    // but since I can't easily create one right now without asking user, 
-    // I'll try to use a simple "dummy" where clause like id is not null (if allowed)
-
-    // Alternatively, we can use a server-side loop with creating a PG function on the fly? No.
-
-    // Let's assume we use a WHERE clause that matches everyone
+    // We use the RPC function 'distribute_tickets_all' created in migration
     const { error } = await supabase.rpc('distribute_tickets_all', { amount })
-
-    // Wait, I haven't created this RPC. 
-    // Let's create a Supabase Function for this, sending raw SQL might not work via JS client easily.
-    // Actually, for "Super Admin", I can run a migration to create these functions. 
-    // I should probably add that to the plan or just do it.
 
     if (error) {
         console.error("Distribution error:", error)
@@ -83,6 +64,7 @@ export async function distributeCoins(amount: number) {
 
     const supabase = createServerActionClient({ cookies })
 
+    // We use the RPC function 'distribute_coins_all' created in migration
     const { error } = await supabase.rpc('distribute_coins_all', { amount })
 
     if (error) {
@@ -132,7 +114,6 @@ export async function sendGlobalNotification(title: string, body: string) {
 
     // Parallel limit
     const limit = 5;
-    const chunks = [];
 
     // Just simple loop for MVP
     for (const user of users) {

@@ -5,7 +5,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useSettings } from '@/contexts/SettingsContext'
 import SettingsToggle from '@/components/SettingsToggle'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export default function SettingsPage() {
     const router = useRouter()
@@ -22,6 +23,25 @@ export default function SettingsPage() {
     } = useSettings()
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [isAdmin, setIsAdmin] = useState(false)
+
+    useEffect(() => {
+        if (!user) return
+
+        async function checkRole() {
+            const { data } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', user.id)
+                .single()
+
+            if (data?.role === 'super_admin' || data?.role === 'admin') {
+                setIsAdmin(true)
+            }
+        }
+
+        checkRole()
+    }, [user])
 
     const handleLogout = async () => {
         await signOut()
@@ -137,6 +157,16 @@ export default function SettingsPage() {
                                 <span>🚪</span>
                                 Çıkış Yap
                             </button>
+
+                            {isAdmin && (
+                                <button
+                                    onClick={() => router.push('/admin')}
+                                    className="w-full p-4 bg-purple-500/20 hover:bg-purple-500/30 rounded-xl border border-purple-500/50 hover:border-purple-500 transition-all text-purple-200 hover:text-white font-bold flex items-center justify-center gap-2"
+                                >
+                                    <span>👑</span>
+                                    Süper Admin Paneli
+                                </button>
+                            )}
 
                             {!showDeleteConfirm ? (
                                 <button

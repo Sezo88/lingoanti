@@ -13,16 +13,20 @@ export default async function AdminLayout({
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
+        console.log("Admin Layout: No user found redirecting")
         redirect("/")
     }
 
-    const { data: userData } = await supabase
+    const { data: userData, error } = await supabase
         .from('users')
         .select('role')
         .eq('id', user.id)
         .single()
 
+    console.log("Admin Layout: User check", { id: user.id, role: userData?.role, error })
+
     if (userData?.role !== 'super_admin' && userData?.role !== 'admin') {
+        console.log("Admin Layout: Unauthorized role redirecting")
         redirect("/")
     }
 

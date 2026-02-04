@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase"
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
@@ -8,7 +8,7 @@ export default async function AdminLayout({
     children: React.ReactNode
 }) {
     const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createServerComponentClient({ cookies })
 
     const { data: { user } } = await supabase.auth.getUser()
 

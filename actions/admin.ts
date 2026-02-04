@@ -81,8 +81,7 @@ export async function distributeCoins(amount: number) {
     const isAdmin = await checkAdmin()
     if (!isAdmin) throw new Error("Unauthorized")
 
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createServerActionClient({ cookies })
 
     const { error } = await supabase.rpc('distribute_coins_all', { amount })
 
@@ -98,8 +97,7 @@ export async function sendGlobalNotification(title: string, body: string) {
     const isAdmin = await checkAdmin()
     if (!isAdmin) throw new Error("Unauthorized")
 
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createServerActionClient({ cookies })
 
     // Fetch all users with tokens
     // This needs to be batched!

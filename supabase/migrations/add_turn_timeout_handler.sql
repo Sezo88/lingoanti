@@ -16,6 +16,14 @@ DECLARE
 
   v_timeout_result JSONB;
   v_word_length INT;
+
+  -- New variables for Smart Skip
+  v_turn_order_json JSONB;
+  v_max_players INT;
+  v_loop_count INT;
+  v_next_turn_index INT;
+  v_next_player_id UUID;
+  v_next_player_status participant_status; -- Assuming enum exists
 BEGIN
   -- 1. Odayı kilitle ve al
   SELECT * INTO v_room FROM rooms WHERE id = p_room_id FOR UPDATE;
@@ -64,13 +72,41 @@ BEGIN
   )
   WHERE id = p_room_id;
 
-  -- 6. Sırayı ilerlet ve turnStartTime'ı güncelle
+  -- 6. SMART TURN ADVANCEMENT (Skip inactive players)
+  v_turn_order_json := v_room.config->'turnOrder';
+  v_max_players := jsonb_array_length(v_turn_order_json);
+  
+  -- Create a loop variable safely
+  v_loop_count := 0;
+
+  LOOP
+    v_current_turn := v_current_turn + 1;
+    v_loop_count := v_loop_count + 1;
+
+    -- Prevent infinite loop
+    IF v_loop_count > v_max_players THEN EXIT; END IF;
+
+    v_next_turn_index := v_current_turn % v_max_players;
+    -- Get UUID as text then cast to UUID
+    v_next_player_id := (v_turn_order_json->>v_next_turn_index)::UUID;
+
+    SELECT status INTO v_next_player_status 
+    FROM room_participants 
+    WHERE room_id = p_room_id AND user_id = v_next_player_id;
+
+    -- Found active player?
+    IF v_next_player_status IS NULL OR v_next_player_status IN ('active', 'playing', 'ready') THEN
+      EXIT; 
+    END IF;
+  END LOOP;
+
+  -- 7. Sırayı ilerlet ve turnStartTime'ı güncelle
   UPDATE rooms
   SET config = jsonb_set(
       jsonb_set(
           v_config,
           '{currentTurn}',
-          to_jsonb(v_current_turn + 1)
+          to_jsonb(v_current_turn)
       ),
       '{turnStartTime}',
       to_jsonb((EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)

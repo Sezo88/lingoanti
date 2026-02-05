@@ -1,25 +1,25 @@
--- Function to distribute tickets to all users
+-- "LBilet" Dağıt (Veritabanındaki 'hearts' sütunu)
 CREATE OR REPLACE FUNCTION distribute_tickets_all(amount int)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Update all users' ticket count
-  UPDATE public.users
-  SET tickets = COALESCE(tickets, 0) + amount;
+  UPDATE public.user_currency
+  SET hearts = COALESCE(hearts, 0) + amount
+  WHERE user_id IS NOT NULL; -- Safety clause to satisfy 'UPDATE requires WHERE'
 END;
 $$;
 
--- Function to distribute coins to all users
+-- "LPara" Dağıt (Veritabanındaki 'tickets' sütunu)
 CREATE OR REPLACE FUNCTION distribute_coins_all(amount int)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Update all users' coin count
-  UPDATE public.users
-  SET coins = COALESCE(coins, 0) + amount;
+  UPDATE public.user_currency
+  SET tickets = COALESCE(tickets, 0) + amount
+  WHERE user_id IS NOT NULL; -- Safety clause to satisfy 'UPDATE requires WHERE'
 END;
 $$;

@@ -12,6 +12,7 @@ function AuthCallbackContent() {
 
     useEffect(() => {
         const handleAuth = async () => {
+            console.log('Mobile callback handler initiated - ' + new Date().toISOString());
             // --- MOBILE FALLBACK LOGIC ---
             // URL'deki tokenleri alıp native şemaya (lingoanti://) fırlatır.
             if (typeof window !== 'undefined') {

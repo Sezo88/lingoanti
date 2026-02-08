@@ -13,7 +13,7 @@ function AuthCallbackContent() {
     useEffect(() => {
         const handleAuth = async () => {
             console.log('Mobile callback handler initiated - ' + new Date().toISOString());
-            // --- MOBILE FALLBACK LOGIC ---
+            // --- IMPLICIT FLOW (token direkt URL hash'te) ---
             // URL'deki tokenleri alıp native şemaya (lingoanti://) fırlatır.
             if (typeof window !== 'undefined') {
                 const hash = window.location.hash.substring(1);
@@ -21,10 +21,23 @@ function AuthCallbackContent() {
                 const accessToken = params.get('access_token');
                 const refreshToken = params.get('refresh_token');
 
-                // Hash'te token varsa (implicit flow) direkt mobil uygulamaya yönlendir
-                if (accessToken && refreshToken) {
+                // source=mobile parametresi veya User-Agent ile mobil kontrolü
+                const sourceParam = searchParams.get('source');
+                const isMobile = sourceParam === 'mobile' || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                console.log('Hash check - hasTokens:', !!accessToken, 'source:', sourceParam, 'isMobile:', isMobile);
+
+                // Hash'te token varsa (implicit flow) mobil uygulamaya yönlendir
+                if (accessToken && refreshToken && isMobile) {
                     setStatus('Uygulamaya yönlendiriliyorsunuz...')
                     window.location.href = `lingoanti://auth/callback#access_token=${accessToken}&refresh_token=${refreshToken}`;
+                    return;
+                }
+
+                // Token var ama web'den geldiyse, session oluştur ve anasayfaya git
+                if (accessToken && refreshToken && !isMobile) {
+                    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+                    router.push('/');
                     return;
                 }
             }

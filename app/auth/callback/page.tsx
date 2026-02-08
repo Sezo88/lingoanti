@@ -47,8 +47,11 @@ function AuthCallbackContent() {
                     if (data.session) {
                         const { access_token, refresh_token } = data.session
 
-                        // User-Agent kontrolü ile mobil mi web mi belirle
-                        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                        // URL'deki source parametresi ile mobil mi kontrol et (User-Agent'a ek)
+                        const sourceParam = searchParams.get('source')
+                        const isMobile = sourceParam === 'mobile' || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+                        console.log('OAuth callback - source:', sourceParam, 'isMobile:', isMobile)
 
                         if (isMobile && access_token && refresh_token) {
                             // Mobil: Deep link ile uygulamaya gönder
